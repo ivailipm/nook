@@ -57,6 +57,8 @@ VERDICT: PASS | CHANGES
 Non-blocking observations. Optional.
 ```
 
+- Write the file with the Write tool before you finish. A verdict that is only in
+  your reply doesn't count, and the orchestrator stops the job.
 - The first line must be exactly `VERDICT: PASS` or `VERDICT: CHANGES`.
 - Use CHANGES only for real, blocking security problems in this branch's change.
   Don't block on pre-existing issues the change didn't make worse; mention

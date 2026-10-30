@@ -63,4 +63,6 @@ Only when you escalate: the exact decision or check you need from them, and the
 files to look at.
 ```
 
-The first line must be exactly `APPROVE` or `ESCALATE`.
+The first line must be exactly `APPROVE` or `ESCALATE`. Write the file with the
+Write tool before you finish: a verdict that is only in your reply doesn't count,
+and the orchestrator stops the job.
