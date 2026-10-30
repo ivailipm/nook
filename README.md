@@ -20,6 +20,8 @@ npm run build                   # or `composer dev` for Vite, the queue worker a
 herd link nook                  # serves http://nook.test
 ```
 
+Log in as `ivayla@example.com` / `password`; the seeder creates that account everywhere except production.
+
 `composer test` runs Pint, Larastan and the Pest suite (on the `nook_testing` database).
 
 ## CI and deploys
@@ -32,6 +34,7 @@ One-time Coolify setup:
 2. In Coolify, create a Docker Compose resource from this repo using `docker-compose.prod.yml`.
 3. Set `APP_KEY` (from `php artisan key:generate --show`), `APP_URL` and `DB_PASSWORD`, and point the domain at the `app` service on port 8080.
 4. Add the resource's deploy webhook URL and a Coolify API token to the GitHub repo as the secrets `COOLIFY_WEBHOOK` and `COOLIFY_TOKEN`. Until then, the deploy step is skipped.
+5. After the first deploy, open a terminal on the `app` container in Coolify and run `php artisan nook:user` to create your login. There's no registration page.
 
 ## Software factory
 
