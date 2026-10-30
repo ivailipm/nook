@@ -15,11 +15,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // The local account; in production the user is created with `php artisan nook:user`.
+        if (! app()->isProduction()) {
+            User::firstOrCreate(
+                ['email' => 'ivayla@example.com'],
+                ['name' => 'Ivayla', 'password' => 'password'],
+            );
+        }
     }
 }

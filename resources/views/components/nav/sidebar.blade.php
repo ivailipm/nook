@@ -21,6 +21,14 @@
 
     <div class="flex-1"></div>
 
+    <form method="POST" action="{{ route('logout') }}" class="mb-3.5">
+        @csrf
+        <button type="submit" class="flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-button px-3 text-[15px] font-medium text-cream-muted">
+            <x-lucide-log-out class="size-5 flex-none stroke-[1.75]" aria-hidden="true" />
+            <span>Log out</span>
+        </button>
+    </form>
+
     <button type="button" class="flex min-h-[46px] cursor-pointer items-center justify-center gap-2 rounded-full bg-peach text-[15px] font-bold text-on-peach">
         <x-lucide-plus class="size-[18px] stroke-[2.25]" aria-hidden="true" />
         Add something

@@ -51,7 +51,7 @@ taskkill //F //PID $(netstat -ano | grep -E "127\.0\.0\.1:<port> .*LISTENING" | 
 
 That ends the listener on the port, and `artisan serve` exits with it.
 
-Every page except login is behind auth. The seeder creates the local account `ivayla@example.com` / `password` (local and factory databases only, never production).
+Every page except login is behind auth. The seeder creates the local account `ivayla@example.com` / `password` (local and factory databases only, never production). Everywhere else, create the user with `php artisan nook:user`.
 
 ## Validation
 
@@ -64,7 +64,8 @@ Every page except login is behind auth. The seeder creates the local account `iv
 
 - Conventional commits with a scope and a one-line subject: `feat(promos): add polaroid board`, `fix(todo): keep focus after quick add`, `test(groceries): cover the quick-add parser`, `chore(ci): cache composer`.
 - Logic that tests must cover (quick-add parsers, auto-linking, promo expiry, recurring rollover, monthly and yearly totals, reminder scheduling) lives in plain PHP classes under `app/`, not inside Livewire components or Blade views, and has Pest tests. Use the examples in FEATURES.md as test cases.
-- Pages are class-based full-page Livewire components in `app/Livewire/Pages`, created with `php artisan make:livewire Pages/Name --class` (no single-file components), and render in the one layout, `resources/views/layouts/app.blade.php`, with `#[Title]` setting the page title. Routes are added with `Route::livewire()` and named after their `App\Enums\Section` value; the enum also holds each section's labels, icon, ground and FAB label.
+- Pages are class-based full-page Livewire components in `app/Livewire/Pages`, created with `php artisan make:livewire Pages/Name --class` (no single-file components), and render in the one layout, `resources/views/layouts/app.blade.php`, with `#[Title]` setting the page title. Routes are added with `Route::livewire()` inside the `auth` group in `routes/web.php` and named after their `App\Enums\Section` value; the enum also holds each section's labels, icon, ground and FAB label. The login page is the one exception: a plain Blade view (`resources/views/auth/login.blade.php`) that Fortify renders, in `resources/views/layouts/guest.blade.php`.
+- Feature tests that load pages sign in first with `$this->actingAs(User::factory()->create())`.
 - Reusable Blade components in `resources/views/components/`: polaroid, receipt, chip, checkbox, sheet, card, toast, nav, and anything else that repeats.
 - Design tokens: `text-accent`, `bg-accent` and `text-on-accent` follow the section's ground, so don't hard-code gold, apricot or peach for the accent. Fonts are `font-display` (Fraunces), `font-sans` (DM Sans, the default), `font-script` (Caveat) and `font-mono` (IBM Plex Mono).
 - Icons are Lucide, rendered as `<x-lucide-…>` components with `aria-hidden="true"` (24px grid, round caps). The SVGs say `stroke-width="2"`, so give each icon the 1.75 stroke with `stroke-[1.75]`. No emoji anywhere in the UI.
