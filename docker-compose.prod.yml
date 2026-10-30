@@ -1,0 +1,69 @@
+# Production stack for Coolify (Docker Compose build pack). CI pushes ghcr.io/ivailipm/nook:latest
+# on every merge to main, then calls Coolify's deploy webhook. Set the ${...} variables in Coolify
+# and point the domain at the `app` service, port 8080.
+x-app: &app
+  image: ghcr.io/ivailipm/nook:latest
+  restart: unless-stopped
+  environment: &env
+    APP_NAME: nook
+    APP_ENV: production
+    APP_DEBUG: "false"
+    APP_KEY: ${APP_KEY}
+    APP_URL: ${APP_URL}
+    LOG_CHANNEL: stderr
+    DB_CONNECTION: pgsql
+    DB_HOST: postgres
+    DB_PORT: "5432"
+    DB_DATABASE: nook
+    DB_USERNAME: nook
+    DB_PASSWORD: ${DB_PASSWORD}
+    SESSION_SECURE_COOKIE: "true"
+    MAIL_MAILER: ${MAIL_MAILER:-log}
+  volumes:
+    - storage:/var/www/html/storage/app
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  app:
+    <<: *app
+    environment:
+      <<: *env
+      # Runs migrations, storage:link and artisan optimize on start.
+      AUTORUN_ENABLED: "true"
+
+  queue:
+    <<: *app
+    command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3", "--max-time=3600"]
+    stop_signal: SIGTERM
+    healthcheck:
+      test: ["CMD", "healthcheck-queue"]
+      start_period: 10s
+
+  scheduler:
+    <<: *app
+    command: ["php", "/var/www/html/artisan", "schedule:work"]
+    stop_signal: SIGTERM
+    healthcheck:
+      test: ["CMD", "healthcheck-schedule"]
+      start_period: 10s
+
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nook
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: nook
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nook -d nook"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  storage:
+  postgres:

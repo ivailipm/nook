@@ -37,7 +37,9 @@ AGENTS.md in the worktree, in the background, on your port.
 Then use the `agent-browser` CLI (run `agent-browser skills get core` first) to
 screenshot the page at desktop and phone widths. Pass `--session <job-id>-ui` on
 every `agent-browser` call, so other jobs' reviewers never drive your browser.
-Don't sign in or submit forms. When you're done, run
+Every nook page is behind login, so sign in with the seeded account CLAUDE.md
+gives; the worktree's dev server only talks to the local `nook_factory`
+database. When you're done, run
 `agent-browser --session <job-id>-ui close` and stop the dev server.
 
 ## What to look for
