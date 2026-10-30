@@ -51,7 +51,7 @@ taskkill //F //PID $(netstat -ano | grep -E "127\.0\.0\.1:<port> .*LISTENING" | 
 
 That ends the listener on the port, and `artisan serve` exits with it.
 
-Every page except login is behind auth. The seeder creates the local account `ivayla@example.com` / `password` (local and factory databases only, never production). Everywhere else, create the user with `php artisan nook:user`.
+Every page except login is behind auth. The seeder creates the local account `ivayla@example.com` / `password` only when `APP_ENV` is `local` or `testing` (factory worktrees run as `local`). Everywhere else, create the user with `php artisan nook:user`. In production, `nook:user` needs a password of at least 12 characters that hasn't appeared in a known breach (checked against Have I Been Pwned), set by `Password::defaults` in `AppServiceProvider`.
 
 ## Validation
 
