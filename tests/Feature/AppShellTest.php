@@ -5,12 +5,14 @@ use App\Livewire\Pages\Home;
 use App\Livewire\Pages\PromoBoard;
 use App\Livewire\Pages\Subscriptions;
 use App\Livewire\Pages\Todo;
+use App\Models\User;
 use Dom\Element;
 use Dom\HTMLDocument;
 use Illuminate\Support\Carbon;
 
 beforeEach(function () {
     $this->withoutVite();
+    $this->actingAs(User::factory()->create());
 });
 
 it('renders each section in the app shell', function (
