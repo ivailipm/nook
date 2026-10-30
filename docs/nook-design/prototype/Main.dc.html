@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>nook</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+button,input{font-family:inherit}
+input::placeholder{color:rgba(243,234,216,0.62)}
+:focus-visible{outline:2px solid #f0b48a;outline-offset:2px}
+a{color:#f0b48a}a:hover{color:#f6cfae}
+</style>
+</helmet>
+<div style="height: 100vh; width: 100%; display: flex; position: relative; overflow: hidden; background: {{theme.bg}}; color: #f3ead8; font-family: 'DM Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.4;">
+
+<!-- ============ DESKTOP SIDEBAR ============ -->
+<sc-if value="{{wide}}" hint-placeholder-val="{{true}}">
+<nav aria-label="Main" style="width: 236px; flex: none; display: flex; flex-direction: column; gap: 4px; padding: 28px 16px; background: rgba(0, 0, 0, 0.28); border-right: 1px solid rgba(255, 255, 255, 0.08);">
+<div style="font-family: Fraunces, serif; font-style: italic; font-weight: 600; font-size: 30px; line-height: 1; padding: 0 12px 28px; letter-spacing: -0.02em;">nook</div>
+<sc-for list="{{sideNav}}" as="n" hint-placeholder-count="5">
+<button type="button" onClick="{{n.go}}" aria-current="{{n.current}}" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 12px; border: 0; cursor: pointer; text-align: left; font-size: 15px; font-weight: {{n.weight}}; background: {{n.bg}}; color: {{n.fg}};">
+<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex: none;"><path d="{{n.icon}}"></path></svg>
+<span style="flex: 1;">{{n.label}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; opacity: 0.8;">{{n.count}}</span>
+</button>
+</sc-for>
+<div style="flex: 1;"></div>
+<button type="button" onClick="{{openAddChooser}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; border-radius: 999px; border: 0; background: #f0b48a; color: #2a140c; font-weight: 700; font-size: 15px; cursor: pointer;">
+<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 2.25; stroke-linecap: round;"><path d="M12 5v14M5 12h14"></path></svg>Add something</button>
+<div style="font-family: Caveat, cursive; font-size: 18px; color: rgba(243, 234, 216, 0.72); padding: 14px 12px 0;">Thursday · 29 October</div>
+</nav>
+</sc-if>
+
+<!-- ============ SCROLLING CONTENT ============ -->
+<main style="flex: 1; min-width: 0; height: 100%; overflow-y: auto; padding: {{pad}};">
+<div style="max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: {{gap}};">
+
+<!-- ---------- HOME ---------- -->
+<sc-if value="{{isHome}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: {{gap}};">
+<div style="display: flex; justify-content: space-between; align-items: center;">
+<sc-if value="{{notWide}}" hint-placeholder-val="{{false}}"><span style="font-family: Fraunces, serif; font-style: italic; font-weight: 600; font-size: 22px; letter-spacing: -0.02em;">nook</span></sc-if>
+<sc-if value="{{wide}}" hint-placeholder-val="{{true}}"><span></span></sc-if>
+<button type="button" onClick="{{toggleNudge}}" aria-label="Morning nudge settings" style="width: 40px; height: 40px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(0, 0, 0, 0.25); color: #f3ead8; display: grid; place-items: center; cursor: pointer;"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"></path></svg></button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: rgba(243, 234, 216, 0.72);">THURSDAY · 29 OCTOBER</span>
+<h1 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: {{greetSize}}; line-height: 1.02; letter-spacing: -0.02em;">Good evening,<br><em style="font-style: italic; font-weight: 500; color: #f0b48a;">Ivayla</em></h1>
+<svg viewBox="0 0 120 12" width="120" height="12" aria-hidden="true" style="margin: -2px 0 0 {{squiggleX}}; fill: none; stroke: #f0b48a; stroke-width: 2; stroke-linecap: round;"><path d="M2 8c12-8 20 6 32 0s20-6 32 0 20 6 32 0 14-5 20-2"></path></svg>
+<span style="font-family: Caveat, cursive; font-size: 21px; color: rgba(243, 234, 216, 0.8);">{{todayLine}}</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px;">
+<button type="button" onClick="{{goGroceries}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(0, 0, 0, 0.25); color: #f3ead8; font-size: 13px; font-weight: 600; cursor: pointer;"><span style="width: 7px; height: 7px; border-radius: 99px; background: #efe6d2;"></span>{{toBuyLabel}}</button>
+<button type="button" onClick="{{goPromos}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(0, 0, 0, 0.25); color: #f3ead8; font-size: 13px; font-weight: 600; cursor: pointer;"><span style="width: 7px; height: 7px; border-radius: 99px; background: #f0b48a;"></span>{{dealsEndingLabel}}</button>
+<button type="button" onClick="{{goSubs}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(0, 0, 0, 0.25); color: #f3ead8; font-size: 13px; font-weight: 600; cursor: pointer;"><span style="width: 7px; height: 7px; border-radius: 99px; background: #9cc2c4;"></span>{{monthLabel}}</button>
+</div>
+
+<div style="display: grid; grid-template-columns: {{cols2}}; gap: 16px; align-items: start;">
+<section style="background: rgba(0, 0, 0, 0.24); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; padding: 16px;">
+<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;"><h2 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: 21px;">Today</h2><span style="font-size: 12px; color: rgba(243, 234, 216, 0.72);">{{todayLeftLabel}}</span></div>
+<sc-for list="{{todayTasks}}" as="t" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid rgba(255, 255, 255, 0.07);">
+<button type="button" onClick="{{t.toggle}}" aria-pressed="{{t.done}}" aria-label="{{t.aria}}" style="width: 28px; height: 28px; margin: -2px 0 0 -4px; flex: none; display: grid; place-items: center; background: none; border: 0; cursor: pointer; padding: 0;"><span style="width: 18px; height: 18px; border-radius: 4px; display: grid; place-items: center; border: 1.5px solid {{t.boxBd}}; background: {{t.boxBg}}; color: #2a140c;"><sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round;"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if></span></button>
+<div style="display: flex; flex-direction: column; min-width: 0;"><span style="font-weight: 600; font-size: 14px; text-decoration: {{t.strike}}; opacity: {{t.op}};">{{t.title}}</span><span style="font-size: 12px; color: rgba(243, 234, 216, 0.72);">{{t.metaLine}}</span></div>
+</div>
+</sc-for>
+<a href="#" onClick="{{goTodo}}" style="display: inline-block; margin-top: 6px; font-size: 13px; font-weight: 600; text-decoration: none;">All tasks →</a>
+</section>
+
+<section style="background: rgba(0, 0, 0, 0.24); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; padding: 16px;">
+<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;"><h2 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: 21px;">Groceries</h2><a href="#" onClick="{{goPromos}}" style="font-size: 13px; font-weight: 600; text-decoration: none; color: #f0b48a;">Promo board →</a></div>
+<sc-for list="{{homeItems}}" as="it" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: center; min-height: 44px; border-top: 1px solid rgba(255, 255, 255, 0.07);">
+<button type="button" onClick="{{it.toggle}}" aria-pressed="{{it.done}}" aria-label="{{it.aria}}" style="width: 28px; height: 28px; margin-left: -4px; flex: none; display: grid; place-items: center; background: none; border: 0; cursor: pointer; padding: 0;"><span style="width: 18px; height: 18px; border-radius: 4px; display: grid; place-items: center; border: 1.5px solid {{it.boxBd}}; background: {{it.boxBg}}; color: #2a140c;"><sc-if value="{{it.done}}" hint-placeholder-val="{{false}}"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round;"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if></span></button>
+<span style="flex: 1; min-width: 0; font-weight: 600; font-size: 14px; text-decoration: {{it.strike}}; opacity: {{it.op}};">{{it.name}}</span>
+<sc-if value="{{it.hasPromo}}" hint-placeholder-val="{{true}}"><button type="button" onClick="{{it.peek}}" aria-label="{{it.promoAria}}" style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; border: 0; background: #f6d9c4; color: #4a1d10; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap;"><svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8zM7.5 7.5h.01"></path></svg>{{it.promoShort}}</button></sc-if>
+<sc-if value="{{it.noPromo}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: rgba(243, 234, 216, 0.72);">{{it.store}}</span></sc-if>
+</div>
+</sc-for>
+</section>
+</div>
+
+<section style="background: rgba(0, 0, 0, 0.24); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; padding: 16px 16px 20px;">
+<div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;"><h2 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: 21px;">Deals ending soon</h2><span style="font-family: Caveat, cursive; font-size: 19px; color: #f0b48a;">don't miss these!</span></div>
+<div style="display: grid; grid-template-columns: {{homePolaCols}}; gap: 18px 14px;">
+<sc-for list="{{soonPromos}}" as="p" hint-placeholder-count="2">
+<button type="button" onClick="{{p.peek}}" aria-label="{{p.aria}}" style="position: relative; display: block; padding: 8px 8px 6px; border: 0; border-radius: 3px; background: #f6f1e7; text-align: left; cursor: pointer; transform: rotate({{p.rot}}deg); box-shadow: 0 10px 22px rgba(0, 0, 0, 0.38); opacity: {{p.op}};">
+<span style="position: absolute; top: -9px; left: 50%; width: 54px; height: 17px; margin-left: -27px; background: {{p.tape}}; opacity: 0.88; transform: rotate({{p.tapeRot}}deg);"></span>
+<span style="display: flex; flex-direction: column; gap: 4px; aspect-ratio: 1 / 1; padding: 10px; overflow: hidden; background: {{p.bg}}; color: {{p.fg}}; position: relative;">
+<sc-if value="{{p.hasPhoto}}" hint-placeholder-val="{{false}}"><img src="{{p.photo}}" alt="{{p.photoAlt}}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;"></sc-if>
+<span style="font-size: 9px; font-weight: 700; letter-spacing: 0.12em; position: relative;">{{p.storeUp}}</span>
+<span style="font-family: Fraunces, serif; font-size: 15px; font-weight: 600; line-height: 1.1; position: relative;">{{p.product}}</span>
+<span style="font-family: Fraunces, serif; font-size: 20px; font-weight: 700; line-height: 1.05; position: relative;">{{p.deal}}</span>
+</span>
+<span style="display: flex; justify-content: space-between; align-items: center; gap: 6px; padding-top: 4px; min-height: 26px;"><span style="font-family: Caveat, cursive; font-size: 17px; font-weight: 700; color: {{p.untilColor}};">{{p.untilLabel}}</span><sc-if value="{{p.linked}}" hint-placeholder-val="{{false}}"><span style="font-size: 10px; font-weight: 700; color: #2c5a3e; border: 1px solid #2c5a3e; border-radius: 999px; padding: 1px 6px;">on list</span></sc-if></span>
+</button>
+</sc-for>
+</div>
+</section>
+
+<section style="background: rgba(0, 0, 0, 0.24); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; padding: 16px;">
+<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;"><h2 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: 21px;">Coming up</h2><a href="#" onClick="{{goSubs}}" style="font-size: 13px; font-weight: 600; text-decoration: none;">All subscriptions →</a></div>
+<sc-for list="{{comingUp}}" as="c" hint-placeholder-count="3">
+<div style="display: flex; align-items: center; gap: 10px; min-height: 46px; border-top: 1px solid rgba(255, 255, 255, 0.07);">
+<span style="width: 34px; height: 34px; border-radius: 10px; flex: none; display: grid; place-items: center; font-family: Fraunces, serif; font-weight: 700; background: rgba(255, 255, 255, 0.08); box-shadow: inset 0 0 0 1.5px {{c.ring}};">{{c.letter}}</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column;"><span style="font-weight: 600; font-size: 14px;">{{c.name}}</span><span style="font-size: 12px; color: {{c.metaColor}};">{{c.when}}</span></span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px;">{{c.amount}}</span>
+</div>
+</sc-for>
+</section>
+</div>
+</sc-if>
+
+<!-- ---------- GROCERIES LIST ---------- -->
+<sc-if value="{{isGroceries}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: {{gap}};">
+<div style="display: flex; flex-direction: column; gap: 2px;">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: rgba(243, 234, 216, 0.72);">GROCERIES</span>
+<h1 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: {{h1Size}}; line-height: 1.05; letter-spacing: -0.015em;">Shopping <em style="font-style: italic; font-weight: 500; color: #e8c46a;">list</em></h1>
+<span style="font-family: Caveat, cursive; font-size: 20px; color: rgba(243, 234, 216, 0.8);">{{listLine}}</span>
+</div>
+<div style="display: flex; gap: 6px; padding: 4px; border-radius: 999px; background: rgba(0, 0, 0, 0.3); align-self: flex-start;">
+<button type="button" aria-pressed="true" style="min-height: 36px; padding: 0 16px; border-radius: 999px; border: 0; background: #f3ead8; color: #17301f; font-weight: 700; font-size: 13px; cursor: pointer;">List</button>
+<button type="button" onClick="{{goPromos}}" aria-pressed="false" style="min-height: 36px; padding: 0 16px; border-radius: 999px; border: 0; background: transparent; color: #f3ead8; font-weight: 600; font-size: 13px; cursor: pointer;">Promo board · {{activePromoCount}}</button>
+</div>
+<form onSubmit="{{submitQuickItem}}" style="display: flex; gap: 8px; align-items: center; padding: 5px 5px 5px 16px; border-radius: 16px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(243, 234, 216, 0.28);">
+<label for="qa" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Add an item</label>
+<input id="qa" value="{{quickItem}}" onChange="{{onQuickItem}}" placeholder="2 coffee @lidl #pantry" autocomplete="off" style="flex: 1; min-width: 0; border: 0; background: transparent; color: #f3ead8; font-size: 16px; padding: 8px 0; outline: none;">
+<button type="submit" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 12px; border: 0; background: #e8c46a; color: #2a2008; font-weight: 700; font-size: 14px; cursor: pointer;"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round;"><path d="M12 5v14M5 12h14"></path></svg>Add</button>
+</form>
+<span style="font-size: 12px; color: rgba(243, 234, 216, 0.72); margin-top: -8px;">Number = quantity · @store · #category. Items that match a saved deal get linked automatically.</span>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+<span style="font-size: 12px; color: rgba(243, 234, 216, 0.72); margin-right: 2px;">Group by</span>
+<sc-for list="{{groupChips}}" as="c" hint-placeholder-count="2"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 600; cursor: pointer;">{{c.label}}</button></sc-for>
+</div>
+<div style="display: grid; grid-template-columns: {{groupCols}}; gap: 14px; align-items: start;">
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+<section style="background: rgba(0, 0, 0, 0.24); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; padding: 8px 16px 6px;">
+<div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0;"><h2 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: 19px;">{{g.title}}</h2><span style="font-size: 12px; color: rgba(243, 234, 216, 0.72);">{{g.meta}}</span></div>
+<sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
+<div style="display: flex; gap: 8px; align-items: center; min-height: 54px; border-top: 1px solid rgba(255, 255, 255, 0.07);">
+<button type="button" onClick="{{it.toggle}}" aria-pressed="{{it.done}}" aria-label="{{it.aria}}" style="width: 44px; height: 44px; margin-left: -12px; flex: none; display: grid; place-items: center; background: none; border: 0; cursor: pointer; padding: 0;"><span style="width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; border: 2px solid {{it.boxBd}}; background: {{it.boxBg}}; color: #17301f;"><sc-if value="{{it.done}}" hint-placeholder-val="{{false}}"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round;"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if></span></button>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column;"><span style="font-weight: 600; font-size: 15px; text-decoration: {{it.strike}}; opacity: {{it.op}};">{{it.name}}</span><span style="font-size: 12px; color: rgba(243, 234, 216, 0.72);">{{it.sub}}</span></span>
+<sc-if value="{{it.hasPromo}}" hint-placeholder-val="{{false}}"><button type="button" onClick="{{it.peek}}" aria-label="{{it.promoAria}}" style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; border: 0; background: {{it.badgeBg}}; color: {{it.badgeFg}}; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8zM7.5 7.5h.01"></path></svg>{{it.promoShort}}</button></sc-if>
+<button type="button" onClick="{{it.remove}}" aria-label="{{it.removeAria}}" style="width: 36px; height: 36px; flex: none; display: grid; place-items: center; border: 0; background: none; color: rgba(243, 234, 216, 0.6); cursor: pointer; margin-right: -8px;"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round;"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+</div>
+</sc-for>
+</section>
+</sc-for>
+</div>
+<sc-if value="{{hasTicked}}" hint-placeholder-val="{{true}}"><button type="button" onClick="{{clearTicked}}" style="align-self: center; min-height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.16); background: rgba(0, 0, 0, 0.3); color: #f3ead8; font-weight: 600; font-size: 13px; cursor: pointer;">{{clearLabel}}</button></sc-if>
+</div>
+</sc-if>
+
+<!-- ---------- PROMO BOARD ---------- -->
+<sc-if value="{{isPromos}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: {{gap}};">
+<div style="display: flex; flex-direction: column; gap: 2px;">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: rgba(243, 234, 216, 0.72);">GROCERIES</span>
+<h1 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: {{h1Size}}; line-height: 1.05; letter-spacing: -0.015em;">{{promoTitleA}} <em style="font-style: italic; font-weight: 500; color: #e8c46a;">{{promoTitleB}}</em></h1>
+<span style="font-family: Caveat, cursive; font-size: 20px; color: rgba(243, 234, 216, 0.8);">{{promoLine}}</span>
+</div>
+<div style="display: flex; gap: 6px; padding: 4px; border-radius: 999px; background: rgba(0, 0, 0, 0.3); align-self: flex-start;">
+<button type="button" onClick="{{goGroceries}}" aria-pressed="false" style="min-height: 36px; padding: 0 16px; border-radius: 999px; border: 0; background: transparent; color: #f3ead8; font-weight: 600; font-size: 13px; cursor: pointer;">List · {{toBuyCount}}</button>
+<button type="button" aria-pressed="true" style="min-height: 36px; padding: 0 16px; border-radius: 999px; border: 0; background: #f3ead8; color: #17301f; font-weight: 700; font-size: 13px; cursor: pointer;">Promo board</button>
+</div>
+<button type="button" onClick="{{openAddPromo}}" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(0, 0, 0, 0.32); color: #f3ead8; text-align: left; cursor: pointer;">
+<span style="width: 40px; height: 40px; border-radius: 12px; flex: none; display: grid; place-items: center; background: #e8c46a; color: #2a2008;"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round;"><path d="M3 8a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM12 16.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"></path></svg></span>
+<span style="display: flex; flex-direction: column;"><span style="font-weight: 700; font-size: 15px;">Snap or share a deal</span><span style="font-size: 12px; color: rgba(243, 234, 216, 0.72);">Screenshot a folder page, then Share → nook. Or upload it here.</span></span>
+</button>
+<div style="display: flex; flex-wrap: wrap; gap: 8px;">
+<sc-for list="{{storeChips}}" as="c" hint-placeholder-count="5"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 600; cursor: pointer;">{{c.label}}</button></sc-for>
+</div>
+<div style="display: grid; grid-template-columns: {{polaCols}}; gap: 26px 16px; padding-top: 8px;">
+<sc-for list="{{boardPromos}}" as="p" hint-placeholder-count="6">
+<button type="button" onClick="{{p.peek}}" aria-label="{{p.aria}}" style="position: relative; display: block; padding: 9px 9px 6px; border: 0; border-radius: 3px; background: #f6f1e7; text-align: left; cursor: pointer; transform: rotate({{p.rot}}deg); box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4); opacity: {{p.op}}; filter: {{p.filter}};">
+<span style="position: absolute; top: -9px; left: 50%; width: 58px; height: 18px; margin-left: -29px; background: {{p.tape}}; opacity: 0.88; transform: rotate({{p.tapeRot}}deg);"></span>
+<span style="display: flex; flex-direction: column; gap: 5px; aspect-ratio: 1 / 1; padding: 11px; overflow: hidden; background: {{p.bg}}; color: {{p.fg}}; position: relative;">
+<sc-if value="{{p.hasPhoto}}" hint-placeholder-val="{{false}}"><img src="{{p.photo}}" alt="{{p.photoAlt}}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;"></sc-if>
+<span style="font-size: 9px; font-weight: 700; letter-spacing: 0.12em; position: relative;">{{p.storeUp}}</span>
+<span style="font-family: Fraunces, serif; font-size: 16px; font-weight: 600; line-height: 1.1; position: relative;">{{p.product}}</span>
+<span style="font-family: Fraunces, serif; font-size: 22px; font-weight: 700; line-height: 1.05; position: relative;">{{p.deal}}</span>
+</span>
+<span style="display: flex; justify-content: space-between; align-items: center; gap: 6px; padding-top: 4px; min-height: 28px;"><span style="font-family: Caveat, cursive; font-size: 18px; font-weight: 700; color: {{p.untilColor}};">{{p.untilLabel}}</span><sc-if value="{{p.linked}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; color: #2c5a3e; border: 1px solid #2c5a3e; border-radius: 999px; padding: 1px 6px;"><svg viewBox="0 0 24 24" width="10" height="10" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 3.5; stroke-linecap: round;"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>on list</span></sc-if></span>
+</button>
+</sc-for>
+</div>
+<sc-if value="{{boardEmpty}}" hint-placeholder-val="{{false}}"><div style="text-align: center; font-family: Caveat, cursive; font-size: 21px; color: rgba(243, 234, 216, 0.78); padding: 20px 0;">nothing here yet. snap your first deal</div></sc-if>
+<button type="button" onClick="{{toggleArchive}}" style="align-self: center; display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(0, 0, 0, 0.32); color: #f3ead8; font-size: 12px; font-weight: 600; cursor: pointer;"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M3 4h18v4H3zM5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"></path></svg>{{archiveLabel}}</button>
+</div>
+</sc-if>
+
+<!-- ---------- TO-DO ---------- -->
+<sc-if value="{{isTodo}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: {{gap}};">
+<div style="display: flex; flex-direction: column; gap: 2px;">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: rgba(243, 234, 216, 0.72);">TO-DO</span>
+<h1 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: {{h1Size}}; line-height: 1.05; letter-spacing: -0.015em;">Small <em style="font-style: italic; font-weight: 500; color: #f2c88a;">things</em></h1>
+<span style="font-family: Caveat, cursive; font-size: 20px; color: rgba(243, 234, 216, 0.8);">one at a time is plenty</span>
+</div>
+<form onSubmit="{{submitQuickTask}}" style="display: flex; gap: 8px; align-items: center; padding: 5px 5px 5px 16px; border-radius: 16px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(243, 234, 216, 0.28);">
+<label for="qt" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Add a task</label>
+<input id="qt" value="{{quickTask}}" onChange="{{onQuickTask}}" placeholder="Email the prof tomorrow !high #school" autocomplete="off" style="flex: 1; min-width: 0; border: 0; background: transparent; color: #f3ead8; font-size: 16px; padding: 8px 0; outline: none;">
+<button type="submit" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 12px; border: 0; background: #f2c88a; color: #2a1a06; font-weight: 700; font-size: 14px; cursor: pointer;"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round;"><path d="M12 5v14M5 12h14"></path></svg>Add</button>
+</form>
+<span style="font-size: 12px; color: rgba(243, 234, 216, 0.72); margin-top: -8px;">today / tomorrow / a weekday · !high !low · #school #home #internship · "every tue" repeats</span>
+<div style="display: flex; flex-wrap: wrap; gap: 8px;">
+<sc-for list="{{tagChips}}" as="c" hint-placeholder-count="4"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 600; cursor: pointer;">{{c.label}}</button></sc-for>
+</div>
+<div style="display: grid; grid-template-columns: {{cols2}}; gap: 14px; align-items: start;">
+<div style="display: flex; flex-direction: column; gap: 14px;">
+<sc-for list="{{taskGroups}}" as="g" hint-placeholder-count="3">
+<section style="background: rgba(0, 0, 0, 0.24); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; padding: 8px 16px 6px;">
+<div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0;"><h2 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: 19px; color: {{g.color}};">{{g.title}}</h2><span style="font-size: 12px; color: rgba(243, 234, 216, 0.72);">{{g.count}}</span></div>
+<sc-for list="{{g.tasks}}" as="t" hint-placeholder-count="2">
+<div style="display: flex; gap: 8px; align-items: flex-start; padding: 4px 0; min-height: 56px; border-top: 1px solid rgba(255, 255, 255, 0.07);">
+<button type="button" onClick="{{t.toggle}}" aria-pressed="{{t.done}}" aria-label="{{t.aria}}" style="width: 44px; height: 44px; margin-left: -12px; flex: none; display: grid; place-items: center; background: none; border: 0; cursor: pointer; padding: 0;"><span style="width: 22px; height: 22px; border-radius: 99px; display: grid; place-items: center; border: 2px solid {{t.boxBd}}; background: {{t.boxBg}}; color: #2a1a06;"><sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round;"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if></span></button>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding-top: 10px;">
+<span style="font-weight: 600; font-size: 15px; text-decoration: {{t.strike}}; opacity: {{t.op}};">{{t.title}}</span>
+<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: rgba(243, 234, 216, 0.72);">
+<sc-if value="{{t.hasPrio}}" hint-placeholder-val="{{true}}"><span style="display: inline-flex; align-items: center; gap: 4px; font-weight: 700; color: {{t.prioColor}};"><span style="width: 8px; height: 8px; border-radius: {{t.prioRadius}}; background: {{t.prioFill}}; border: 1.5px solid {{t.prioColor}};"></span>{{t.prioLabel}}</span></sc-if>
+<span style="font-weight: 600; color: {{t.dueColor}};">{{t.dueLabel}}</span>
+<sc-if value="{{t.repeats}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; align-items: center; gap: 4px;"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M17 2l4 4-4 4M3 12v-2a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 12v2a4 4 0 0 1-4 4H3"></path></svg>{{t.repeatLabel}}</span></sc-if>
+<span style="padding: 1px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.09); color: #f3ead8;">{{t.tag}}</span>
+</span>
+</span>
+</div>
+</sc-for>
+</section>
+</sc-for>
+</div>
+<section style="background: rgba(0, 0, 0, 0.24); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; padding: 16px; display: flex; gap: 12px; align-items: center;">
+<span style="width: 40px; height: 40px; border-radius: 12px; flex: none; display: grid; place-items: center; background: rgba(242, 200, 138, 0.16); color: #f2c88a;"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"></path></svg></span>
+<span style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 700; font-size: 14px;">Morning nudge</span><span style="font-size: 12px; color: rgba(243, 234, 216, 0.72);">A push notification at 08:00 with what's due today.</span></span>
+<button type="button" onClick="{{toggleNudge}}" aria-pressed="{{nudge}}" aria-label="Morning nudge" style="width: 52px; height: 30px; border-radius: 999px; border: 0; padding: 3px; cursor: pointer; background: {{nudgeTrack}}; display: flex; justify-content: {{nudgeAlign}};"><span style="width: 24px; height: 24px; border-radius: 99px; background: #f6f1e7;"></span></button>
+</section>
+</div>
+</div>
+</sc-if>
+
+<!-- ---------- SUBSCRIPTIONS ---------- -->
+<sc-if value="{{isSubs}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: {{gap}};">
+<div style="display: flex; flex-direction: column; gap: 2px;">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: rgba(243, 234, 216, 0.72);">MONEY</span>
+<h1 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: {{h1Size}}; line-height: 1.05; letter-spacing: -0.015em;">Subscrip<em style="font-style: italic; font-weight: 500; color: #f0b48a;">tions</em></h1>
+<span style="font-family: Caveat, cursive; font-size: 20px; color: rgba(243, 234, 216, 0.8);">where the money quietly goes</span>
+</div>
+<div style="display: grid; grid-template-columns: {{subsCols}}; gap: 18px; align-items: start;">
+
+<div style="padding: 4px 6px 0;">
+<div style="transform: rotate(-1deg); filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.45));">
+<div style="background: #f7f2e6; color: #2a241c; font-family: 'IBM Plex Mono', monospace; padding: 18px 18px 10px; display: flex; flex-direction: column; gap: 4px;">
+<div style="text-align: center; font-size: 11px; letter-spacing: 0.16em; color: #5b5246;">* * * NOOK · OCTOBER * * *</div>
+<div style="text-align: center; font-size: 11px; letter-spacing: 0.16em; margin-top: 8px; color: #5b5246;">THIS MONTH</div>
+<div style="text-align: center; font-family: Fraunces, serif; font-weight: 700; font-size: 46px; line-height: 1.05;">{{monthTotal}}</div>
+<div style="text-align: center; font-size: 12px; color: #5b5246; margin-bottom: 10px;">≈ {{yearTotal}} a year</div>
+<sc-for list="{{receiptLines}}" as="r" hint-placeholder-count="5">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 8px 0; border-top: 1px dashed #b9ad98;">
+<span style="display: flex; flex-direction: column;"><span style="font-weight: 600; font-size: 14px;">{{r.name}}</span><span style="font-size: 11px; color: {{r.metaColor}};">{{r.meta}}</span></span>
+<span style="font-weight: 600; font-size: 14px;">{{r.amount}}</span>
+</div>
+</sc-for>
+<div style="display: flex; justify-content: space-between; padding: 10px 0 4px; border-top: 2px solid #2a241c; font-weight: 600; font-size: 13px;"><span>TOTAL / MONTH</span><span>{{monthTotal}}</span></div>
+<div style="text-align: center; font-size: 10px; letter-spacing: 0.16em; color: #5b5246; padding: 8px 0 4px;">THANK YOU · COME AGAIN</div>
+</div>
+<svg viewBox="0 0 100 4" preserveAspectRatio="none" width="100%" height="10" aria-hidden="true" style="display: block; fill: #f7f2e6;"><path d="{{zig}}"></path></svg>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 16px;">
+<sc-if value="{{hasTrial}}" hint-placeholder-val="{{true}}">
+<section style="position: relative; background: rgba(0, 0, 0, 0.28); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 18px 16px 16px;">
+<span style="position: absolute; top: -10px; right: 18px; padding: 3px 9px; background: #f6f1e7; color: #a8361f; font-size: 10px; font-weight: 800; letter-spacing: 0.14em; transform: rotate(4deg); border: 1.5px solid #a8361f; border-radius: 3px;">TRIAL</span>
+<h2 style="margin: 0 0 4px; font-family: Fraunces, serif; font-weight: 600; font-size: 20px; line-height: 1.2;">{{trial.headline}}</h2>
+<span style="font-size: 13px; color: rgba(243, 234, 216, 0.78);">{{trial.detail}}</span>
+<div style="display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap;">
+<button type="button" onClick="{{trial.remind}}" style="flex: 1 1 140px; min-height: 42px; border-radius: 10px; border: 0; background: {{trial.remindBg}}; color: {{trial.remindFg}}; font-weight: 700; font-size: 13px; cursor: pointer;">{{trial.remindLabel}}</button>
+<button type="button" onClick="{{trial.keep}}" style="flex: 1 1 100px; min-height: 42px; border-radius: 10px; border: 1px solid rgba(243, 234, 216, 0.4); background: transparent; color: #f3ead8; font-weight: 700; font-size: 13px; cursor: pointer;">Keep it</button>
+<button type="button" onClick="{{trial.cancel}}" style="flex: 1 1 100px; min-height: 42px; border-radius: 10px; border: 1px solid rgba(243, 234, 216, 0.4); background: transparent; color: #f3ead8; font-weight: 700; font-size: 13px; cursor: pointer;">Cancel trial</button>
+</div>
+</section>
+</sc-if>
+
+<section style="background: rgba(0, 0, 0, 0.28); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 16px;">
+<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;"><h2 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: 20px;">By category</h2><span style="font-size: 12px; color: rgba(243, 234, 216, 0.72);">per month</span></div>
+<div role="img" aria-label="{{catAria}}" style="display: flex; gap: 2px; height: 12px; border-radius: 4px; overflow: hidden; margin-bottom: 12px;">
+<sc-for list="{{cats}}" as="c" hint-placeholder-count="3"><span title="{{c.tip}}" style="height: 100%; flex: {{c.flex}} 1 0; background: {{c.color}};"></span></sc-for>
+</div>
+<sc-for list="{{cats}}" as="c" hint-placeholder-count="3">
+<div style="display: flex; align-items: center; gap: 10px; min-height: 28px; font-size: 13px;"><span style="width: 9px; height: 9px; border-radius: 2px; background: {{c.color}};"></span><span style="flex: 1;">{{c.label}}</span><span style="color: rgba(243, 234, 216, 0.72); font-size: 12px;">{{c.share}}</span><span style="font-family: 'IBM Plex Mono', monospace; width: 64px; text-align: right;">{{c.amount}}</span></div>
+</sc-for>
+<sc-if value="{{hasSaved}}" hint-placeholder-val="{{true}}"><div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1); font-family: Caveat, cursive; font-size: 19px; color: #f0b48a;">{{savedLine}}</div></sc-if>
+</section>
+
+<section style="background: rgba(0, 0, 0, 0.28); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 8px 16px 12px;">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;"><h2 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: 20px;">All subscriptions</h2><button type="button" onClick="{{openAddSub}}" style="min-height: 34px; padding: 0 12px; border-radius: 999px; border: 0; background: #f0b48a; color: #2a140c; font-weight: 700; font-size: 12px; cursor: pointer;">+ Add</button></div>
+<sc-for list="{{subRows}}" as="s" hint-placeholder-count="5">
+<div style="display: flex; align-items: center; gap: 10px; min-height: 54px; border-top: 1px solid rgba(255, 255, 255, 0.07); opacity: {{s.op}};">
+<span style="width: 34px; height: 34px; border-radius: 10px; flex: none; display: grid; place-items: center; font-family: Fraunces, serif; font-weight: 700; background: rgba(255, 255, 255, 0.08); box-shadow: inset 0 0 0 1.5px {{s.ring}};">{{s.letter}}</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column;"><span style="font-weight: 600; font-size: 14px; text-decoration: {{s.strike}};">{{s.name}}</span><span style="font-size: 12px; color: rgba(243, 234, 216, 0.72);">{{s.meta}}</span></span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-align: right;">{{s.amount}}</span>
+<button type="button" onClick="{{s.action}}" style="min-height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid rgba(243, 234, 216, 0.35); background: transparent; color: #f3ead8; font-size: 12px; font-weight: 600; cursor: pointer;">{{s.actionLabel}}</button>
+</div>
+</sc-for>
+</section>
+</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+</main>
+
+<!-- ============ MOBILE FLOATING NAV ============ -->
+<sc-if value="{{notWide}}" hint-placeholder-val="{{false}}">
+<nav aria-label="Main" style="position: absolute; left: 14px; right: 14px; bottom: 14px; height: 64px; border-radius: 22px; background: rgba(18, 12, 10, 0.78); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(14px); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);">
+<sc-for list="{{tabsLeft}}" as="n" hint-placeholder-count="2">
+<button type="button" onClick="{{n.go}}" aria-current="{{n.current}}" style="height: 100%; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: {{n.fg}}; font-size: 10px; font-weight: {{n.weight}};"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;"><path d="{{n.icon}}"></path></svg>{{n.label}}</button>
+</sc-for>
+<div style="display: grid; place-items: center;"><button type="button" onClick="{{fab}}" aria-label="{{fabLabel}}" style="width: 54px; height: 54px; margin-top: -30px; border-radius: 999px; border: 4px solid rgba(18, 12, 10, 0.9); background: #f0b48a; color: #2a140c; display: grid; place-items: center; cursor: pointer; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round;"><path d="M12 5v14M5 12h14"></path></svg></button></div>
+<sc-for list="{{tabsRight}}" as="n" hint-placeholder-count="2">
+<button type="button" onClick="{{n.go}}" aria-current="{{n.current}}" style="height: 100%; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: {{n.fg}}; font-size: 10px; font-weight: {{n.weight}};"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;"><path d="{{n.icon}}"></path></svg>{{n.label}}</button>
+</sc-for>
+</nav>
+</sc-if>
+
+<!-- ============ TOAST ============ -->
+<sc-if value="{{hasToast}}" hint-placeholder-val="{{false}}">
+<div role="status" style="position: absolute; left: 50%; bottom: {{toastBottom}}; transform: translateX(-50%); padding: 10px 16px; border-radius: 12px; background: #f6f1e7; color: #2a241c; font-size: 13px; font-weight: 600; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4); white-space: nowrap;">{{toast}}</div>
+</sc-if>
+
+<!-- ============ SHEETS ============ -->
+<sc-if value="{{sheetOpen}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; background: rgba(8, 5, 4, 0.62); display: flex; justify-content: center; align-items: {{sheetAlign}};">
+<button type="button" onClick="{{closeSheet}}" aria-label="Close" style="position: absolute; inset: 0; border: 0; background: transparent; cursor: default;"></button>
+<div role="dialog" aria-label="{{sheetTitle}}" style="position: relative; width: {{sheetW}}; max-height: 88%; overflow-y: auto; background: #1d1714; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: {{sheetRadius}}; padding: 10px 18px 22px; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);">
+<div style="width: 40px; height: 4px; border-radius: 2px; background: rgba(243, 234, 216, 0.35); margin: 0 auto 12px;"></div>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;"><h2 style="margin: 0; font-family: Fraunces, serif; font-weight: 600; font-size: 22px;">{{sheetTitle}}</h2><button type="button" onClick="{{closeSheet}}" aria-label="Close" style="width: 36px; height: 36px; border-radius: 99px; border: 0; background: rgba(255, 255, 255, 0.08); color: #f3ead8; display: grid; place-items: center; cursor: pointer;"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round;"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
+
+<!-- chooser -->
+<sc-if value="{{sheetChoose}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+<sc-for list="{{chooser}}" as="c" hint-placeholder-count="4">
+<button type="button" onClick="{{c.go}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px; min-height: 104px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); background: {{c.bg}}; color: #f3ead8; text-align: left; cursor: pointer;"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;"><path d="{{c.icon}}"></path></svg><span style="font-weight: 700; font-size: 15px;">{{c.label}}</span><span style="font-size: 12px; color: rgba(243, 234, 216, 0.75);">{{c.hint}}</span></button>
+</sc-for>
+</div>
+</sc-if>
+
+<!-- promo peek -->
+<sc-if value="{{sheetPeek}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 12px;">
+<div style="padding: 10px 10px 8px; background: #f6f1e7; border-radius: 3px; transform: rotate(-1deg); box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45);">
+<div style="position: relative; aspect-ratio: 4 / 3; background: {{peek.bg}}; color: {{peek.fg}}; padding: 16px; display: flex; flex-direction: column; gap: 6px; overflow: hidden;">
+<sc-if value="{{peek.hasPhoto}}" hint-placeholder-val="{{false}}"><img src="{{peek.photo}}" alt="{{peek.photoAlt}}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000;"></sc-if>
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.14em; position: relative;">{{peek.storeUp}}</span>
+<span style="font-family: Fraunces, serif; font-size: 26px; font-weight: 600; line-height: 1.1; position: relative;">{{peek.product}}</span>
+<span style="font-family: Fraunces, serif; font-size: 40px; font-weight: 700; line-height: 1; position: relative;">{{peek.deal}}</span>
+</div>
+<div style="font-family: Caveat, cursive; font-size: 20px; font-weight: 700; color: {{peek.untilColor}}; padding-top: 4px;">{{peek.untilLabel}}</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: rgba(243, 234, 216, 0.78);"><span>{{peek.storeLine}}</span><span>{{peek.noteLine}}</span><span style="color: #f3ead8; font-weight: 600;">{{peek.linkLine}}</span></div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap;">
+<sc-if value="{{peek.linked}}" hint-placeholder-val="{{true}}"><button type="button" onClick="{{peek.gotIt}}" style="flex: 1 1 140px; min-height: 46px; border-radius: 12px; border: 0; background: #f0b48a; color: #2a140c; font-weight: 700; font-size: 14px; cursor: pointer;">Got it · tick it off</button></sc-if>
+<sc-if value="{{peek.linked}}" hint-placeholder-val="{{true}}"><button type="button" onClick="{{peek.unlink}}" style="flex: 1 1 100px; min-height: 46px; border-radius: 12px; border: 1px solid rgba(243, 234, 216, 0.4); background: transparent; color: #f3ead8; font-weight: 700; font-size: 14px; cursor: pointer;">Unlink</button></sc-if>
+<sc-if value="{{peek.canAdd}}" hint-placeholder-val="{{false}}"><button type="button" onClick="{{peek.addToList}}" style="flex: 1 1 140px; min-height: 46px; border-radius: 12px; border: 0; background: #f0b48a; color: #2a140c; font-weight: 700; font-size: 14px; cursor: pointer;">Add to my list</button></sc-if>
+<button type="button" onClick="{{peek.remove}}" style="flex: 1 1 100px; min-height: 46px; border-radius: 12px; border: 1px solid rgba(240, 150, 130, 0.6); background: transparent; color: #f4a394; font-weight: 700; font-size: 14px; cursor: pointer;">Delete promo</button>
+</div>
+</div>
+</sc-if>
+
+<!-- add item -->
+<sc-if value="{{sheetItem}}" hint-placeholder-val="{{false}}">
+<form onSubmit="{{saveItem}}" style="display: flex; flex-direction: column; gap: 14px;">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 10px;">
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="fi-name" style="font-size: 13px; font-weight: 600;">Item</label><input id="fi-name" value="{{form.name}}" onChange="{{on.name}}" placeholder="Coffee beans" style="min-height: 46px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(243, 234, 216, 0.3); background: rgba(0, 0, 0, 0.3); color: #f3ead8; font-size: 16px; width: 100%;"></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="fi-qty" style="font-size: 13px; font-weight: 600;">Qty</label><input id="fi-qty" value="{{form.qty}}" onChange="{{on.qty}}" placeholder="1kg" style="min-height: 46px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(243, 234, 216, 0.3); background: rgba(0, 0, 0, 0.3); color: #f3ead8; font-size: 16px; width: 100%; font-family: 'IBM Plex Mono', monospace;"></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13px; font-weight: 600;">Store</span><div style="display: flex; flex-wrap: wrap; gap: 8px;"><sc-for list="{{fStoreChips}}" as="c" hint-placeholder-count="5"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 600; cursor: pointer;">{{c.label}}</button></sc-for></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13px; font-weight: 600;">Category</span><div style="display: flex; flex-wrap: wrap; gap: 8px;"><sc-for list="{{fCatChips}}" as="c" hint-placeholder-count="4"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 600; cursor: pointer;">{{c.label}}</button></sc-for></div></div>
+<button type="submit" style="min-height: 48px; border-radius: 12px; border: 0; background: #e8c46a; color: #2a2008; font-weight: 700; font-size: 15px; cursor: pointer;">Add to list</button>
+</form>
+</sc-if>
+
+<!-- add promo -->
+<sc-if value="{{sheetPromo}}" hint-placeholder-val="{{false}}">
+<form onSubmit="{{savePromo}}" style="display: flex; flex-direction: column; gap: 14px;">
+<label style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 14px; border: 2px dashed rgba(243, 234, 216, 0.45); border-radius: 16px; text-align: center; cursor: pointer; background: rgba(0, 0, 0, 0.2); position: relative; overflow: hidden; min-height: 120px; justify-content: center;">
+<sc-if value="{{form.hasPhoto}}" hint-placeholder-val="{{false}}"><img src="{{form.photo}}" alt="Selected deal photo" style="max-height: 160px; max-width: 100%; border-radius: 8px;"></sc-if>
+<sc-if value="{{form.noPhoto}}" hint-placeholder-val="{{true}}"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" style="fill: none; stroke: #e8c46a; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;"><path d="M3 8a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM12 16.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"></path></svg></sc-if>
+<span style="font-weight: 700; font-size: 14px;">{{form.photoLabel}}</span>
+<span style="font-size: 12px; color: rgba(243, 234, 216, 0.75);">On Android you can also Share a screenshot straight to nook.</span>
+<input type="file" accept="image/*" onChange="{{on.photo}}" style="position: absolute; width: 1px; height: 1px; opacity: 0;">
+</label>
+<button type="button" disabled="{{true}}" style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border-radius: 999px; border: 1px dashed rgba(243, 234, 216, 0.45); background: transparent; color: rgba(243, 234, 216, 0.8); font-size: 12px; font-weight: 600;"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round;"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg>Read from photo · coming later</button>
+<div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13px; font-weight: 600;">Store *</span><div style="display: flex; flex-wrap: wrap; gap: 8px;"><sc-for list="{{fStoreChips}}" as="c" hint-placeholder-count="5"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 600; cursor: pointer;">{{c.label}}</button></sc-for></div></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="fp-from" style="font-size: 13px; font-weight: 600;">Valid from</label><input id="fp-from" type="date" value="{{form.from}}" onChange="{{on.from}}" style="min-height: 46px; padding: 0 12px; border-radius: 12px; border: 1px solid rgba(243, 234, 216, 0.3); background: rgba(0, 0, 0, 0.3); color: #f3ead8; font-size: 15px; width: 100%; color-scheme: dark; font-family: 'IBM Plex Mono', monospace;"></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="fp-until" style="font-size: 13px; font-weight: 600;">Valid until *</label><input id="fp-until" type="date" value="{{form.until}}" onChange="{{on.until}}" style="min-height: 46px; padding: 0 12px; border-radius: 12px; border: 1px solid #e8c46a; background: rgba(0, 0, 0, 0.3); color: #f3ead8; font-size: 15px; width: 100%; color-scheme: dark; font-family: 'IBM Plex Mono', monospace;"></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="fp-prod" style="font-size: 13px; font-weight: 600;">Product</label><input id="fp-prod" value="{{form.product}}" onChange="{{on.product}}" placeholder="Coffee beans 1kg" style="min-height: 46px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(243, 234, 216, 0.3); background: rgba(0, 0, 0, 0.3); color: #f3ead8; font-size: 16px; width: 100%;"></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="fp-deal" style="font-size: 13px; font-weight: 600;">Deal or price</label><input id="fp-deal" value="{{form.deal}}" onChange="{{on.deal}}" placeholder="2+1 free · €3.49" style="min-height: 46px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(243, 234, 216, 0.3); background: rgba(0, 0, 0, 0.3); color: #f3ead8; font-size: 16px; width: 100%;"></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13px; font-weight: 600;">Link to a list item</span><div style="display: flex; flex-wrap: wrap; gap: 8px;"><sc-for list="{{fLinkChips}}" as="c" hint-placeholder-count="4"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 600; cursor: pointer;">{{c.label}}</button></sc-for></div></div>
+<button type="submit" style="min-height: 48px; border-radius: 12px; border: 0; background: #e8c46a; color: #2a2008; font-weight: 700; font-size: 15px; cursor: pointer;">Pin to promo board</button>
+</form>
+</sc-if>
+
+<!-- add task -->
+<sc-if value="{{sheetTask}}" hint-placeholder-val="{{false}}">
+<form onSubmit="{{saveTask}}" style="display: flex; flex-direction: column; gap: 14px;">
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="ft-title" style="font-size: 13px; font-weight: 600;">Task</label><input id="ft-title" value="{{form.title}}" onChange="{{on.title}}" placeholder="Send CV to Cegeka" style="min-height: 46px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(243, 234, 216, 0.3); background: rgba(0, 0, 0, 0.3); color: #f3ead8; font-size: 16px; width: 100%;"></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13px; font-weight: 600;">Due</span><div style="display: flex; flex-wrap: wrap; gap: 8px;"><sc-for list="{{fDueChips}}" as="c" hint-placeholder-count="4"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 600; cursor: pointer;">{{c.label}}</button></sc-for></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13px; font-weight: 600;">Priority</span><div style="display: flex; flex-wrap: wrap; gap: 8px;"><sc-for list="{{fPrioChips}}" as="c" hint-placeholder-count="4"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 600; cursor: pointer;">{{c.label}}</button></sc-for></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13px; font-weight: 600;">Tag</span><div style="display: flex; flex-wrap: wrap; gap: 8px;"><sc-for list="{{fTagChips}}" as="c" hint-placeholder-count="3"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 600; cursor: pointer;">{{c.label}}</button></sc-for></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13px; font-weight: 600;">Repeat</span><div style="display: flex; flex-wrap: wrap; gap: 8px;"><sc-for list="{{fRepeatChips}}" as="c" hint-placeholder-count="2"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 600; cursor: pointer;">{{c.label}}</button></sc-for></div></div>
+<button type="submit" style="min-height: 48px; border-radius: 12px; border: 0; background: #f2c88a; color: #2a1a06; font-weight: 700; font-size: 15px; cursor: pointer;">Add task</button>
+</form>
+</sc-if>
+
+<!-- add subscription -->
+<sc-if value="{{sheetSub}}" hint-placeholder-val="{{false}}">
+<form onSubmit="{{saveSub}}" style="display: flex; flex-direction: column; gap: 14px;">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 10px;">
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="fs-name" style="font-size: 13px; font-weight: 600;">Name</label><input id="fs-name" value="{{form.sname}}" onChange="{{on.sname}}" placeholder="Netflix" style="min-height: 46px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(243, 234, 216, 0.3); background: rgba(0, 0, 0, 0.3); color: #f3ead8; font-size: 16px; width: 100%;"></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="fs-price" style="font-size: 13px; font-weight: 600;">Price €</label><input id="fs-price" inputMode="decimal" value="{{form.price}}" onChange="{{on.price}}" placeholder="9.99" style="min-height: 46px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(243, 234, 216, 0.3); background: rgba(0, 0, 0, 0.3); color: #f3ead8; font-size: 16px; width: 100%; font-family: 'IBM Plex Mono', monospace;"></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13px; font-weight: 600;">Billing</span><div style="display: flex; flex-wrap: wrap; gap: 8px;"><sc-for list="{{fCycleChips}}" as="c" hint-placeholder-count="2"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 600; cursor: pointer;">{{c.label}}</button></sc-for></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13px; font-weight: 600;">Category</span><div style="display: flex; flex-wrap: wrap; gap: 8px;"><sc-for list="{{fSubCatChips}}" as="c" hint-placeholder-count="4"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 600; cursor: pointer;">{{c.label}}</button></sc-for></div></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: end;">
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="fs-next" style="font-size: 13px; font-weight: 600;">{{form.nextLabel}}</label><input id="fs-next" type="date" value="{{form.next}}" onChange="{{on.next}}" style="min-height: 46px; padding: 0 12px; border-radius: 12px; border: 1px solid rgba(243, 234, 216, 0.3); background: rgba(0, 0, 0, 0.3); color: #f3ead8; font-size: 15px; width: 100%; color-scheme: dark; font-family: 'IBM Plex Mono', monospace;"></div>
+<button type="button" onClick="{{on.trial}}" aria-pressed="{{form.trial}}" style="min-height: 46px; border-radius: 12px; border: 1px solid {{form.trialBd}}; background: {{form.trialBg}}; color: {{form.trialFg}}; font-size: 13px; font-weight: 700; cursor: pointer;">{{form.trialLabel}}</button>
+</div>
+<span style="font-size: 12px; color: rgba(243, 234, 216, 0.72);">Free trials get a reminder 3 days and 1 day before they turn paid.</span>
+<button type="submit" style="min-height: 48px; border-radius: 12px; border: 0; background: #f0b48a; color: #2a140c; font-weight: 700; font-size: 15px; cursor: pointer;">Save subscription</button>
+</form>
+</sc-if>
+
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"layout":{"editor":"enum","options":["auto","mobile","web"],"default":"auto"},"$preview":{"width":1280,"height":860}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      vw: (typeof window !== 'undefined' ? window.innerWidth : 1280),
+      screen: 'home',
+      groupBy: 'store',
+      storeFilter: 'All',
+      tagFilter: 'All',
+      showArchive: false,
+      quickItem: '',
+      quickTask: '',
+      nudge: true,
+      sheet: null,
+      peekId: null,
+      form: {},
+      toast: '',
+      nextId: 100,
+      trialReminder: false,
+      items: [
+        { id: 1, name: 'Coffee beans', qty: '1kg', store: 'Colruyt', cat: 'Pantry', done: false, promoId: 'p1' },
+        { id: 2, name: 'Dish soap', qty: '', store: 'Delhaize', cat: 'Household', done: false, promoId: 'p2' },
+        { id: 3, name: 'Oat milk', qty: '2', store: 'Aldi', cat: 'Dairy', done: false, promoId: null },
+        { id: 4, name: 'Spinach', qty: '300g', store: 'Lidl', cat: 'Fruit & veg', done: false, promoId: null },
+        { id: 5, name: 'Greek yoghurt', qty: '2', store: 'Lidl', cat: 'Dairy', done: false, promoId: 'p3' },
+        { id: 6, name: 'Bananas', qty: '6', store: 'Aldi', cat: 'Fruit & veg', done: true, promoId: null },
+        { id: 7, name: 'Laundry pods', qty: '', store: 'Colruyt', cat: 'Household', done: false, promoId: 'p5' }
+      ],
+      promos: [
+        { id: 'p1', store: 'Colruyt', product: 'Coffee beans 1 kg', deal: '2+1 free', note: '€11.98 for three', until: 2, from: -2, tone: 0, photo: null },
+        { id: 'p2', store: 'Delhaize', product: 'Dish soap', deal: '−30%', note: '€2.09 instead of €2.99', until: 1, from: -5, tone: 1, photo: null },
+        { id: 'p3', store: 'Lidl', product: 'Greek yoghurt', deal: '2nd ½ price', note: '', until: 5, from: -1, tone: 2, photo: null },
+        { id: 'p4', store: 'Aldi', product: 'Pasta 1 kg', deal: '€1.79', note: 'instead of €2.39', until: 6, from: 0, tone: 3, photo: null },
+        { id: 'p5', store: 'Colruyt', product: 'Laundry pods', deal: '−25%', note: '', until: 12, from: -3, tone: 4, photo: null },
+        { id: 'p6', store: 'Lidl', product: 'Avocados ×4', deal: '€2.49', note: '', until: 2, from: -1, tone: 5, photo: null },
+        { id: 'p7', store: 'Aldi', product: 'Mandarins 2 kg', deal: '1+1', note: '', until: -2, from: -8, tone: 3, photo: null },
+        { id: 'p8', store: 'Delhaize', product: 'Kitchen roll', deal: '−40%', note: '', until: -4, from: -10, tone: 1, photo: null },
+        { id: 'p9', store: 'Lidl', product: 'Gouda slices', deal: '€1.99', note: '', until: -1, from: -7, tone: 2, photo: null }
+      ],
+      tasks: [
+        { id: 1, title: 'Return library book', tag: 'school', due: -1, prio: 'med', repeat: null, done: false },
+        { id: 2, title: 'Send CV to two companies', tag: 'internship', due: 0, prio: 'high', repeat: null, done: false },
+        { id: 3, title: 'Put out the PMD bag', tag: 'home', due: 0, prio: null, repeat: 4, done: false },
+        { id: 4, title: 'Water the plants', tag: 'home', due: 0, prio: 'low', repeat: null, done: true },
+        { id: 5, title: 'Finish cloud lab report', tag: 'school', due: 1, prio: 'high', repeat: null, done: false },
+        { id: 6, title: 'Read deep learning chapter 5', tag: 'school', due: 4, prio: 'low', repeat: null, done: false },
+        { id: 7, title: 'Take out the trash', tag: 'home', due: 5, prio: null, repeat: 2, done: false }
+      ],
+      subs: [
+        { id: 1, name: 'Gym', price: 24.99, cycle: 'monthly', next: 3, cat: 'Health', trial: false, cancelled: null },
+        { id: 2, name: 'Netflix', price: 13.49, cycle: 'monthly', next: 5, cat: 'Entertainment', trial: false, cancelled: null },
+        { id: 3, name: 'Spotify', price: 6.49, cycle: 'monthly', next: 2, cat: 'Entertainment', trial: false, cancelled: null },
+        { id: 4, name: 'iCloud+', price: 2.99, cycle: 'monthly', next: 16, cat: 'Storage', trial: false, cancelled: null },
+        { id: 5, name: 'Duolingo Super', price: 12.99, cycle: 'monthly', next: 4, cat: 'Education', trial: true, cancelled: null },
+        { id: 6, name: 'Disney+', price: 7.99, cycle: 'monthly', next: 0, cat: 'Entertainment', trial: false, cancelled: -61 }
+      ]
+    };
+    this.onResize = () => this.setState({ vw: window.innerWidth });
+  }
+  componentDidMount() { window.addEventListener('resize', this.onResize); }
+  componentWillUnmount() { window.removeEventListener('resize', this.onResize); clearTimeout(this.toastT); }
+
+  // ---------- helpers ----------
+  base() { return new Date(2026, 9, 29); }
+  dOf(o) { const b = this.base(); return new Date(b.getFullYear(), b.getMonth(), b.getDate() + o); }
+  wd(o) { return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][this.dOf(o).getDay()]; }
+  mo(m) { return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m]; }
+  rel(o) { if (o === 0) return 'today'; if (o === 1) return 'tomorrow'; if (o === -1) return 'yesterday'; if (o > 1 && o < 7) return this.wd(o); const d = this.dOf(o); return d.getDate() + ' ' + this.mo(d.getMonth()); }
+  long(o) { const d = this.dOf(o); return this.wd(o) + ' ' + d.getDate() + ' ' + this.mo(d.getMonth()); }
+  iso(o) { const d = this.dOf(o); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  off(iso) { if (!iso) return null; const p = iso.split('-').map(Number); return Math.round((new Date(p[0], p[1] - 1, p[2]) - this.base()) / 86400000); }
+  eur(n) { return '€' + n.toFixed(2); }
+  monthly(s) { return s.cycle === 'yearly' ? s.price / 12 : s.price; }
+  stores() { return ['Aldi', 'Lidl', 'Delhaize', 'Colruyt', 'Other']; }
+  gcats() { return ['Fruit & veg', 'Dairy', 'Pantry', 'Household']; }
+  tones() {
+    return [
+      { bg: '#3b2a22', fg: '#f3ead8', tape: '#e6c76a' },
+      { bg: '#cfdccf', fg: '#24332a', tape: '#9fb0c6' },
+      { bg: '#efe9df', fg: '#1f2b4a', tape: '#e9a98a' },
+      { bg: '#f0cf7a', fg: '#3a2a08', tape: '#a9bfa3' },
+      { bg: '#d5deea', fg: '#1f2b4a', tape: '#9fb0c6' },
+      { bg: '#4d6b4a', fg: '#f3ead8', tape: '#e6c76a' }
+    ];
+  }
+  say(msg) { clearTimeout(this.toastT); this.setState({ toast: msg }); this.toastT = setTimeout(() => this.setState({ toast: '' }), 2600); }
+  go(screen) { return (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ screen: screen, sheet: null }); }; }
+  chips(list, current, pick, light) {
+    return list.map((v) => {
+      const val = typeof v === 'object' ? v.value : v;
+      const label = typeof v === 'object' ? v.label : v;
+      const on = current === val;
+      return { label: label, pressed: on, pick: () => pick(val), bg: on ? '#f3ead8' : 'rgba(0, 0, 0, 0.28)', fg: on ? '#1d1714' : '#f3ead8', bd: on ? '#f3ead8' : 'rgba(255, 255, 255, 0.16)' };
+    });
+  }
+  setF(k, v) { this.setState({ form: Object.assign({}, this.state.form, { [k]: v }) }); }
+  open(kind) {
+    const s = this.state;
+    const forms = {
+      item: { name: '', qty: '', store: 'Lidl', cat: 'Pantry' },
+      promo: { store: 'Lidl', from: this.iso(0), until: this.iso(5), product: '', deal: '', link: null, photo: null },
+      task: { title: '', due: 0, prio: null, tag: 'home', repeat: null },
+      sub: { sname: '', price: '', cycle: 'monthly', scat: 'Entertainment', next: this.iso(30), trial: false }
+    };
+    this.setState({ sheet: kind, form: forms[kind] || {}, peekId: null });
+  }
+  activePromoFor(name, store) {
+    const n = name.toLowerCase().split(' ')[0];
+    if (n.length < 3) return null;
+    const p = this.state.promos.find((p) => p.until >= 0 && p.product.toLowerCase().indexOf(n) >= 0 && (!store || p.store === store));
+    return p || this.state.promos.find((p) => p.until >= 0 && p.product.toLowerCase().indexOf(n) >= 0) || null;
+  }
+  addItem(name, qty, store, cat) {
+    if (!name) return;
+    const p = this.activePromoFor(name, store);
+    const id = this.state.nextId;
+    const item = { id: id, name: name.charAt(0).toUpperCase() + name.slice(1), qty: qty, store: p ? p.store : store, cat: cat, done: false, promoId: p ? p.id : null };
+    this.setState({ items: this.state.items.concat([item]), nextId: id + 1 });
+    this.say(p ? 'Added, and linked to the ' + p.store + ' deal: ' + p.deal : 'Added ' + item.name);
+  }
+  parseItem(t) {
+    let qty = '', store = 'Lidl', cat = 'Pantry';
+    t = t.trim();
+    const m = t.match(/^(\d+\s*(?:x|×|kg|g|l|ml)?)\s+(.*)$/i);
+    if (m) { qty = m[1].replace(/\s+/g, ''); t = m[2]; }
+    t = t.replace(/@(\S+)/, (a, b) => { const f = this.stores().find((x) => x.toLowerCase().indexOf(b.toLowerCase()) === 0); if (f) store = f; return ''; });
+    t = t.replace(/#(\S+)/, (a, b) => { const f = this.gcats().find((x) => x.toLowerCase().indexOf(b.toLowerCase()) === 0); if (f) cat = f; return ''; });
+    return { name: t.replace(/\s+/g, ' ').trim(), qty: qty, store: store, cat: cat };
+  }
+  parseTask(t) {
+    let prio = null, tag = 'home', due = null, repeat = null;
+    const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    t = t.replace(/!(high|med|medium|low)/i, (a, b) => { prio = b.toLowerCase().indexOf('h') === 0 ? 'high' : b.toLowerCase().indexOf('l') === 0 ? 'low' : 'med'; return ''; });
+    t = t.replace(/#(school|home|internship)/i, (a, b) => { tag = b.toLowerCase(); return ''; });
+    t = t.replace(/every\s+(sun|mon|tue|wed|thu|fri|sat)\w*/i, (a, b) => { repeat = days.indexOf(b.toLowerCase()); return ''; });
+    t = t.replace(/\b(today|tomorrow)\b/i, (a, b) => { due = b.toLowerCase() === 'today' ? 0 : 1; return ''; });
+    t = t.replace(/\b(sun|mon|tue|wed|thu|fri|sat)\w*\b/i, (a, b) => { const want = days.indexOf(b.toLowerCase()); const now = this.base().getDay(); due = (want - now + 7) % 7 || 7; return ''; });
+    if (repeat !== null && due === null) { const now = this.base().getDay(); due = (repeat - now + 7) % 7; }
+    return { title: t.replace(/\s+/g, ' ').trim(), prio: prio, tag: tag, due: due, repeat: repeat };
+  }
+  addTask(o) {
+    if (!o.title) return;
+    const id = this.state.nextId;
+    this.setState({ tasks: this.state.tasks.concat([Object.assign({ id: id, done: false }, o)]), nextId: id + 1 });
+    this.say('Task added' + (o.due !== null ? ' · due ' + this.rel(o.due) : ''));
+  }
+  toggleTask(id) {
+    const s = this.state;
+    const t = s.tasks.find((x) => x.id === id);
+    let tasks = s.tasks.map((x) => x.id === id ? Object.assign({}, x, { done: !x.done }) : x);
+    if (t && !t.done && t.repeat !== null && t.repeat !== undefined) {
+      const nextDue = (t.due === null ? 0 : t.due) + 7;
+      tasks = tasks.concat([Object.assign({}, t, { id: s.nextId, done: false, due: nextDue })]);
+      this.setState({ tasks: tasks, nextId: s.nextId + 1 });
+      this.say('Done. Next one: ' + this.long(nextDue));
+      return;
+    }
+    this.setState({ tasks: tasks });
+  }
+  toggleItem(id) { this.setState({ items: this.state.items.map((x) => x.id === id ? Object.assign({}, x, { done: !x.done }) : x) }); }
+
+  // ---------- view model ----------
+  renderVals() {
+    const s = this.state;
+    const layout = this.props.layout ?? 'auto';
+    const wide = layout === 'web' ? true : layout === 'mobile' ? false : s.vw >= 900;
+    const scr = s.screen;
+    const themes = {
+      home: 'radial-gradient(120% 55% at 100% 0%, #7a2a33 0%, rgba(122, 42, 51, 0) 60%), linear-gradient(180deg, #4a1520 0%, #2a0c12 55%, #190a0d 100%)',
+      groceries: 'radial-gradient(110% 55% at 0% 0%, #2f6b48 0%, rgba(47, 107, 72, 0) 60%), linear-gradient(180deg, #17402c 0%, #0f2a1e 55%, #0a1a13 100%)',
+      todo: 'radial-gradient(110% 55% at 100% 0%, #6b5326 0%, rgba(107, 83, 38, 0) 60%), linear-gradient(180deg, #3a2b14 0%, #241a0c 55%, #160f07 100%)',
+      subs: 'radial-gradient(90% 45% at 100% 0%, #8a5a3a 0%, rgba(138, 90, 58, 0) 55%), linear-gradient(180deg, #11393c 0%, #0b2729 55%, #071a1b 100%)'
+    };
+    const themeKey = scr === 'promos' ? 'groceries' : scr;
+    const tones = this.tones();
+
+    // ----- promos
+    const promos = s.promos.map((p, i) => {
+      const t = tones[p.tone % tones.length];
+      const expired = p.until < 0;
+      const linkedItem = s.items.find((it) => it.promoId === p.id && !it.done);
+      const untilLabel = expired ? 'expired ' + this.rel(p.until) : p.until === 0 ? 'ends today!' : p.until === 1 ? 'ends tomorrow' : 'until ' + this.rel(p.until);
+      return Object.assign({}, p, {
+        expired: expired, soon: !expired && p.until <= 3,
+        bg: t.bg, fg: t.fg, tape: t.tape,
+        rot: [-2.2, 1.8, -1.2, 2.4, -1.8, 1.2][i % 6], tapeRot: [-4, 3, -2, 5, -3, 2][i % 6],
+        storeUp: p.store.toUpperCase(), untilLabel: untilLabel,
+        untilColor: expired ? '#6b625a' : p.until <= 1 ? '#a8361f' : '#3a2a20',
+        op: expired ? 0.55 : 1, filter: expired ? 'grayscale(1)' : 'none',
+        hasPhoto: !!p.photo, photoAlt: 'Photo of the ' + p.store + ' deal', linked: !!linkedItem,
+        aria: p.product + ', ' + p.deal + ' at ' + p.store + ', ' + untilLabel,
+        peek: () => this.setState({ sheet: 'peek', peekId: p.id })
+      });
+    });
+    const active = promos.filter((p) => !p.expired).sort((a, b) => a.until - b.until);
+    const expiredList = promos.filter((p) => p.expired);
+    const soonPromos = active.filter((p) => p.soon).slice(0, wide ? 5 : 4);
+    const byStore = (p) => s.storeFilter === 'All' || p.store === s.storeFilter;
+    const boardPromos = (s.showArchive ? expiredList : active).filter(byStore);
+    const promoById = {}; promos.forEach((p) => { promoById[p.id] = p; });
+
+    // ----- items
+    const mkItem = (it) => {
+      const p = it.promoId ? promoById[it.promoId] : null;
+      const live = p && !p.expired;
+      return Object.assign({}, it, {
+        hasPromo: !!live, noPromo: !live,
+        promoShort: live ? p.deal + (wide ? ' · ' + p.store : '') : '',
+        promoAria: live ? 'Show the ' + p.store + ' deal: ' + p.deal : '',
+        badgeBg: it.done ? 'rgba(255, 255, 255, 0.12)' : '#e8c46a', badgeFg: it.done ? 'rgba(243, 234, 216, 0.8)' : '#2a2008',
+        sub: [it.qty, s.groupBy === 'store' ? it.cat : it.store].filter(Boolean).join(' · '),
+        strike: it.done ? 'line-through' : 'none', op: it.done ? 0.55 : 1,
+        boxBd: it.done ? '#e8c46a' : 'rgba(243, 234, 216, 0.6)', boxBg: it.done ? '#e8c46a' : 'transparent',
+        aria: (it.done ? 'Untick ' : 'Tick off ') + it.name, removeAria: 'Remove ' + it.name,
+        toggle: () => this.toggleItem(it.id),
+        remove: () => this.setState({ items: s.items.filter((x) => x.id !== it.id) }),
+        peek: () => this.setState({ sheet: 'peek', peekId: it.promoId })
+      });
+    };
+    const items = s.items.map(mkItem);
+    const left = items.filter((i) => !i.done);
+    const keys = s.groupBy === 'store' ? this.stores() : this.gcats();
+    const groups = keys.map((k) => {
+      const list = items.filter((i) => (s.groupBy === 'store' ? i.store : i.cat) === k).sort((a, b) => a.done - b.done);
+      const n = list.filter((i) => !i.done).length;
+      return { title: k, items: list, meta: n === 0 ? 'all done' : n + ' left' };
+    }).filter((g) => g.items.length);
+    const ticked = items.filter((i) => i.done).length;
+    const homeItems = left.slice(0, 5).map((i) => Object.assign({}, i, { promoShort: i.hasPromo ? promoById[i.promoId].deal + ' · ' + i.store : '' }));
+
+    // ----- tasks
+    const mkTask = (t) => {
+      const overdue = !t.done && t.due !== null && t.due < 0;
+      const today = t.due === 0;
+      const prioMap = { high: ['High', '#f4a394', '2px', '#f4a394'], med: ['Medium', '#f2c88a', '99px', '#f2c88a'], low: ['Low', 'rgba(243, 234, 216, 0.72)', '99px', 'transparent'] };
+      const pm = t.prio ? prioMap[t.prio] : null;
+      return Object.assign({}, t, {
+        hasPrio: !!pm, prioLabel: pm ? pm[0] : '', prioColor: pm ? pm[1] : '', prioRadius: pm ? pm[2] : '', prioFill: pm ? pm[3] : '',
+        dueLabel: t.due === null ? 'no date' : overdue ? 'overdue · was ' + this.rel(t.due) : today ? 'due today' : 'due ' + this.rel(t.due),
+        dueColor: overdue ? '#f4a394' : today && !t.done ? '#f2c88a' : 'rgba(243, 234, 216, 0.72)',
+        repeats: t.repeat !== null && t.repeat !== undefined,
+        repeatLabel: t.repeat !== null && t.repeat !== undefined ? 'every ' + ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][t.repeat] : '',
+        strike: t.done ? 'line-through' : 'none', op: t.done ? 0.55 : 1,
+        boxBd: t.done ? '#f2c88a' : 'rgba(243, 234, 216, 0.6)', boxBg: t.done ? '#f2c88a' : 'transparent',
+        aria: (t.done ? 'Mark not done: ' : 'Complete: ') + t.title,
+        metaLine: (t.tag.charAt(0).toUpperCase() + t.tag.slice(1)) + ' · ' + (t.done ? 'done' : overdue ? 'overdue' : t.due === 0 ? 'due today' : 'due ' + this.rel(t.due)),
+        toggle: () => this.toggleTask(t.id)
+      });
+    };
+    const tasks = s.tasks.map(mkTask).filter((t) => s.tagFilter === 'All' || t.tag === s.tagFilter);
+    const tg = [
+      { title: 'Overdue', color: '#f4a394', tasks: tasks.filter((t) => !t.done && t.due !== null && t.due < 0) },
+      { title: 'Today', color: '#f3ead8', tasks: tasks.filter((t) => !t.done && t.due === 0) },
+      { title: 'Upcoming', color: '#f3ead8', tasks: tasks.filter((t) => !t.done && (t.due === null || t.due > 0)).sort((a, b) => (a.due ?? 99) - (b.due ?? 99)) },
+      { title: 'Done', color: 'rgba(243, 234, 216, 0.72)', tasks: tasks.filter((t) => t.done) }
+    ].filter((g) => g.tasks.length).map((g) => Object.assign(g, { count: g.tasks.length + (g.tasks.length === 1 ? ' task' : ' tasks') }));
+    const allTasks = s.tasks.map(mkTask);
+    const todayTasks = allTasks.filter((t) => (t.due !== null && t.due <= 0)).sort((a, b) => a.done - b.done);
+    const todayLeft = todayTasks.filter((t) => !t.done).length;
+    const words = ['nothing', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+
+    // ----- subs
+    const ringC = { Health: '#f0b48a', Entertainment: '#efe6d2', Storage: '#7fa2a6', Education: '#c9a2d8', Other: '#e2b65a' };
+    const isC = (x) => x.cancelled !== null && x.cancelled !== undefined;
+    const live = s.subs.filter((x) => !isC(x));
+    const paying = live.filter((x) => !x.trial);
+    const month = paying.reduce((a, x) => a + this.monthly(x), 0);
+    const receiptLines = live.slice().sort((a, b) => a.next - b.next).map((x) => ({
+      name: x.name,
+      meta: x.trial ? 'free trial · ends ' + this.long(x.next) : x.cycle + ' · next ' + this.long(x.next),
+      metaColor: x.trial ? '#a8361f' : '#5b5246',
+      amount: x.trial ? '€0.00' : this.eur(this.monthly(x))
+    }));
+    const catTotals = {};
+    paying.forEach((x) => { catTotals[x.cat] = (catTotals[x.cat] || 0) + this.monthly(x); });
+    const cats = Object.keys(catTotals).sort((a, b) => catTotals[b] - catTotals[a]).map((k) => ({
+      label: k, amount: this.eur(catTotals[k]), flex: Math.max(1, Math.round(catTotals[k] * 100)),
+      color: ringC[k] || '#e2b65a', share: Math.round(catTotals[k] / (month || 1) * 100) + '%',
+      tip: k + ': ' + this.eur(catTotals[k]) + ' a month'
+    }));
+    const cancelled = s.subs.filter(isC);
+    const savedTotal = cancelled.reduce((a, x) => a + this.monthly(x) * Math.max(1, Math.round(-x.cancelled / 30)), 0);
+    const savedLine = cancelled.length ? 'saved ' + this.eur(savedTotal) + ' since cancelling ' + cancelled.map((x) => x.name).join(', ') : '';
+    const trialSub = live.find((x) => x.trial && x.next <= 7);
+    const trial = trialSub ? {
+      headline: trialSub.name + ' turns paid on ' + ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][this.dOf(trialSub.next).getDay()],
+      detail: 'Free until ' + this.long(trialSub.next) + ', then ' + this.eur(trialSub.price) + ' / month.',
+      remindLabel: s.trialReminder ? 'Reminder set · ' + this.long(trialSub.next - 1) : 'Remind me ' + ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][this.dOf(trialSub.next - 1).getDay()],
+      remindBg: s.trialReminder ? 'rgba(240, 180, 138, 0.18)' : '#f0b48a', remindFg: s.trialReminder ? '#f0b48a' : '#2a140c',
+      remind: () => { this.setState({ trialReminder: !s.trialReminder }); if (!s.trialReminder) this.say('We will nudge you the day before'); },
+      keep: () => { this.setState({ subs: s.subs.map((x) => x.id === trialSub.id ? Object.assign({}, x, { trial: false }) : x) }); this.say(trialSub.name + ' is now a paid subscription'); },
+      cancel: () => { this.setState({ subs: s.subs.map((x) => x.id === trialSub.id ? Object.assign({}, x, { trial: false, cancelled: 0 }) : x) }); this.say('Trial cancelled. Nothing will be charged'); }
+    } : {};
+    const subRows = s.subs.slice().sort((a, b) => (isC(a) - isC(b)) || a.next - b.next).map((x) => ({
+      name: x.name, letter: x.name.charAt(0), ring: ringC[x.cat] || '#e2b65a',
+      meta: isC(x) ? 'cancelled ' + this.rel(x.cancelled) + ' · ' + x.cat : x.cat + ' · ' + (x.trial ? 'trial until ' + this.rel(x.next) : x.cycle + ' · next ' + this.rel(x.next)),
+      amount: this.eur(x.price) + (x.cycle === 'yearly' ? '/yr' : '/mo'),
+      strike: isC(x) ? 'line-through' : 'none', op: isC(x) ? 0.6 : 1,
+      actionLabel: isC(x) ? 'Resume' : 'Cancel',
+      action: () => { this.setState({ subs: s.subs.map((y) => y.id === x.id ? Object.assign({}, y, { cancelled: isC(x) ? null : 0 }) : y) }); this.say(isC(x) ? x.name + ' is back on' : x.name + ' marked as cancelled'); }
+    }));
+    const comingUp = live.filter((x) => x.next <= 14).sort((a, b) => a.next - b.next).slice(0, 4).map((x) => ({
+      name: x.name, letter: x.name.charAt(0), ring: ringC[x.cat] || '#e2b65a',
+      when: x.trial ? 'trial ends ' + this.long(x.next) : 'pays ' + this.long(x.next),
+      metaColor: x.trial ? '#f0b48a' : 'rgba(243, 234, 216, 0.72)',
+      amount: x.trial ? 'then ' + this.eur(x.price) : this.eur(this.monthly(x))
+    }));
+    let zig = 'M0 0 H100 V0';
+    for (let i = 20; i > 0; i--) { zig += ' L' + (i * 5 - 2.5) + ' 4 L' + ((i - 1) * 5) + ' 0'; }
+    zig += ' Z';
+
+    // ----- nav
+    const icons = {
+      home: 'M3 10.5 12 3.5l9 7V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
+      groceries: 'M5 9h14l-1.4 10.2A2 2 0 0 1 15.6 21H8.4a2 2 0 0 1-2-1.8zM9 9V7a3 3 0 0 1 6 0v2',
+      promos: 'M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8zM7.5 7.5h.01',
+      todo: 'M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01',
+      subs: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3'
+    };
+    const navDef = [
+      { key: 'home', label: 'Home', count: '' },
+      { key: 'groceries', label: 'Groceries', count: String(left.length) },
+      { key: 'promos', label: 'Promo board', count: String(active.length) },
+      { key: 'todo', label: 'To-do', count: String(allTasks.filter((t) => !t.done).length) },
+      { key: 'subs', label: 'Subscriptions', count: String(live.length) }
+    ];
+    const isCur = (k) => k === scr || (k === 'groceries' && scr === 'promos' && !wide);
+    const navItem = (n) => ({
+      label: n.label, count: n.count, icon: icons[n.key], go: this.go(n.key),
+      current: isCur(n.key) ? 'page' : undefined,
+      bg: isCur(n.key) ? 'rgba(243, 234, 216, 0.12)' : 'transparent',
+      fg: isCur(n.key) ? '#f3ead8' : 'rgba(243, 234, 216, 0.72)',
+      weight: isCur(n.key) ? 700 : 500
+    });
+    const tab = (k, label) => Object.assign(navItem({ key: k, label: label, count: '' }), { fg: isCur(k) ? '#f3ead8' : 'rgba(243, 234, 216, 0.62)' });
+
+    // ----- sheet
+    const f = s.form || {};
+    const on = {
+      name: (e) => this.setF('name', e.target.value), qty: (e) => this.setF('qty', e.target.value),
+      product: (e) => this.setF('product', e.target.value), deal: (e) => this.setF('deal', e.target.value),
+      from: (e) => this.setF('from', e.target.value), until: (e) => this.setF('until', e.target.value),
+      title: (e) => this.setF('title', e.target.value),
+      sname: (e) => this.setF('sname', e.target.value), price: (e) => this.setF('price', e.target.value), next: (e) => this.setF('next', e.target.value),
+      trial: () => this.setF('trial', !f.trial),
+      photo: (e) => { const file = e.target.files && e.target.files[0]; if (file) this.setF('photo', URL.createObjectURL(file)); }
+    };
+    const peekP = s.peekId ? promoById[s.peekId] : null;
+    const peekItem = peekP ? s.items.find((it) => it.promoId === peekP.id && !it.done) : null;
+    const peek = peekP ? Object.assign({}, peekP, {
+      storeLine: peekP.store + ' · valid ' + this.rel(peekP.from) + ' – ' + this.rel(peekP.until),
+      noteLine: peekP.note || ' ',
+      linkLine: peekItem ? 'On your list: ' + peekItem.name + (peekItem.qty ? ' (' + peekItem.qty + ')' : '') : 'Not on your list yet',
+      linked: !!peekItem, canAdd: !peekItem && !peekP.expired,
+      gotIt: () => { this.setState({ items: s.items.map((it) => it.id === peekItem.id ? Object.assign({}, it, { done: true }) : it), sheet: null }); this.say(peekItem.name + ' ticked off'); },
+      unlink: () => this.setState({ items: s.items.map((it) => it.id === peekItem.id ? Object.assign({}, it, { promoId: null }) : it), sheet: null }),
+      addToList: () => { const id = s.nextId; const nm = peekP.product.replace(/\s*[×x]?\d+\s*(kg|g|l)?\s*$/i, '').trim(); this.setState({ items: s.items.concat([{ id: id, name: nm, qty: '', store: peekP.store, cat: 'Pantry', done: false, promoId: peekP.id }]), nextId: id + 1, sheet: null }); this.say(nm + ' added with the deal linked'); },
+      remove: () => { this.setState({ promos: s.promos.filter((p) => p.id !== peekP.id), items: s.items.map((it) => it.promoId === peekP.id ? Object.assign({}, it, { promoId: null }) : it), sheet: null }); this.say('Promo deleted'); }
+    }) : {};
+    const titles = { choose: 'Add something', peek: 'The deal', item: 'Add to your list', promo: 'Pin a deal', task: 'New task', sub: 'New subscription' };
+    const fabKind = { home: 'choose', groceries: 'item', promos: 'promo', todo: 'task', subs: 'sub' }[scr];
+    const linkOpts = [{ value: null, label: 'None' }].concat(left.filter((i) => !i.hasPromo).slice(0, 6).map((i) => ({ value: i.id, label: i.name })));
+
+    return {
+      wide: wide, notWide: !wide,
+      theme: { bg: themes[themeKey] },
+      pad: wide ? '44px 48px 56px' : '20px 18px 120px',
+      gap: wide ? '24px' : '18px',
+      cols2: wide ? 'repeat(2, minmax(0, 1fr))' : 'minmax(0, 1fr)',
+      groupCols: wide ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'minmax(0, 1fr)',
+      subsCols: wide ? 'minmax(0, 1fr) minmax(0, 1.1fr)' : 'minmax(0, 1fr)',
+      polaCols: wide ? 'repeat(auto-fill, minmax(180px, 1fr))' : 'repeat(2, minmax(0, 1fr))',
+      homePolaCols: wide ? 'repeat(auto-fill, minmax(170px, 1fr))' : 'repeat(2, minmax(0, 1fr))',
+      h1Size: wide ? '46px' : '34px', greetSize: wide ? '52px' : '38px', squiggleX: wide ? '6px' : '4px',
+      isHome: scr === 'home', isGroceries: scr === 'groceries', isPromos: scr === 'promos', isTodo: scr === 'todo', isSubs: scr === 'subs',
+      sideNav: navDef.map(navItem),
+      tabsLeft: [tab('home', 'Home'), tab('groceries', 'Groceries')],
+      tabsRight: [tab('todo', 'To-do'), tab('subs', 'Subs')],
+      fab: () => this.open(fabKind), fabLabel: titles[fabKind],
+      openAddChooser: () => this.open('choose'),
+      goGroceries: this.go('groceries'), goPromos: this.go('promos'), goSubs: this.go('subs'), goTodo: this.go('todo'),
+
+      // home
+      todayLine: todayLeft === 0 ? 'all clear today. go enjoy your evening' : (words[todayLeft] || todayLeft) + ' small thing' + (todayLeft === 1 ? '' : 's') + ' and you’re done',
+      toBuyLabel: left.length + ' to buy', dealsEndingLabel: active.filter((p) => p.soon).length + ' deals ending', monthLabel: this.eur(month) + ' / mo',
+      todayTasks: todayTasks, todayLeftLabel: todayLeft + ' left',
+      homeItems: homeItems, soonPromos: soonPromos, comingUp: comingUp,
+
+      // groceries
+      listLine: left.length ? left.length + ' things to grab, ' + left.filter((i) => i.hasPromo).length + ' with a deal' : 'list is empty. nice.',
+      activePromoCount: active.length, toBuyCount: left.length,
+      quickItem: s.quickItem,
+      onQuickItem: (e) => this.setState({ quickItem: e.target.value }),
+      submitQuickItem: (e) => { e.preventDefault(); const p = this.parseItem(s.quickItem); if (p.name) { this.addItem(p.name, p.qty, p.store, p.cat); this.setState({ quickItem: '' }); } },
+      groupChips: this.chips([{ value: 'store', label: 'Store' }, { value: 'cat', label: 'Category' }], s.groupBy, (v) => this.setState({ groupBy: v })),
+      groups: groups, hasTicked: ticked > 0, clearLabel: 'Clear ' + ticked + ' ticked',
+      clearTicked: () => this.setState({ items: s.items.filter((i) => !i.done) }),
+
+      // promos
+      promoTitleA: s.showArchive ? 'The' : 'Promo', promoTitleB: s.showArchive ? 'archive' : 'board',
+      promoLine: s.showArchive ? 'expired deals rest here' : 'snapped from this week’s folders',
+      storeChips: this.chips(['All', 'Aldi', 'Lidl', 'Delhaize', 'Colruyt'], s.storeFilter, (v) => this.setState({ storeFilter: v })),
+      boardPromos: boardPromos, boardEmpty: boardPromos.length === 0,
+      archiveLabel: s.showArchive ? '← Back to the board' : expiredList.length + ' expired this week · archive',
+      toggleArchive: () => this.setState({ showArchive: !s.showArchive }),
+      openAddPromo: () => this.open('promo'),
+
+      // todo
+      quickTask: s.quickTask,
+      onQuickTask: (e) => this.setState({ quickTask: e.target.value }),
+      submitQuickTask: (e) => { e.preventDefault(); const p = this.parseTask(s.quickTask); if (p.title) { this.addTask(p); this.setState({ quickTask: '' }); } },
+      tagChips: this.chips(['All', 'school', 'home', 'internship'], s.tagFilter, (v) => this.setState({ tagFilter: v })),
+      taskGroups: tg,
+      nudge: s.nudge, nudgeTrack: s.nudge ? '#f2c88a' : 'rgba(255, 255, 255, 0.2)', nudgeAlign: s.nudge ? 'flex-end' : 'flex-start',
+      toggleNudge: () => { this.setState({ nudge: !s.nudge }); this.say(s.nudge ? 'Morning nudge off' : 'Morning nudge on · 08:00'); },
+
+      // subs
+      monthTotal: this.eur(month), yearTotal: this.eur(month * 12),
+      receiptLines: receiptLines, zig: zig,
+      hasTrial: !!trialSub, trial: trial,
+      cats: cats, catAria: 'Monthly spend by category: ' + cats.map((c) => c.label + ' ' + c.amount).join(', '),
+      hasSaved: !!savedLine, savedLine: savedLine,
+      subRows: subRows, openAddSub: () => this.open('sub'),
+
+      // toast
+      hasToast: !!s.toast, toast: s.toast, toastBottom: wide ? '28px' : '96px',
+
+      // sheet
+      sheetOpen: !!s.sheet, sheetTitle: titles[s.sheet] || '',
+      sheetChoose: s.sheet === 'choose', sheetPeek: s.sheet === 'peek' && !!peekP, sheetItem: s.sheet === 'item', sheetPromo: s.sheet === 'promo', sheetTask: s.sheet === 'task', sheetSub: s.sheet === 'sub',
+      sheetAlign: wide ? 'center' : 'flex-end', sheetW: wide ? '480px' : '100%', sheetRadius: wide ? '22px' : '24px 24px 0 0',
+      closeSheet: () => this.setState({ sheet: null }),
+      chooser: [
+        { label: 'Grocery item', hint: 'add to the list', icon: icons.groceries, bg: 'rgba(47, 107, 72, 0.35)', go: () => this.open('item') },
+        { label: 'Promo', hint: 'photo or screenshot', icon: icons.promos, bg: 'rgba(232, 196, 106, 0.2)', go: () => this.open('promo') },
+        { label: 'Task', hint: 'with a due date', icon: icons.todo, bg: 'rgba(107, 83, 38, 0.45)', go: () => this.open('task') },
+        { label: 'Subscription', hint: 'or a free trial', icon: icons.subs, bg: 'rgba(17, 57, 60, 0.6)', go: () => this.open('sub') }
+      ],
+      peek: peek,
+      form: Object.assign({}, f, {
+        hasPhoto: !!f.photo, noPhoto: !f.photo, photoLabel: f.photo ? 'Tap to change the photo' : 'Upload a photo or screenshot',
+        nextLabel: f.trial ? 'Trial ends' : 'Next payment',
+        trialLabel: f.trial ? 'Free trial · on' : 'Free trial?', trialBg: f.trial ? '#f0b48a' : 'rgba(0, 0, 0, 0.28)', trialFg: f.trial ? '#2a140c' : '#f3ead8', trialBd: f.trial ? '#f0b48a' : 'rgba(255, 255, 255, 0.16)'
+      }),
+      on: on,
+      fStoreChips: this.chips(this.stores(), f.store, (v) => this.setF('store', v)),
+      fCatChips: this.chips(this.gcats(), f.cat, (v) => this.setF('cat', v)),
+      fLinkChips: this.chips(linkOpts, f.link === undefined ? null : f.link, (v) => this.setF('link', v)),
+      fDueChips: this.chips([{ value: 0, label: 'Today' }, { value: 1, label: 'Tomorrow' }, { value: 3, label: this.wd(3) }, { value: 7, label: 'Next week' }, { value: null, label: 'No date' }], f.due, (v) => this.setF('due', v)),
+      fPrioChips: this.chips([{ value: 'high', label: 'High' }, { value: 'med', label: 'Medium' }, { value: 'low', label: 'Low' }, { value: null, label: 'None' }], f.prio, (v) => this.setF('prio', v)),
+      fTagChips: this.chips(['school', 'home', 'internship'], f.tag, (v) => this.setF('tag', v)),
+      fRepeatChips: this.chips([{ value: null, label: 'Once' }, { value: 'weekly', label: 'Every week' }], f.repeat, (v) => this.setF('repeat', v)),
+      fCycleChips: this.chips([{ value: 'monthly', label: 'Monthly' }, { value: 'yearly', label: 'Yearly' }], f.cycle, (v) => this.setF('cycle', v)),
+      fSubCatChips: this.chips(['Entertainment', 'Health', 'Storage', 'Education', 'Other'], f.scat, (v) => this.setF('scat', v)),
+      saveItem: (e) => { e.preventDefault(); if (!f.name) return; this.addItem(f.name.trim(), f.qty || '', f.store, f.cat); this.setState({ sheet: null }); },
+      savePromo: (e) => {
+        e.preventDefault();
+        const until = this.off(f.until);
+        if (until === null) { this.say('Add the "valid until" date first'); return; }
+        const id = 'p' + s.nextId;
+        const p = { id: id, store: f.store, product: f.product || (f.store + ' deal'), deal: f.deal || 'Deal', note: '', until: until, from: this.off(f.from) ?? 0, tone: s.nextId % 6, photo: f.photo || null };
+        this.setState({ promos: s.promos.concat([p]), items: f.link ? s.items.map((it) => it.id === f.link ? Object.assign({}, it, { promoId: id }) : it) : s.items, nextId: s.nextId + 1, sheet: null, screen: 'promos', showArchive: false });
+        this.say('Pinned to the board · ' + (until < 0 ? 'already expired' : 'until ' + this.rel(until)));
+      },
+      saveTask: (e) => {
+        e.preventDefault(); if (!f.title) return;
+        const due = f.due === undefined ? null : f.due;
+        const rep = f.repeat === 'weekly' ? this.dOf(due === null ? 0 : due).getDay() : null;
+        this.addTask({ title: f.title.trim(), due: rep !== null && due === null ? 0 : due, prio: f.prio || null, tag: f.tag, repeat: rep });
+        this.setState({ sheet: null });
+      },
+      saveSub: (e) => {
+        e.preventDefault();
+        const price = parseFloat(String(f.price).replace(',', '.'));
+        if (!f.sname || isNaN(price)) { this.say('Add a name and a price'); return; }
+        const id = s.nextId;
+        this.setState({ subs: s.subs.concat([{ id: id, name: f.sname.trim(), price: price, cycle: f.cycle, next: this.off(f.next) ?? 30, cat: f.scat, trial: !!f.trial, cancelled: null }]), nextId: id + 1, sheet: null, screen: 'subs' });
+        this.say(f.trial ? 'Trial saved. You will get a reminder before it turns paid' : 'Subscription saved');
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
