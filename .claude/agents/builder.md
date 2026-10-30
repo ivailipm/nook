@@ -54,8 +54,9 @@ command you ran and its result, or what the page showed.
   `agent-browser skills get core` first to learn it). Pass
   `--session <job-id>-builder` on every `agent-browser` call, so other jobs
   never drive your browser. Close it with
-  `agent-browser --session <job-id>-builder close` and stop the dev server when
-  you're done.
+  `agent-browser --session <job-id>-builder close` and stop the dev server by
+  its port, with the command AGENTS.md gives, when you're done. Never run
+  `npm run dev` in the worktree; use `npm run build`.
 
 ## Commit
 

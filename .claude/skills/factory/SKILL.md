@@ -135,10 +135,19 @@ gets `5102 + 10n`, appended as ` Port: <port>.`
 
 ### Build check
 
-Read the first line of `build.md`.
+Run **Clean up**, then read the first line of `build.md`.
 
 - `STATUS: READY`: start the next review round.
 - `STATUS: BLOCKED`: go to **Needs human**.
+
+### Clean up
+
+Agents sometimes leave a dev server running. For each of the job's three
+ports (builder, `reviewer-ux`, `reviewer-ui`), if
+`netstat -ano | grep -E "127\.0\.0\.1:<port> .*LISTENING"` prints a line, stop
+it with the port-scoped command in AGENTS.md. Never stop processes by name.
+If `<worktree>/public/hot` exists, an agent ran Vite: delete the file and tell
+the user, since a Vite server may still be running from the worktree.
 
 ### Review round N
 
@@ -153,7 +162,7 @@ Read the first line of `build.md`.
    round is done only when all four `review-*.md` files exist in `round-<N>/`.
    Never resume the builder mid-round. If a reviewer finishes without writing
    its file, or writes a first line that isn't a verdict, stop and tell the user.
-4. Decide:
+4. Run **Clean up**, then decide:
    - **All PASS**: go to **Approve**.
    - **Any CHANGES, resumes left**: set `stage: "build"`, then resume the same
      builder with `SendMessage` to `builder-<job-id>`:

@@ -39,7 +39,17 @@ Worktrees use the `nook_factory` database, so they never touch the main checkout
 
 ## Dev server on a given port
 
-`php artisan serve --host=127.0.0.1 --port=<port>`, then open `http://127.0.0.1:<port>`. It serves the built assets in `public/build`, so run `npm run build` again after changing CSS, JS or classes in Blade. Stop the server when you're done.
+`php artisan serve --host=127.0.0.1 --port=<port>`, in the background, then open `http://127.0.0.1:<port>`. It serves the built assets in `public/build`, so run `npm run build` again after changing CSS, JS or classes in Blade.
+
+Never run `npm run dev` or `composer dev` in a factory worktree. Vite writes `public/hot`, and once Vite stops, every page asks the dead Vite server for its CSS and JS. If you find `public/hot` in a worktree, delete it.
+
+Stop the server when you're done, by its port. Never stop processes by name: Herd runs on the same `php.exe`.
+
+```bash
+taskkill //F //PID $(netstat -ano | grep -E "127\.0\.0\.1:<port> .*LISTENING" | awk '{print $5}' | head -1)
+```
+
+That ends the listener on the port, and `artisan serve` exits with it.
 
 Every page except login is behind auth. The seeder creates the local account `ivayla@example.com` / `password` (local and factory databases only, never production).
 

@@ -62,6 +62,8 @@ VERDICT: PASS | CHANGES
 Non-blocking observations. Optional.
 ```
 
+- Write the file with the Write tool before you finish. A verdict that is only in
+  your reply doesn't count, and the orchestrator stops the job.
 - The first line must be exactly `VERDICT: PASS` or `VERDICT: CHANGES`.
 - A failing check is always CHANGES. Otherwise use CHANGES only for bugs, spec
   gaps or clear convention breaks. Put style preferences under Notes.

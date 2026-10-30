@@ -32,15 +32,20 @@ checkout; your one file goes there.
 ## Look at it
 
 If the change shows up on a page, look at it. Start the dev server from
-AGENTS.md in the worktree, in the background, on your port.
+AGENTS.md in the worktree, in the background, on your port. It serves the
+built assets; never run `npm run dev` (AGENTS.md says why).
 
 Then use the `agent-browser` CLI (run `agent-browser skills get core` first) to
-screenshot the page at desktop and phone widths. Pass `--session <job-id>-ui` on
+screenshot every page the change adds or touches (the spec lists them, so not
+a sample) at phone width (390px) and desktop width (1280px), and compare each
+against the design docs AGENTS.md points to. Pass `--session <job-id>-ui` on
 every `agent-browser` call, so other jobs' reviewers never drive your browser.
 Every nook page is behind login, so sign in with the seeded account CLAUDE.md
 gives; the worktree's dev server only talks to the local `nook_factory`
-database. When you're done, run
-`agent-browser --session <job-id>-ui close` and stop the dev server.
+database. List the pages and widths you checked under Notes.
+
+When you're done, run `agent-browser --session <job-id>-ui close` and stop the
+dev server by its port, with the command AGENTS.md gives.
 
 ## What to look for
 
@@ -66,6 +71,8 @@ VERDICT: PASS | CHANGES
 Non-blocking observations. Optional.
 ```
 
+- Write the file with the Write tool before you finish. A verdict that is only in
+  your reply doesn't count, and the orchestrator stops the job.
 - The first line must be exactly `VERDICT: PASS` or `VERDICT: CHANGES`.
 - Use CHANGES only for visible inconsistencies or breakage. Put matters of
   taste under Notes.
