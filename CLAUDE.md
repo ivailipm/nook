@@ -54,10 +54,12 @@ Every page except login is behind auth. The seeder creates the local account `iv
 
 - Conventional commits with a scope and a one-line subject: `feat(promos): add polaroid board`, `fix(todo): keep focus after quick add`, `test(groceries): cover the quick-add parser`, `chore(ci): cache composer`.
 - Logic that tests must cover (quick-add parsers, auto-linking, promo expiry, recurring rollover, monthly and yearly totals, reminder scheduling) lives in plain PHP classes under `app/`, not inside Livewire components or Blade views, and has Pest tests. Use the examples in FEATURES.md as test cases.
+- Pages are class-based full-page Livewire components in `app/Livewire/Pages`, created with `php artisan make:livewire Pages/Name --class` (no single-file components), and render in the one layout, `resources/views/layouts/app.blade.php`, with `#[Title]` setting the page title. Routes are added with `Route::livewire()` and named after their `App\Enums\Section` value; the enum also holds each section's labels, icon, ground and FAB label.
 - Reusable Blade components in `resources/views/components/`: polaroid, receipt, chip, checkbox, sheet, card, toast, nav, and anything else that repeats.
-- Icons are Lucide (24px grid, 1.75 stroke, round caps). No emoji anywhere in the UI.
+- Design tokens: `text-accent`, `bg-accent` and `text-on-accent` follow the section's ground, so don't hard-code gold, apricot or peach for the accent. Fonts are `font-display` (Fraunces), `font-sans` (DM Sans, the default), `font-script` (Caveat) and `font-mono` (IBM Plex Mono).
+- Icons are Lucide, rendered as `<x-lucide-…>` components with `aria-hidden="true"` (24px grid, round caps). The SVGs say `stroke-width="2"`, so give each icon the 1.75 stroke with `stroke-[1.75]`. No emoji anywhere in the UI.
 - Accessibility: real `<button>`s and `<label>`s, `aria-pressed` on toggles and chips, `aria-label` on icon-only buttons, touch targets of at least 44px, the peach focus ring (2px solid `#f0b48a`, offset 2px) on everything interactive, and state never shown by colour alone.
-- One codebase for a 390px phone and a laptop. The breakpoint is 900px.
+- One codebase for a 390px phone and a laptop. The breakpoint is 900px, and `wide:` is the only responsive variant (Tailwind's default breakpoints are removed).
 - Money is `€3.49`. Dates are relative when near ("today", "tomorrow", "Sat"), otherwise "10 Nov"; the long form is "Sun 1 Nov". Weeks start on Monday.
 - Seeders reproduce the prototype's sample data, with dates relative to the day you seed.
 
