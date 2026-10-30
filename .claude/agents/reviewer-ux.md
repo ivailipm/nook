@@ -33,8 +33,10 @@ server from AGENTS.md in the worktree, in the background, on your port.
 
 Then use the `agent-browser` CLI (run `agent-browser skills get core` first).
 Pass `--session <job-id>-ux` on every `agent-browser` call, so other jobs'
-reviewers never drive your browser. Don't sign in or submit forms: the dev
-server may talk to real services. When you're done, run
+reviewers never drive your browser. Every nook page is behind login, so sign
+in with the seeded account CLAUDE.md gives. The worktree's dev server only
+talks to the local `nook_factory` database, so using the forms is safe. When
+you're done, run
 `agent-browser --session <job-id>-ux close` and stop the dev server.
 
 ## What to look for
