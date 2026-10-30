@@ -1,11 +1,147 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/fraunces/opsz.css';
+@import '@fontsource-variable/fraunces/opsz-italic.css';
+@import '@fontsource-variable/dm-sans/opsz.css';
+@import '@fontsource-variable/caveat';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/* Design tokens from docs/nook-design/DESIGN.md §2–3. Plain @theme (not inline) so each ground can override the accent. */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Fraunces Variable', serif;
+    --font-sans: 'DM Sans Variable', system-ui, sans-serif;
+    --font-script: 'Caveat Variable', cursive;
+    --font-mono: 'IBM Plex Mono', monospace;
+
+    --breakpoint-*: initial;
+    --breakpoint-wide: 900px;
+
+    --color-cream: #f3ead8;
+    --color-cream-muted: rgb(243 234 216 / 0.72);
+    --color-cream-faint: rgb(243 234 216 / 0.6);
+    --color-hairline: rgb(255 255 255 / 0.07);
+    --color-card-border: rgb(255 255 255 / 0.10);
+    --color-card-bg: rgb(0 0 0 / 0.24);
+    --color-input-border: rgb(243 234 216 / 0.28);
+    --color-paper: #f6f1e7;
+    --color-receipt: #f7f2e6;
+    --color-receipt-ink: #2a241c;
+    --color-receipt-muted: #5b5246;
+    --color-receipt-rule: #b9ad98;
+    --color-sheet-bg: #1d1714;
+    --color-scrim: rgb(8 5 4 / 0.62);
+
+    --color-peach: #f0b48a;
+    --color-on-peach: #2a140c;
+    --color-gold: #e8c46a;
+    --color-on-gold: #2a2008;
+    --color-apricot: #f2c88a;
+    --color-on-apricot: #2a1a06;
+    --color-accent: var(--color-peach);
+    --color-on-accent: var(--color-on-peach);
+
+    --color-overdue: #f4a394;
+    --color-due-today: #f2c88a;
+    --color-ends-soon: #a8361f;
+    --color-on-list: #2c5a3e;
+    --color-destructive: #f4a394;
+    --color-destructive-border: rgb(240 150 130 / 0.6);
+
+    --color-tone-0-bg: #3b2a22;
+    --color-tone-0-text: #f3ead8;
+    --color-tone-0-tape: #e6c76a;
+    --color-tone-1-bg: #cfdccf;
+    --color-tone-1-text: #24332a;
+    --color-tone-1-tape: #9fb0c6;
+    --color-tone-2-bg: #efe9df;
+    --color-tone-2-text: #1f2b4a;
+    --color-tone-2-tape: #e9a98a;
+    --color-tone-3-bg: #f0cf7a;
+    --color-tone-3-text: #3a2a08;
+    --color-tone-3-tape: #a9bfa3;
+    --color-tone-4-bg: #d5deea;
+    --color-tone-4-text: #1f2b4a;
+    --color-tone-4-tape: #9fb0c6;
+    --color-tone-5-bg: #4d6b4a;
+    --color-tone-5-text: #f3ead8;
+    --color-tone-5-tape: #e6c76a;
+
+    --color-cat-health: #f0b48a;
+    --color-cat-entertainment: #efe6d2;
+    --color-cat-storage: #7fa2a6;
+    --color-cat-education: #c9a2d8;
+    --color-cat-other: #e2b65a;
+
+    --radius-card: 18px;
+    --radius-input: 16px;
+    --radius-button: 12px;
+    --radius-avatar: 10px;
+    --radius-polaroid: 3px;
+    --radius-checkbox: 6px;
+
+    --shadow-polaroid: 0 12px 24px rgb(0 0 0 / 0.4);
+    --shadow-nav: 0 10px 30px rgb(0 0 0 / 0.45);
+    --shadow-fab: 0 8px 20px rgb(0 0 0 / 0.4);
+    --shadow-sheet: 0 -10px 40px rgb(0 0 0 / 0.5);
+    --shadow-toast: 0 10px 24px rgb(0 0 0 / 0.4);
+    --drop-shadow-receipt: 0 14px 22px rgb(0 0 0 / 0.45);
+
+    --spacing: 0.25rem;
+}
+
+@layer base {
+    body {
+        font-family: var(--font-sans);
+        font-size: 15px;
+        line-height: 1.4;
+        color: var(--color-cream);
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-peach);
+        outline-offset: 2px;
+    }
+
+    ::placeholder {
+        color: rgb(243 234 216 / 0.62);
+    }
+
+    a {
+        color: var(--color-peach);
+    }
+
+    a:hover {
+        color: #f6cfae;
+    }
+
+    /* Section grounds: the gradients from the prototype's `themes`. The Promo board uses the groceries ground. */
+    [data-ground='home'] {
+        background: radial-gradient(120% 55% at 100% 0%, #7a2a33 0%, rgba(122, 42, 51, 0) 60%), linear-gradient(180deg, #4a1520 0%, #2a0c12 55%, #190a0d 100%);
+        --color-accent: var(--color-peach);
+        --color-on-accent: var(--color-on-peach);
+    }
+
+    [data-ground='groceries'] {
+        background: radial-gradient(110% 55% at 0% 0%, #2f6b48 0%, rgba(47, 107, 72, 0) 60%), linear-gradient(180deg, #17402c 0%, #0f2a1e 55%, #0a1a13 100%);
+        --color-accent: var(--color-gold);
+        --color-on-accent: var(--color-on-gold);
+    }
+
+    [data-ground='todo'] {
+        background: radial-gradient(110% 55% at 100% 0%, #6b5326 0%, rgba(107, 83, 38, 0) 60%), linear-gradient(180deg, #3a2b14 0%, #241a0c 55%, #160f07 100%);
+        --color-accent: var(--color-apricot);
+        --color-on-accent: var(--color-on-apricot);
+    }
+
+    [data-ground='subscriptions'] {
+        background: radial-gradient(90% 45% at 100% 0%, #8a5a3a 0%, rgba(138, 90, 58, 0) 55%), linear-gradient(180deg, #11393c 0%, #0b2729 55%, #071a1b 100%);
+        --color-accent: var(--color-peach);
+        --color-on-accent: var(--color-on-peach);
+    }
 }
