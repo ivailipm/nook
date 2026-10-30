@@ -106,7 +106,8 @@ jobs:
     steps:
       - name: Trigger the Coolify deploy
         if: env.COOLIFY_WEBHOOK != ''
-        run: curl --fail-with-body --silent --show-error -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_WEBHOOK"
+        run: |
+          curl --fail-with-body --silent --show-error -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_WEBHOOK"
 
       - name: Skip until Coolify is set up
         if: env.COOLIFY_WEBHOOK == ''
