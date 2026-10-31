@@ -51,7 +51,7 @@ taskkill //F //PID $(netstat -ano | grep -E "127\.0\.0\.1:<port> .*LISTENING" | 
 
 That ends the listener on the port, and `artisan serve` exits with it.
 
-Every page except login is behind auth. The seeder creates the local account `ivayla@example.com` / `password` only when `APP_ENV` is `local` or `testing` (factory worktrees run as `local`). Everywhere else, create the user with `php artisan nook:user`. In production, `nook:user` needs a password of at least 12 characters that hasn't appeared in a known breach (checked against Have I Been Pwned), set by `Password::defaults` in `AppServiceProvider`.
+Every page except login is behind auth. The seeder creates the local account `ivayla@example.com` / `password` and the prototype's sample grocery items for it, only when `APP_ENV` is `local` or `testing` (factory worktrees run as `local`). Everywhere else, create the user with `php artisan nook:user`. In production, `nook:user` needs a password of at least 12 characters that hasn't appeared in a known breach (checked against Have I Been Pwned), set by `Password::defaults` in `AppServiceProvider`.
 
 ## Validation
 
@@ -63,7 +63,9 @@ Every page except login is behind auth. The seeder creates the local account `iv
 ## Conventions
 
 - Conventional commits with a scope and a one-line subject: `feat(promos): add polaroid board`, `fix(todo): keep focus after quick add`, `test(groceries): cover the quick-add parser`, `chore(ci): cache composer`.
-- Logic that tests must cover (quick-add parsers, auto-linking, promo expiry, recurring rollover, monthly and yearly totals, reminder scheduling) lives in plain PHP classes under `app/`, not inside Livewire components or Blade views, and has Pest tests. Use the examples in FEATURES.md as test cases.
+- Logic that tests must cover (quick-add parsers, auto-linking, promo expiry, recurring rollover, monthly and yearly totals, reminder scheduling) lives in plain PHP classes under `app/`, not inside Livewire components or Blade views, and has Pest tests. Use the examples in FEATURES.md as test cases. The quick-add parsers live in `app/Parsers` (`GroceryItemParser` returns a `ParsedGroceryItem`).
+- User data: each table of user data has a `user_id` foreign key (cascade on delete), and items are created and read through the user's relation (`$user->groceryItems()`).
+- Enums: stores and grocery categories are the string-backed enums `App\Enums\Store` and `App\Enums\GroceryCategory`, in the prototype's order, with the display name as the value. Models cast to them.
 - Pages are class-based full-page Livewire components in `app/Livewire/Pages`, created with `php artisan make:livewire Pages/Name --class` (no single-file components), and render in the one layout, `resources/views/layouts/app.blade.php`, with `#[Title]` setting the page title. Routes are added with `Route::livewire()` inside the `auth` group in `routes/web.php` and named after their `App\Enums\Section` value; the enum also holds each section's labels, icon, ground, FAB label and the sheet its FAB opens. The login page is the one exception: a plain Blade view (`resources/views/auth/login.blade.php`) that Fortify renders, in `resources/views/layouts/guest.blade.php`.
 - Feature tests that load pages sign in first with `$this->actingAs(User::factory()->create())`.
 - Reusable Blade components in `resources/views/components/`: `<x-card title>` with an `aside` slot, `<x-chip :pressed size="sm|md">`, `<x-checkbox :checked variant="grocery|task" label>`, `<x-sheet name title>`, the toast and the nav, plus polaroid, receipt and anything else that repeats. A sheet opens on the `open-sheet` event with `{ name }`, and the toast shows on the `toast` event with `{ message }`, dispatched from Alpine (`$dispatch`) or Livewire (`$this->dispatch('toast', message: …)`).
