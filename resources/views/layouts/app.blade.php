@@ -21,6 +21,9 @@
             </main>
 
             <x-nav.floating :current="$section" />
+
+            <x-toast />
+            <x-add-something />
         </div>
     </body>
 </html>
