@@ -24,6 +24,8 @@ Where these differ from `docs/nook-design/` (the prototype included), these win.
 - Home "Coming up" shows the real charge for yearly subscriptions, not price ÷ 12.
 - Share target: the service worker catches the share POST and hands the photo to the add-promo form, so no route needs a CSRF exemption.
 - The 08:00 push is skipped when nothing is due. "A deal on your list ends today" is a line in that same push, not a separate notification.
+- Ticking a grocery item moves it to the end of its group, as the prototype does (FEATURES.md says it stays in place). Confirmed on 2026-10-31.
+- Expired promos leave the board and show in the archive during the week they expired (Monday to Sunday). A daily job deletes each promo and its photo 30 days after its `valid_until`. Confirmed on 2026-10-31.
 
 ## Still open
 
@@ -31,6 +33,5 @@ These get decided before the milestone that needs them, and recorded above.
 
 - Trial reminders: FEATURES.md gives every trial pushes 3 days and 1 day before it converts, but the "Remind me" button toggles a day-before reminder. (M5)
 - What happens when a subscription's next payment date passes, and when a trial ends without Keep it or Cancel trial. (M5)
-- The archive's window ("N expired this week" or every expired promo), and when expired promos and their photos are deleted. (M3)
 - Offline in the shop: the last-loaded list read-only, or ticking offline and syncing later. (M7)
 - Editing and deleting tasks and subscriptions (the spec only has cancel and resume). (M4, M5)
