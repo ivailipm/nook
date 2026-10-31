@@ -15,8 +15,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // The local account; in production the user is created with `php artisan nook:user`.
-        if (! app()->isProduction()) {
+        // The local account, only in the local and testing environments; everywhere else
+        // the user is created with `php artisan nook:user`.
+        if (app()->environment(['local', 'testing'])) {
             User::firstOrCreate(
                 ['email' => 'ivayla@example.com'],
                 ['name' => 'Ivayla', 'password' => 'password'],
