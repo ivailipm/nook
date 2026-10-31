@@ -111,6 +111,7 @@ enum Section: string
     {
         return match ($this) {
             self::Home => 'add-something',
+            self::Groceries => 'add-item',
             default => null,
         };
     }
