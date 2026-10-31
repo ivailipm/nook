@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Store;
+use App\Support\RelativeDate;
 use Carbon\CarbonInterface;
 use Database\Factories\PromoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -94,6 +95,29 @@ class Promo extends Model
             today()->startOfWeek(CarbonInterface::MONDAY)->subDay()->toDateString(),
             today()->subDay()->toDateString(),
         ]);
+    }
+
+    /**
+     * Whole calendar days left: 0 on the last day, 1 the day before, negative once expired.
+     */
+    public function daysLeft(): int
+    {
+        return RelativeDate::daysFromToday($this->valid_until);
+    }
+
+    /**
+     * The handwritten label on the polaroid: "ends today!", "ends tomorrow", "until Sat" or "expired 27 Oct".
+     */
+    public function untilLabel(): string
+    {
+        $days = $this->daysLeft();
+
+        return match (true) {
+            $days < 0 => 'expired '.RelativeDate::format($this->valid_until),
+            $days === 0 => 'ends today!',
+            $days === 1 => 'ends tomorrow',
+            default => 'until '.RelativeDate::format($this->valid_until),
+        };
     }
 
     /**
