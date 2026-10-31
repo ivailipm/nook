@@ -61,7 +61,7 @@ class AddItem extends Component
 
         $this->resetForm();
 
-        $this->dispatch('toast', message: "Added {$item->name}");
+        $this->dispatch('toast', message: $addGroceryItem->message($item));
         $this->dispatch('grocery-item-added');
         $this->dispatch('close-sheet', name: 'add-item');
     }
