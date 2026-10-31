@@ -38,4 +38,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(GroceryItem::class);
     }
+
+    /**
+     * @return HasMany<Promo, $this>
+     */
+    public function promos(): HasMany
+    {
+        return $this->hasMany(Promo::class);
+    }
 }

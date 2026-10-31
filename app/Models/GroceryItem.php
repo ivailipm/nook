@@ -37,4 +37,12 @@ class GroceryItem extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * @return BelongsTo<Promo, $this>
+     */
+    public function promo(): BelongsTo
+    {
+        return $this->belongsTo(Promo::class);
+    }
 }

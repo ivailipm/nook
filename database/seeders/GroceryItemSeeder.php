@@ -11,7 +11,7 @@ class GroceryItemSeeder extends Seeder
 {
     /**
      * Seed the prototype's sample grocery items for the user, unless they already have items.
-     * The prototype links four of them to promos; M3 relinks them when it seeds the promos.
+     * The prototype links four of them to promos; PromoSeeder links them when it seeds the promos.
      */
     public function run(User $user): void
     {

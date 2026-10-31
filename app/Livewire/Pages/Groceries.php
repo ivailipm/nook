@@ -36,7 +36,7 @@ class Groceries extends Component
 
         $this->reset('quickItem');
 
-        $this->dispatch('toast', message: "Added {$item->name}");
+        $this->dispatch('toast', message: $addGroceryItem->message($item));
     }
 
     public function toggle(int $id): void
