@@ -92,6 +92,19 @@
     --shadow-toast: 0 10px 24px rgb(0 0 0 / 0.4);
     --drop-shadow-receipt: 0 14px 22px rgb(0 0 0 / 0.45);
 
+    /* The bottom sheet slides up on open below 900px. */
+    --animate-sheet-up: sheet-up 200ms ease-out;
+
+    @keyframes sheet-up {
+        from {
+            translate: 0 100%;
+        }
+
+        to {
+            translate: 0 0;
+        }
+    }
+
     --spacing: 0.25rem;
 }
 
