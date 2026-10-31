@@ -29,7 +29,13 @@
         </button>
     </form>
 
-    <button type="button" class="flex min-h-[46px] cursor-pointer items-center justify-center gap-2 rounded-full bg-peach text-[15px] font-bold text-on-peach">
+    <button
+        type="button"
+        x-data
+        x-on:click="$dispatch('open-sheet', { name: 'add-something' })"
+        aria-haspopup="dialog"
+        class="flex min-h-[46px] cursor-pointer items-center justify-center gap-2 rounded-full bg-peach text-[15px] font-bold text-on-peach"
+    >
         <x-lucide-plus class="size-[18px] stroke-[2.25]" aria-hidden="true" />
         Add something
     </button>

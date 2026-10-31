@@ -3,7 +3,7 @@
 
     <x-page-header eyebrow="LOG IN" subtitle="everything's where you left it">Welcome <em>back</em></x-page-header>
 
-    <div class="rounded-card border border-card-border bg-card-bg p-4">
+    <x-card>
         <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-3.5">
             @csrf
 
@@ -14,5 +14,5 @@
 
             <button type="submit" class="min-h-12 w-full cursor-pointer rounded-button bg-accent text-[15px] font-bold text-on-accent">Log in</button>
         </form>
-    </div>
+    </x-card>
 </x-layouts::guest>

@@ -103,4 +103,15 @@ enum Section: string
             self::Subscriptions => 'New subscription',
         };
     }
+
+    /**
+     * The sheet the FAB opens, or null until that section's add sheet exists.
+     */
+    public function fabSheet(): ?string
+    {
+        return match ($this) {
+            self::Home => 'add-something',
+            default => null,
+        };
+    }
 }
