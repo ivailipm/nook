@@ -1,12 +1,13 @@
 @props(['name', 'title'])
 
-{{-- Opens on the window event open-sheet with { name }. The dialog has no padding, so a click on the dialog itself is on the scrim; a press that starts in the panel doesn't count. --}}
+{{-- Opens on the window event open-sheet and closes on close-sheet, each with { name }. The dialog has no padding, so a click on the dialog itself is on the scrim; a press that starts in the panel doesn't count. --}}
 <dialog
     id="sheet-{{ $name }}"
     aria-labelledby="sheet-{{ $name }}-title"
     wire:ignore.self
     x-data="{ pressedScrim: false }"
     x-on:open-sheet.window="$event.detail.name === @js($name) && ! $el.open && $el.showModal()"
+    x-on:close-sheet.window="$event.detail.name === @js($name) && $el.open && $el.close()"
     x-on:pointerdown="pressedScrim = $event.target === $el"
     x-on:click="pressedScrim && $event.target === $el && $el.close()"
     class="mt-auto max-h-[88dvh] w-full max-w-none animate-sheet-up overflow-y-auto rounded-t-[24px] border border-white/10 bg-sheet-bg text-cream shadow-sheet backdrop:bg-scrim motion-reduce:animate-none wide:m-auto wide:w-[480px] wide:animate-none wide:rounded-[22px]"
