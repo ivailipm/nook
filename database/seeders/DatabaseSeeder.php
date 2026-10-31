@@ -15,13 +15,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // The local account, only in the local and testing environments; everywhere else
-        // the user is created with `php artisan nook:user`.
+        // The local account and its sample data, only in the local and testing environments;
+        // everywhere else the user is created with `php artisan nook:user`.
         if (app()->environment(['local', 'testing'])) {
-            User::firstOrCreate(
+            $user = User::firstOrCreate(
                 ['email' => 'ivayla@example.com'],
                 ['name' => 'Ivayla', 'password' => 'password'],
             );
+
+            $this->callWith(GroceryItemSeeder::class, ['user' => $user]);
         }
     }
 }
