@@ -3,6 +3,8 @@ includes:
 
 parameters:
     level: 6
+    # Read each model's casts() so cast attributes have their enum and date types.
+    parseModelCastsMethod: true
     paths:
         - app/
         - database/
