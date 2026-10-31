@@ -1,9 +1,9 @@
 @use('App\Enums\Section')
 
 <div class="flex flex-col gap-4.5 wide:gap-6">
-    <x-page-header eyebrow="GROCERIES" :subtitle="$open === 0 ? 'list is empty. nice.' : $open.' '.Str::plural('thing', $open).' to grab'">Shopping <em>list</em></x-page-header>
+    <x-page-header eyebrow="GROCERIES" :subtitle="$open === 0 ? 'list is empty. nice.' : $open.' '.Str::plural('thing', $open).' to grab, '.$deals.' with a deal'">Shopping <em>list</em></x-page-header>
 
-    <x-groceries-switch :current="Section::Groceries" />
+    <x-groceries-switch :current="Section::Groceries" :promo-count="$activePromos" />
 
     {{-- The bar takes the focus ring while its input is focused. --}}
     <form wire:submit="add" class="flex items-center gap-2 rounded-input border border-input-border bg-black/30 py-[5px] pr-[5px] pl-4 has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-peach">
@@ -53,6 +53,9 @@
                             <span @class(['text-[15px] font-semibold', 'line-through opacity-55' => $item->done])>{{ $item->name }}</span>
                             <span class="text-[12px] text-cream-muted">{{ $item->qty === null ? $detail : $item->qty.' · '.$detail }}</span>
                         </span>
+                        @if ($item->hasActivePromo())
+                            <x-promo-badge :promo="$item->promo" :done="$item->done" />
+                        @endif
                         <button
                             type="button"
                             wire:click="remove({{ $item->id }})"

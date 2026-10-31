@@ -1,8 +1,11 @@
 <?php
 
 use App\Enums\Section;
+use App\Enums\Store;
+use App\Models\Promo;
 use Dom\Element;
 use Dom\HTMLDocument;
+use Illuminate\Support\Carbon;
 
 /**
  * @param  array<string, mixed>  $data
@@ -107,8 +110,11 @@ it('closes a sheet on close-sheet with its name', function () {
         ->and($dialog->getAttribute('x-on:close-sheet.window'))->toBe("\$event.detail.name === 'add-item' && \$el.open && \$el.close()");
 });
 
-it('renders the groceries switch as two links with the current one marked', function (Section $current, ?int $listCount, array $links) {
-    $nav = renderBlade('<x-groceries-switch :current="$current" :list-count="$listCount" />', ['current' => $current, 'listCount' => $listCount])->querySelector('nav');
+it('renders the groceries switch as two links with the current one marked', function (Section $current, ?int $listCount, ?int $promoCount, array $links) {
+    $nav = renderBlade(
+        '<x-groceries-switch :current="$current" :list-count="$listCount" :promo-count="$promoCount" />',
+        ['current' => $current, 'listCount' => $listCount, 'promoCount' => $promoCount],
+    )->querySelector('nav');
 
     expect($nav->getAttribute('aria-label'))->toBe('Groceries')
         ->and(array_map(
@@ -116,14 +122,110 @@ it('renders the groceries switch as two links with the current one marked', func
             iterator_to_array($nav->querySelectorAll('a')),
         ))->toBe(array_map(fn (array $link) => [$link[0], route($link[1]), ...array_slice($link, 2)], $links));
 })->with([
-    'on the list' => [Section::Groceries, null, [
+    'on the list' => [Section::Groceries, null, null, [
         ['List', 'groceries', 'page', true],
         ['Promo board', 'promos', null, false],
     ]],
-    'on the promo board' => [Section::Promos, 6, [
+    'on the list with a promo count' => [Section::Groceries, null, 6, [
+        ['List', 'groceries', 'page', true],
+        ['Promo board · 6', 'promos', null, false],
+    ]],
+    'on the promo board' => [Section::Promos, 6, null, [
         ['List · 6', 'groceries', null, false],
         ['Promo board', 'promos', 'page', true],
     ]],
+]);
+
+it('renders the groceries switch without a promo count by default', function () {
+    $links = renderBlade('<x-groceries-switch :current="$current" />', ['current' => Section::Groceries])->querySelectorAll('nav a');
+
+    expect(trim($links->item(1)->textContent))->toBe('Promo board');
+});
+
+/**
+ * A Colruyt promo on Thursday 29 October 2026 that ends on the given date.
+ */
+function componentPromo(string $validUntil, int $tone = 0): Promo
+{
+    test()->travelTo(Carbon::parse('2026-10-29 12:00', 'Europe/Brussels'));
+
+    return Promo::factory()->create(['store' => Store::Colruyt, 'product' => 'Coffee beans 1 kg', 'deal' => '2+1 free', 'valid_until' => $validUntil, 'tone' => $tone]);
+}
+
+/**
+ * @return list<Element>
+ */
+function componentChildren(Element $element): array
+{
+    return array_values(array_filter(iterator_to_array($element->childNodes), fn ($node) => $node instanceof Element));
+}
+
+it('renders a polaroid with its tone, tilt, tape and label', function (bool $linked) {
+    $promo = componentPromo('2026-10-31', tone: 4);
+    $frame = renderBlade('<x-polaroid :promo="$promo" :linked="$linked" />', ['promo' => $promo, 'linked' => $linked])->querySelector('body > div');
+    [$tape, $photo, $labelRow] = componentChildren($frame);
+    [$tilt, $tapeTilt] = [['-rotate-[2.2deg]', '-rotate-4'], ['rotate-[1.8deg]', 'rotate-3'], ['-rotate-[1.2deg]', '-rotate-2'], ['rotate-[2.4deg]', 'rotate-5'], ['-rotate-[1.8deg]', '-rotate-3'], ['rotate-[1.2deg]', 'rotate-2']][$promo->id % 6];
+    $pill = componentChildren($labelRow)[1] ?? null;
+
+    expect($frame->getAttribute('class'))->toBe("relative h-full rounded-polaroid bg-paper px-[9px] pt-[9px] pb-1.5 shadow-polaroid {$tilt}")
+        ->and($tape->getAttribute('class'))->toBe("absolute -top-[9px] left-1/2 -ml-[29px] h-[18px] w-[58px] opacity-88 bg-tone-4-tape {$tapeTilt}")
+        ->and(trim($tape->textContent))->toBe('')
+        ->and($photo->getAttribute('class'))->toBe('flex aspect-square flex-col gap-[5px] overflow-hidden p-[11px] bg-tone-4-bg text-tone-4-text')
+        ->and(array_map(fn (Element $line) => [trim($line->textContent), $line->getAttribute('class')], componentChildren($photo)))->toBe([
+            ['Colruyt', 'text-[9px] font-bold tracking-[0.12em] uppercase'],
+            ['Coffee beans 1 kg', 'font-display text-[16px] leading-[1.1] font-semibold'],
+            ['2+1 free', 'font-display text-[22px] leading-[1.05] font-bold'],
+        ])
+        ->and($labelRow->getAttribute('class'))->toBe('flex min-h-7 items-center justify-between gap-1.5 pt-1')
+        ->and(trim($labelRow->firstElementChild->textContent))->toBe('until Sat')
+        ->and($labelRow->firstElementChild->getAttribute('class'))->toBe('font-script text-[18px] font-bold text-[#3a2a20]')
+        ->and($frame->querySelectorAll('button, a, [tabindex], [role="button"]'))->toHaveCount(0);
+
+    if ($linked) {
+        expect(trim($pill->textContent))->toBe('on list')
+            ->and($pill->getAttribute('class'))->toBe('inline-flex items-center gap-[3px] rounded-full border border-on-list px-1.5 py-px text-[10px] font-bold text-on-list')
+            ->and($pill->querySelector('svg[aria-hidden="true"]'))->not->toBeNull();
+    } else {
+        expect($pill)->toBeNull();
+    }
+})->with(['linked' => true, 'not linked' => false]);
+
+it('greys an expired polaroid', function () {
+    $promo = componentPromo('2026-10-27');
+    $frame = renderBlade('<x-polaroid :promo="$promo" :linked="false" />', ['promo' => $promo])->querySelector('body > div');
+    $label = componentChildren($frame)[2]->firstElementChild;
+
+    expect(iterator_to_array($frame->classList))->toContain('opacity-55', 'grayscale')
+        ->and(trim($label->textContent))->toBe('expired 27 Oct')
+        ->and($label->getAttribute('class'))->toBe('font-script text-[18px] font-bold text-[#6b625a]');
+});
+
+it('keeps an active polaroid in colour', function () {
+    $promo = componentPromo('2026-10-30');
+    $frame = renderBlade('<x-polaroid :promo="$promo" />', ['promo' => $promo])->querySelector('body > div');
+    $label = componentChildren($frame)[2]->firstElementChild;
+
+    expect(iterator_to_array($frame->classList))->not->toContain('opacity-55')
+        ->and(iterator_to_array($frame->classList))->not->toContain('grayscale')
+        ->and(trim($label->textContent))->toBe('ends tomorrow')
+        ->and($label->getAttribute('class'))->toBe('font-script text-[18px] font-bold text-ends-soon');
+});
+
+it('renders a promo badge, gold while the item is open and grey once it is done', function (bool $done, string $colours) {
+    $promo = componentPromo('2026-10-31');
+    $badge = renderBlade('<x-promo-badge :promo="$promo" :done="$done" />', ['promo' => $promo, 'done' => $done])->querySelector('body > span');
+    $wide = $badge->querySelector('[class~="wide:inline"]');
+
+    expect($badge->getAttribute('class'))->toBe("inline-flex items-center gap-[5px] rounded-full px-2.5 py-1 text-[12px] font-bold whitespace-nowrap {$colours}")
+        ->and($badge->querySelector('svg[aria-hidden="true"]')->getAttribute('class'))->toContain('size-[13px] stroke-[2.2]')
+        ->and(trim($wide->previousSibling->textContent))->toBe('2+1 free')
+        ->and($wide->textContent)->toBe(' · Colruyt')
+        ->and($wide->getAttribute('class'))->toBe('hidden wide:inline')
+        ->and(preg_replace('/\s+/u', ' ', trim($badge->textContent)))->toBe('2+1 free · Colruyt')
+        ->and($badge->querySelectorAll('button, a, [tabindex]'))->toHaveCount(0);
+})->with([
+    'open' => [false, 'bg-accent text-on-accent'],
+    'done' => [true, 'bg-white/12 text-cream/80'],
 ]);
 
 it('renders an empty toast live region', function () {

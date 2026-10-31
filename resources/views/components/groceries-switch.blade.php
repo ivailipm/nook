@@ -1,11 +1,11 @@
 @use('App\Enums\Section')
-@props(['current', 'listCount' => null])
+@props(['current', 'listCount' => null, 'promoCount' => null])
 
-{{-- The List | Promo board switch. Each link is a 36px pill whose ::before reaches 4px past it, so the hit area is 44px. "List" shows the open item count when one is given. --}}
+{{-- The List | Promo board switch. Each link is a 36px pill whose ::before reaches 4px past it, so the hit area is 44px. "List" shows the open item count and "Promo board" the active promo count when one is given. --}}
 <nav aria-label="Groceries" class="flex gap-1.5 self-start rounded-full bg-black/30 p-1">
     @foreach ([
         [Section::Groceries, $listCount === null ? 'List' : "List · {$listCount}"],
-        [Section::Promos, 'Promo board'],
+        [Section::Promos, $promoCount === null ? 'Promo board' : "Promo board · {$promoCount}"],
     ] as [$section, $label])
         <a
             href="{{ route($section->value) }}"

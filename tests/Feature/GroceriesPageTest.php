@@ -5,10 +5,14 @@ use App\Enums\Store;
 use App\Livewire\Pages\Groceries;
 use App\Livewire\Pages\PromoBoard;
 use App\Models\GroceryItem;
+use App\Models\Promo;
 use App\Models\User;
 use Database\Seeders\GroceryItemSeeder;
+use Database\Seeders\PromoSeeder;
 use Dom\Element;
 use Dom\HTMLDocument;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 
@@ -80,6 +84,53 @@ function seedGroceries(User $user): void
 function groceryItem(User $user, string $name): GroceryItem
 {
     return $user->groceryItems()->where('name', $name)->sole();
+}
+
+/**
+ * The seeded list and promos on Thursday 29 October 2026, the prototype's base date.
+ */
+function seedGroceriesWithPromos(User $user): void
+{
+    test()->travelTo(Carbon::parse('2026-10-29 12:00', 'Europe/Brussels'));
+
+    seedGroceries($user);
+    app(PromoSeeder::class)->run($user);
+}
+
+/**
+ * Each row's promo badge by item name, as [the text a phone reads, the part shown from 900px, gold], or null without one.
+ *
+ * @return array<string, array{string, string, bool}|null>
+ */
+function groceryBadges(Testable $component): array
+{
+    $badges = [];
+
+    foreach (groceriesHtml($component)->querySelectorAll('section button[aria-pressed]') as $checkbox) {
+        $name = $checkbox->nextElementSibling;
+        $badge = $name->nextElementSibling;
+
+        if ($badge->tagName === 'BUTTON') {
+            $badges[trim($name->firstElementChild->textContent)] = null;
+
+            continue;
+        }
+
+        $wide = $badge->querySelector('[class~="wide:inline"]');
+
+        expect($badge->querySelector('svg[aria-hidden="true"]'))->not->toBeNull();
+
+        $badges[trim($name->firstElementChild->textContent)] = [
+            trim($wide->previousSibling->textContent),
+            $wide->textContent,
+            match (true) {
+                $badge->classList->contains('bg-accent') && $badge->classList->contains('text-on-accent') => true,
+                $badge->classList->contains('bg-white/12') && $badge->classList->contains('text-cream/80') => false,
+            },
+        ];
+    }
+
+    return $badges;
 }
 
 dataset('seeded cards by store', ['the seeded list' => [[
@@ -173,8 +224,8 @@ it('counts the open items in the subtitle', function (array $done, string $subti
 
     expect(grocerySubtitle(Livewire::test(Groceries::class)))->toBe($subtitle);
 })->with([
-    'several' => [[false, false, true], '2 things to grab'],
-    'one' => [[false, true], '1 thing to grab'],
+    'several' => [[false, false, true], '2 things to grab, 0 with a deal'],
+    'one' => [[false, true], '1 thing to grab, 0 with a deal'],
     'only done items' => [[true], 'list is empty. nice.'],
     'nothing' => [[], 'list is empty. nice.'],
 ]);
@@ -209,7 +260,7 @@ it('adds a quick-add line and empties the input', function () {
     expect([$item->name, $item->qty, $item->store, $item->category, $item->done, $item->promo_id])
         ->toBe(['Coffee', '2', Store::Lidl, GroceryCategory::Pantry, false, null])
         ->and(groceryCards($component)['Lidl · 3 left'])->toBe(['Spinach: 300g · Fruit & veg', 'Greek yoghurt: 2 · Dairy', 'Coffee: 2 · Pantry'])
-        ->and(grocerySubtitle($component))->toBe('7 things to grab');
+        ->and(grocerySubtitle($component))->toBe('7 things to grab, 0 with a deal');
 
     $component->set('quickItem', '300g spinach #fru')->call('add')->assertSet('quickItem', '')->assertDispatched('toast', message: 'Added Spinach');
 
@@ -265,14 +316,14 @@ it('ticks an item, moving it to the end of its group, and unticks it', function 
 
     expect($coffee->fresh()->done)->toBeTrue()
         ->and(groceryCards($component)['Colruyt · 1 left'])->toBe(['Laundry pods: Household', 'Coffee beans: 1kg · Pantry (done)'])
-        ->and(grocerySubtitle($component))->toBe('5 things to grab')
+        ->and(grocerySubtitle($component))->toBe('5 things to grab, 0 with a deal')
         ->and(trim(clearButton($component)->textContent))->toBe('Clear 2 ticked');
 
     $component->call('toggle', $coffee->id);
 
     expect($coffee->fresh()->done)->toBeFalse()
         ->and(groceryCards($component)['Colruyt · 2 left'])->toBe(['Coffee beans: 1kg · Pantry', 'Laundry pods: Household'])
-        ->and(grocerySubtitle($component))->toBe('6 things to grab')
+        ->and(grocerySubtitle($component))->toBe('6 things to grab, 0 with a deal')
         ->and(trim(clearButton($component)->textContent))->toBe('Clear 1 ticked');
 });
 
@@ -349,7 +400,7 @@ it('never lists another user\'s items', function () {
     $component = Livewire::test(Groceries::class);
 
     expect(groceryCards($component))->toBe(['Lidl · 1 left' => ['Milk: Dairy']])
-        ->and(grocerySubtitle($component))->toBe('1 thing to grab')
+        ->and(grocerySubtitle($component))->toBe('1 thing to grab, 0 with a deal')
         ->and(clearButton($component))->toBeNull();
 });
 
@@ -363,13 +414,109 @@ it('refreshes when the add-item sheet adds an item', function () {
     expect(groceryCards($component->dispatch('grocery-item-added')))->toBe(['Aldi · 1 left' => ['Oat bars: 4 · Pantry']]);
 });
 
-it('shows the switch on the Groceries page with List current', function () {
-    seedGroceries($this->user);
+it('shows the switch on the Groceries page with List current and the user\'s active promo count', function () {
+    seedGroceriesWithPromos($this->user);
+    Promo::factory()->create(['valid_until' => today()]);
 
     expect(switchLinks(Livewire::test(Groceries::class)))->toBe([
         ['List', route('groceries'), 'page'],
-        ['Promo board', route('promos'), null],
+        ['Promo board · 6', route('promos'), null],
     ]);
+
+    $this->user->promos()->where('valid_until', today()->addDay())->update(['valid_until' => today()->subDay()]);
+
+    expect(switchLinks(Livewire::test(Groceries::class))[1][0])->toBe('Promo board · 5');
+});
+
+it('shows the badges and the deal count on the seeded list', function () {
+    seedGroceriesWithPromos($this->user);
+
+    $component = Livewire::test(Groceries::class);
+
+    expect(groceryBadges($component))->toBe([
+        'Oat milk' => null,
+        'Bananas' => null,
+        'Spinach' => null,
+        'Greek yoghurt' => ['2nd ½ price', ' · Lidl', true],
+        'Dish soap' => ['−30%', ' · Delhaize', true],
+        'Coffee beans' => ['2+1 free', ' · Colruyt', true],
+        'Laundry pods' => ['−25%', ' · Colruyt', true],
+    ])->and(grocerySubtitle($component))->toBe('6 things to grab, 4 with a deal');
+});
+
+it('renders the badge between the name and the remove button', function () {
+    seedGroceriesWithPromos($this->user);
+
+    $remove = groceriesHtml(Livewire::test(Groceries::class))->querySelector('button[aria-label="Remove Coffee beans"]');
+    $badge = $remove->previousElementSibling;
+
+    expect($badge->tagName)->toBe('SPAN')
+        ->and($badge->getAttribute('class'))->toBe('inline-flex items-center gap-[5px] rounded-full px-2.5 py-1 text-[12px] font-bold whitespace-nowrap bg-accent text-on-accent')
+        ->and($badge->querySelector('[class~="wide:inline"]')->getAttribute('class'))->toBe('hidden wide:inline')
+        ->and($badge->previousElementSibling->classList->contains('flex-1'))->toBeTrue();
+});
+
+it('greys a ticked item\'s badge and leaves it out of the deal count', function () {
+    seedGroceriesWithPromos($this->user);
+
+    $component = Livewire::test(Groceries::class)->call('toggle', groceryItem($this->user, 'Coffee beans')->id);
+
+    expect(groceryBadges($component)['Coffee beans'])->toBe(['2+1 free', ' · Colruyt', false])
+        ->and(grocerySubtitle($component))->toBe('5 things to grab, 3 with a deal');
+});
+
+it('hides the badge of a promo that has ended, before the nightly unlink', function () {
+    seedGroceriesWithPromos($this->user);
+    $gouda = $this->user->promos()->where('product', 'Gouda slices')->sole();
+    $this->user->groceryItems()->where('name', 'Spinach')->update(['promo_id' => $gouda->id]);
+
+    $component = Livewire::test(Groceries::class);
+
+    expect(groceryBadges($component)['Spinach'])->toBeNull()
+        ->and(grocerySubtitle($component))->toBe('6 things to grab, 4 with a deal');
+
+    // Dish soap's promo ended on Friday 30 October, so on Saturday its badge is gone and the count drops.
+    $this->travelTo(Carbon::parse('2026-10-31 00:00:01', 'Europe/Brussels'));
+
+    $component = Livewire::test(Groceries::class);
+
+    expect(groceryBadges($component)['Dish soap'])->toBeNull()
+        ->and(grocerySubtitle($component))->toBe('6 things to grab, 3 with a deal');
+});
+
+it('adds a quick-add item with its deal badge', function () {
+    seedGroceriesWithPromos($this->user);
+
+    $component = Livewire::test(Groceries::class)
+        ->set('quickItem', 'pasta')
+        ->call('add')
+        ->assertDispatched('toast', message: 'Added, and linked to the Aldi deal: €1.79');
+
+    expect(groceryCards($component)['Aldi · 2 left'])->toBe(['Oat milk: 2 · Dairy', 'Pasta: Pantry', 'Bananas: 6 · Fruit & veg (done)'])
+        ->and(groceryBadges($component)['Pasta'])->toBe(['€1.79', ' · Aldi', true])
+        ->and(grocerySubtitle($component))->toBe('7 things to grab, 5 with a deal');
+});
+
+it('loads each row\'s promo without a query per row', function () {
+    seedGroceriesWithPromos($this->user);
+
+    $queries = function () {
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        Livewire::test(Groceries::class);
+
+        return count(DB::getQueryLog());
+    };
+
+    $before = $queries();
+
+    foreach (['Rice', 'Flour', 'Sugar'] as $product) {
+        $promo = $this->user->promos()->create(['store' => Store::Aldi, 'product' => $product, 'deal' => '€1', 'valid_until' => today()->addDays(3)]);
+        GroceryItem::factory()->for($this->user)->create(['name' => $product, 'store' => Store::Aldi, 'done' => false, 'promo_id' => $promo->id]);
+    }
+
+    expect(array_filter(groceryBadges(Livewire::test(Groceries::class))))->toHaveCount(7)
+        ->and($queries())->toBe($before);
 });
 
 it('shows the switch on the Promo board with the user\'s open item count', function () {
