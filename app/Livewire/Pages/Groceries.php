@@ -5,6 +5,7 @@ namespace App\Livewire\Pages;
 use App\Actions\AddGroceryItem;
 use App\Enums\GroceryCategory;
 use App\Enums\Store;
+use App\Models\GroceryItem;
 use App\Parsers\GroceryItemParser;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\On;
@@ -61,7 +62,8 @@ class Groceries extends Component
         $byCategory = $this->groupBy === 'category';
 
         // Open items first, then done ones, each in the order they were added.
-        $items = auth()->user()->groceryItems()->orderBy('done')->orderBy('id')->get();
+        $items = auth()->user()->groceryItems()->with('promo')->orderBy('done')->orderBy('id')->get();
+        $open = $items->where('done', false);
 
         $groups = collect($byCategory ? GroceryCategory::cases() : Store::cases())
             ->map(function (Store|GroceryCategory $key) use ($items, $byCategory) {
@@ -74,8 +76,10 @@ class Groceries extends Component
         return view('livewire.pages.groceries', [
             'groups' => $groups,
             'byCategory' => $byCategory,
-            'open' => $items->where('done', false)->count(),
+            'open' => $open->count(),
+            'deals' => $open->filter(fn (GroceryItem $item) => $item->hasActivePromo())->count(),
             'ticked' => $items->where('done', true)->count(),
+            'activePromos' => auth()->user()->promos()->active()->count(),
         ]);
     }
 }

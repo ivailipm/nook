@@ -45,4 +45,13 @@ class GroceryItem extends Model
     {
         return $this->belongsTo(Promo::class);
     }
+
+    /**
+     * Whether the item is linked to a promo that hasn't ended, worked out from today's date
+     * so a link left over until the nightly nook:expire-promos run never counts.
+     */
+    public function hasActivePromo(): bool
+    {
+        return $this->promo !== null && $this->promo->daysLeft() >= 0;
+    }
 }
