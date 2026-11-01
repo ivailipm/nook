@@ -11,13 +11,13 @@ use Illuminate\Support\Str;
 
 /**
  * Adds an open item to the user's grocery list, linked to a matching active promo and moved to that promo's store.
- * The quick add and the add-item sheet both add through here.
+ * The quick add, the add-item sheet and the promo sheet all add through here. The promo sheet names its promo, so nothing is searched for.
  */
 class AddGroceryItem
 {
-    public function handle(User $user, string $name, ?string $qty, Store $store, GroceryCategory $category): GroceryItem
+    public function handle(User $user, string $name, ?string $qty, Store $store, GroceryCategory $category, ?Promo $promo = null): GroceryItem
     {
-        $promo = $this->activePromoFor($user, $name, $store);
+        $promo ??= $this->activePromoFor($user, $name, $store);
 
         $item = $user->groceryItems()->create([
             'name' => Str::ucfirst($name),

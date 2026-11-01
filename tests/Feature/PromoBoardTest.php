@@ -102,7 +102,7 @@ function boardChips(Testable $component): array
 
 function archiveToggle(Testable $component): Element
 {
-    $buttons = boardHtml($component)->querySelectorAll('button:not([aria-pressed])');
+    $buttons = boardHtml($component)->querySelectorAll('button[wire\:click="$toggle(\'archive\')"]');
 
     expect($buttons)->toHaveCount(1);
 
@@ -134,7 +134,7 @@ it('lays out the page from the header to the archive toggle', function () {
     $root = boardHtml(Livewire::test(PromoBoard::class))->querySelector('body > div');
     $blocks = array_map(fn (Element $block) => $block->tagName, boardChildren($root));
 
-    expect($blocks)->toBe(['DIV', 'NAV', 'DIV', 'DIV', 'UL', 'BUTTON'])
+    expect($blocks)->toBe(['DIV', 'NAV', 'BUTTON', 'DIV', 'UL', 'BUTTON'])
         ->and($root->querySelector('h1')->innerHTML)->toBe('Promo <em>board</em>')
         ->and(trim($root->querySelector('h1')->previousElementSibling->textContent))->toBe('GROCERIES')
         ->and(trim($root->querySelector('h1')->nextElementSibling->textContent))->toBe('snapped from this week’s folders')
@@ -142,11 +142,17 @@ it('lays out the page from the header to the archive toggle', function () {
         ->and(boardChildren($root)[4]->getAttribute('class'))->toBe('grid grid-cols-2 gap-x-4 gap-y-[26px] pt-2 wide:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]');
 });
 
-it('renders a static snap card with the camera tile', function () {
+it('renders the snap card as a button that opens the add-promo sheet, with the camera tile', function () {
     $card = boardChildren(boardHtml(Livewire::test(PromoBoard::class))->querySelector('body > div'))[2];
     $tile = $card->firstElementChild;
 
-    expect($card->tagName)->toBe('DIV')
+    expect($card->tagName)->toBe('BUTTON')
+        ->and($card->getAttribute('type'))->toBe('button')
+        ->and($card->getAttribute('aria-haspopup'))->toBe('dialog')
+        ->and($card->getAttribute('x-on:click'))->toBe("\$dispatch('open-sheet', { name: 'add-promo' })")
+        ->and($card->classList->contains('w-full'))->toBeTrue()
+        ->and($card->classList->contains('text-left'))->toBeTrue()
+        ->and($card->classList->contains('cursor-pointer'))->toBeTrue()
         ->and($tile->classList->contains('bg-accent'))->toBeTrue()
         ->and($tile->classList->contains('text-on-accent'))->toBeTrue()
         ->and($tile->querySelector('svg[aria-hidden="true"]'))->not->toBeNull()
@@ -358,12 +364,23 @@ it('tilts each polaroid and its tape by the promo\'s id', function () {
     }
 });
 
-it('keeps the polaroids and the snap card out of the tab order', function () {
-    $root = boardHtml(Livewire::test(PromoBoard::class))->querySelector('body > div');
+it('makes each polaroid a button with its name and promo id', function () {
+    $coffee = boardPromo($this->user, 'Coffee beans 1 kg');
+    $frame = boardFrames(Livewire::test(PromoBoard::class))[1];
 
-    foreach ([$root->querySelector('ul[role="list"]'), boardChildren($root)[2]] as $static) {
-        expect($static->querySelectorAll('button, a, [tabindex], [role="button"], [wire\:click], .cursor-pointer'))->toHaveCount(0);
-    }
+    expect($frame->tagName)->toBe('BUTTON')
+        ->and($frame->getAttribute('aria-label'))->toBe('Coffee beans 1 kg, 2+1 free at Colruyt, until Sat, on list')
+        ->and($frame->getAttribute('x-on:click'))->toBe("\$dispatch('show-promo', { id: {$coffee->id} })");
+});
+
+it('shows a promo\'s photo through the owner-checked route', function () {
+    $coffee = boardPromo($this->user, 'Coffee beans 1 kg');
+    $coffee->update(['photo_path' => 'promos/photo.jpg']);
+
+    $images = boardHtml(Livewire::test(PromoBoard::class))->querySelectorAll('ul[role="list"] img');
+
+    expect($images)->toHaveCount(1)
+        ->and($images->item(0)->getAttribute('src'))->toBe(route('promos.photo', $coffee));
 });
 
 it('shows the on-list pill when the add-item sheet links an item', function () {

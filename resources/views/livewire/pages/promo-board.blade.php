@@ -6,8 +6,12 @@
 
     <x-groceries-switch :current="Section::Promos" :list-count="$open" />
 
-    {{-- Static until the add-promo sheet exists. --}}
-    <div class="flex w-full items-center gap-3.5 rounded-2xl border border-white/12 bg-black/32 px-4 py-3.5">
+    <button
+        type="button"
+        aria-haspopup="dialog"
+        x-on:click="$dispatch('open-sheet', { name: 'add-promo' })"
+        class="flex w-full cursor-pointer items-center gap-3.5 rounded-2xl border border-white/12 bg-black/32 px-4 py-3.5 text-left"
+    >
         <span class="grid size-10 flex-none place-items-center rounded-button bg-accent text-on-accent">
             <x-lucide-camera class="size-5 stroke-[1.9]" aria-hidden="true" />
         </span>
@@ -15,7 +19,7 @@
             <span class="text-[15px] font-bold">Snap or share a deal</span>
             <span class="text-[12px] text-cream-muted">Screenshot a folder page, then Share → nook. Or upload it here.</span>
         </span>
-    </div>
+    </button>
 
     <div role="group" aria-label="Filter by store" class="flex flex-wrap gap-2">
         <x-chip size="sm" :pressed="$store === null" wire:click="$set('storeFilter', 'All')">All</x-chip>
