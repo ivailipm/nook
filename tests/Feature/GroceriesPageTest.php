@@ -110,7 +110,7 @@ function groceryBadges(Testable $component): array
         $name = $checkbox->nextElementSibling;
         $badge = $name->nextElementSibling;
 
-        if ($badge->tagName === 'BUTTON') {
+        if (! $badge->hasAttribute('aria-haspopup')) {
             $badges[trim($name->firstElementChild->textContent)] = null;
 
             continue;
@@ -407,7 +407,7 @@ it('never lists another user\'s items', function () {
 it('refreshes when the add-item sheet adds an item', function () {
     $component = Livewire::test(Groceries::class);
 
-    expect($component->effects['listeners'])->toBe(['grocery-item-added']);
+    expect($component->effects['listeners'])->toBe(['grocery-item-added', 'promo-changed']);
 
     GroceryItem::factory()->for($this->user)->create(['name' => 'Oat bars', 'qty' => '4', 'store' => Store::Aldi, 'category' => GroceryCategory::Pantry]);
 
@@ -450,8 +450,10 @@ it('renders the badge between the name and the remove button', function () {
     $remove = groceriesHtml(Livewire::test(Groceries::class))->querySelector('button[aria-label="Remove Coffee beans"]');
     $badge = $remove->previousElementSibling;
 
-    expect($badge->tagName)->toBe('SPAN')
-        ->and($badge->getAttribute('class'))->toBe('inline-flex items-center gap-[5px] rounded-full px-2.5 py-1 text-[12px] font-bold whitespace-nowrap bg-accent text-on-accent')
+    expect($badge->tagName)->toBe('BUTTON')
+        ->and($badge->getAttribute('aria-label'))->toBe('Show the Colruyt deal: 2+1 free')
+        ->and($badge->getAttribute('aria-haspopup'))->toBe('dialog')
+        ->and($badge->getAttribute('class'))->toBe('relative inline-flex max-w-[60%] cursor-pointer items-center gap-[5px] rounded-full px-2.5 py-1 text-[12px] font-bold whitespace-nowrap before:absolute before:inset-x-0 before:-inset-y-2.5 bg-accent text-on-accent')
         ->and($badge->querySelector('[class~="wide:inline"]')->getAttribute('class'))->toBe('hidden wide:inline')
         ->and($badge->previousElementSibling->classList->contains('flex-1'))->toBeTrue();
 });
@@ -463,6 +465,17 @@ it('greys a ticked item\'s badge and leaves it out of the deal count', function 
 
     expect(groceryBadges($component)['Coffee beans'])->toBe(['2+1 free', ' · Colruyt', false])
         ->and(grocerySubtitle($component))->toBe('5 things to grab, 3 with a deal');
+});
+
+it('lets a ticked item\'s badge open the promo sheet too', function () {
+    seedGroceriesWithPromos($this->user);
+    $coffee = $this->user->groceryItems()->where('name', 'Coffee beans')->sole();
+    $coffee->update(['done' => true]);
+
+    $badge = groceriesHtml(Livewire::test(Groceries::class))->querySelector('button[aria-label="Remove Coffee beans"]')->previousElementSibling;
+
+    expect($badge->tagName)->toBe('BUTTON')
+        ->and($badge->getAttribute('x-on:click'))->toBe("\$dispatch('show-promo', { id: {$coffee->promo_id} })");
 });
 
 it('hides the badge of a promo that has ended, before the nightly unlink', function () {
@@ -528,7 +541,7 @@ it('shows the switch on the Promo board with the user\'s open item count', funct
     expect(switchLinks($component))->toBe([
         ['List · 6', route('groceries'), null],
         ['Promo board', route('promos'), 'page'],
-    ])->and($component->effects['listeners'])->toBe(['grocery-item-added']);
+    ])->and($component->effects['listeners'])->toBe(['grocery-item-added', 'promo-changed']);
 
     GroceryItem::factory()->for($this->user)->create(['done' => false]);
 

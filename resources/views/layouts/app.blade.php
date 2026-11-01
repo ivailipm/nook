@@ -25,6 +25,8 @@
             <x-toast />
             <x-add-something />
             <livewire:sheets.add-item />
+            <livewire:sheets.promo-sheet />
+            <livewire:sheets.add-promo />
         </div>
     </body>
 </html>

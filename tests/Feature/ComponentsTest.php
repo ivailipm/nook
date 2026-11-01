@@ -162,24 +162,24 @@ function componentChildren(Element $element): array
 
 it('renders a polaroid with its tone, tilt, tape and label', function (bool $linked) {
     $promo = componentPromo('2026-10-31', tone: 4);
-    $frame = renderBlade('<x-polaroid :promo="$promo" :linked="$linked" />', ['promo' => $promo, 'linked' => $linked])->querySelector('body > div');
+    $frame = renderBlade('<x-polaroid :promo="$promo" :linked="$linked" />', ['promo' => $promo, 'linked' => $linked])->querySelector('body > button');
     [$tape, $photo, $labelRow] = componentChildren($frame);
     [$tilt, $tapeTilt] = [['-rotate-[2.2deg]', '-rotate-4'], ['rotate-[1.8deg]', 'rotate-3'], ['-rotate-[1.2deg]', '-rotate-2'], ['rotate-[2.4deg]', 'rotate-5'], ['-rotate-[1.8deg]', '-rotate-3'], ['rotate-[1.2deg]', 'rotate-2']][$promo->id % 6];
     $pill = componentChildren($labelRow)[1] ?? null;
 
-    expect($frame->getAttribute('class'))->toBe("relative h-full rounded-polaroid bg-paper px-[9px] pt-[9px] pb-1.5 shadow-polaroid {$tilt}")
+    expect($frame->getAttribute('class'))->toBe("relative flex h-full w-full cursor-pointer flex-col rounded-polaroid bg-paper px-[9px] pt-[9px] pb-1.5 text-left shadow-polaroid {$tilt}")
         ->and($tape->getAttribute('class'))->toBe("absolute -top-[9px] left-1/2 -ml-[29px] h-[18px] w-[58px] opacity-88 bg-tone-4-tape {$tapeTilt}")
         ->and(trim($tape->textContent))->toBe('')
-        ->and($photo->getAttribute('class'))->toBe('flex aspect-square flex-col gap-[5px] overflow-hidden p-[11px] bg-tone-4-bg text-tone-4-text')
+        ->and($photo->getAttribute('class'))->toBe('relative flex aspect-square flex-col gap-[5px] overflow-hidden p-[11px] bg-tone-4-bg text-tone-4-text')
         ->and(array_map(fn (Element $line) => [trim($line->textContent), $line->getAttribute('class')], componentChildren($photo)))->toBe([
-            ['Colruyt', 'text-[9px] font-bold tracking-[0.12em] uppercase'],
-            ['Coffee beans 1 kg', 'font-display text-[16px] leading-[1.1] font-semibold'],
-            ['2+1 free', 'font-display text-[22px] leading-[1.05] font-bold'],
+            ['Colruyt', 'relative text-[9px] font-bold tracking-[0.12em] uppercase'],
+            ['Coffee beans 1 kg', 'relative font-display text-[16px] leading-[1.1] font-semibold'],
+            ['2+1 free', 'relative font-display text-[22px] leading-[1.05] font-bold'],
         ])
         ->and($labelRow->getAttribute('class'))->toBe('flex min-h-7 items-center justify-between gap-1.5 pt-1')
         ->and(trim($labelRow->firstElementChild->textContent))->toBe('until Sat')
         ->and($labelRow->firstElementChild->getAttribute('class'))->toBe('font-script text-[18px] font-bold text-[#3a2a20]')
-        ->and($frame->querySelectorAll('button, a, [tabindex], [role="button"]'))->toHaveCount(0);
+        ->and($frame->querySelectorAll('div, button, a, [tabindex], [role="button"]'))->toHaveCount(0);
 
     if ($linked) {
         expect(trim($pill->textContent))->toBe('on list')
@@ -190,9 +190,56 @@ it('renders a polaroid with its tone, tilt, tape and label', function (bool $lin
     }
 })->with(['linked' => true, 'not linked' => false]);
 
+it('makes a polaroid a button that opens the promo sheet', function () {
+    $promo = componentPromo('2026-10-31');
+    $frame = renderBlade('<x-polaroid :promo="$promo" />', ['promo' => $promo])->querySelector('body > *');
+
+    expect($frame->tagName)->toBe('BUTTON')
+        ->and($frame->getAttribute('type'))->toBe('button')
+        ->and($frame->getAttribute('aria-haspopup'))->toBe('dialog')
+        ->and($frame->getAttribute('x-on:click'))->toBe("\$dispatch('show-promo', { id: {$promo->id} })");
+});
+
+it('names a polaroid by its product, deal, store, until label and list state', function (?string $product, bool $linked, string $label) {
+    $promo = componentPromo('2026-10-31');
+    $promo->update(['product' => $product]);
+
+    $frame = renderBlade('<x-polaroid :promo="$promo" :linked="$linked" />', ['promo' => $promo, 'linked' => $linked])->querySelector('body > button');
+
+    expect($frame->getAttribute('aria-label'))->toBe($label);
+})->with([
+    'with a product' => ['Coffee beans 1 kg', false, 'Coffee beans 1 kg, 2+1 free at Colruyt, until Sat'],
+    'on the list' => ['Coffee beans 1 kg', true, 'Coffee beans 1 kg, 2+1 free at Colruyt, until Sat, on list'],
+    'without a product' => [null, false, '2+1 free at Colruyt, until Sat'],
+]);
+
+it('fills the square with the photo and keeps the text on top', function () {
+    $promo = componentPromo('2026-10-31');
+    $promo->update(['photo_path' => 'promos/photo.jpg']);
+
+    $frame = renderBlade('<x-polaroid :promo="$promo" />', ['promo' => $promo])->querySelector('body > button');
+    [$image, $store, $product, $deal] = componentChildren(componentChildren($frame)[1]);
+
+    expect($image->tagName)->toBe('IMG')
+        ->and($image->getAttribute('src'))->toBe(route('promos.photo', $promo))
+        ->and($image->getAttribute('alt'))->toBe('Photo of the Colruyt deal')
+        ->and($image->getAttribute('loading'))->toBe('lazy')
+        ->and($image->getAttribute('class'))->toBe('absolute inset-0 size-full object-cover')
+        ->and($image->parentElement->classList->contains('relative'))->toBeTrue()
+        ->and($store->classList->contains('relative'))->toBeTrue()
+        ->and($product->classList->contains('relative'))->toBeTrue()
+        ->and($deal->classList->contains('relative'))->toBeTrue();
+});
+
+it('has no image on a polaroid without a photo', function () {
+    $promo = componentPromo('2026-10-31');
+
+    expect(renderBlade('<x-polaroid :promo="$promo" />', ['promo' => $promo])->querySelector('img'))->toBeNull();
+});
+
 it('greys an expired polaroid', function () {
     $promo = componentPromo('2026-10-27');
-    $frame = renderBlade('<x-polaroid :promo="$promo" :linked="false" />', ['promo' => $promo])->querySelector('body > div');
+    $frame = renderBlade('<x-polaroid :promo="$promo" :linked="false" />', ['promo' => $promo])->querySelector('body > button');
     $label = componentChildren($frame)[2]->firstElementChild;
 
     expect(iterator_to_array($frame->classList))->toContain('opacity-55', 'grayscale')
@@ -202,7 +249,7 @@ it('greys an expired polaroid', function () {
 
 it('keeps an active polaroid in colour', function () {
     $promo = componentPromo('2026-10-30');
-    $frame = renderBlade('<x-polaroid :promo="$promo" />', ['promo' => $promo])->querySelector('body > div');
+    $frame = renderBlade('<x-polaroid :promo="$promo" />', ['promo' => $promo])->querySelector('body > button');
     $label = componentChildren($frame)[2]->firstElementChild;
 
     expect(iterator_to_array($frame->classList))->not->toContain('opacity-55')
@@ -213,11 +260,15 @@ it('keeps an active polaroid in colour', function () {
 
 it('renders a promo badge, gold while the item is open and grey once it is done', function (bool $done, string $colours) {
     $promo = componentPromo('2026-10-31');
-    $badge = renderBlade('<x-promo-badge :promo="$promo" :done="$done" />', ['promo' => $promo, 'done' => $done])->querySelector('body > span');
+    $badge = renderBlade('<x-promo-badge :promo="$promo" :done="$done" />', ['promo' => $promo, 'done' => $done])->querySelector('body > button');
     $wide = $badge->querySelector('[class~="wide:inline"]');
 
-    expect($badge->getAttribute('class'))->toBe("inline-flex items-center gap-[5px] rounded-full px-2.5 py-1 text-[12px] font-bold whitespace-nowrap {$colours}")
-        ->and($badge->querySelector('svg[aria-hidden="true"]')->getAttribute('class'))->toContain('size-[13px] stroke-[2.2]')
+    expect($badge->getAttribute('class'))->toBe("relative inline-flex max-w-[60%] cursor-pointer items-center gap-[5px] rounded-full px-2.5 py-1 text-[12px] font-bold whitespace-nowrap before:absolute before:inset-x-0 before:-inset-y-2.5 {$colours}")
+        ->and($badge->getAttribute('type'))->toBe('button')
+        ->and($badge->getAttribute('aria-haspopup'))->toBe('dialog')
+        ->and($badge->getAttribute('aria-label'))->toBe('Show the Colruyt deal: 2+1 free')
+        ->and($badge->getAttribute('x-on:click'))->toBe("\$dispatch('show-promo', { id: {$promo->id} })")
+        ->and($badge->querySelector('svg[aria-hidden="true"]')->getAttribute('class'))->toContain('size-[13px] flex-none stroke-[2.2]')
         ->and(trim($wide->previousSibling->textContent))->toBe('2+1 free')
         ->and($wide->textContent)->toBe(' · Colruyt')
         ->and($wide->getAttribute('class'))->toBe('hidden wide:inline')
@@ -232,5 +283,30 @@ it('renders an empty toast live region', function () {
     $status = renderBlade('<x-toast />')->querySelector('[role="status"]');
 
     expect($status)->not->toBeNull()
-        ->and(trim($status->textContent))->toBe('');
+        ->and(trim($status->textContent))->toBe('')
+        ->and($status->hasAttribute('x-init'))->toBeFalse()
+        ->and($status->getAttribute('x-on:toast.window'))->toBe('show($event.detail.message)');
+});
+
+it('shows a flashed toast once the page has loaded, not in the markup', function () {
+    session()->flash('toast', 'Pinned to the board · until Tue');
+
+    $status = renderBlade('<x-toast />')->querySelector('[role="status"]');
+
+    expect(trim($status->textContent))->toBe('')
+        ->and($status->getAttribute('x-init'))->toContain('setTimeout', 'Pinned to the board · until Tue');
+});
+
+it('renders existing fields as before, and a date field in mono with a dark picker', function () {
+    $this->withViewErrors([]);
+
+    $text = renderBlade('<x-field label="Item" name="itemName" placeholder="Milk" />')->querySelector('input');
+    $date = renderBlade('<x-field label="From" name="validFrom" type="date" />')->querySelector('input');
+    $gold = renderBlade('<x-field label="Until" name="validUntil" type="date" gold />')->querySelector('input');
+
+    expect($text->getAttribute('class'))->toBe('min-h-[46px] w-full rounded-[12px] border bg-black/30 px-3.5 text-[16px] border-input-border')
+        ->and($text->hasAttribute('type'))->toBeFalse()
+        ->and($date->getAttribute('class'))->toBe('min-h-[46px] w-full rounded-[12px] border bg-black/30 px-3 font-mono text-[15px] [color-scheme:dark] border-input-border')
+        ->and($date->getAttribute('type'))->toBe('date')
+        ->and($gold->getAttribute('class'))->toBe('min-h-[46px] w-full rounded-[12px] border bg-black/30 px-3 font-mono text-[15px] [color-scheme:dark] border-gold');
 });

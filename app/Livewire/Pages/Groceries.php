@@ -14,6 +14,7 @@ use Livewire\Component;
 
 #[Title('Groceries')]
 #[On('grocery-item-added')]
+#[On('promo-changed')]
 class Groceries extends Component
 {
     public string $quickItem = '';

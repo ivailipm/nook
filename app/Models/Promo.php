@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 #[Fillable(['store', 'product', 'deal', 'note', 'valid_from', 'valid_until', 'photo_path', 'tone'])]
 class Promo extends Model
@@ -118,6 +119,41 @@ class Promo extends Model
             $days === 1 => 'ends tomorrow',
             default => 'until '.RelativeDate::format($this->valid_until),
         };
+    }
+
+    /**
+     * The promo sheet's line: "Colruyt · valid 27 Oct – Sat", or "Colruyt · valid until Sat" without a start date.
+     */
+    public function validityLine(): string
+    {
+        $until = RelativeDate::format($this->valid_until);
+
+        return $this->valid_from === null
+            ? "{$this->store->value} · valid until {$until}"
+            : "{$this->store->value} · valid ".RelativeDate::format($this->valid_from)." – {$until}";
+    }
+
+    /**
+     * The name of the item "Add to my list" creates: the product without its trailing size, or "Lidl deal" without a product.
+     * A product that is only a size keeps its text.
+     */
+    public function listItemName(): string
+    {
+        if ($this->product === null) {
+            return "{$this->store->value} deal";
+        }
+
+        $name = Str::trim((string) preg_replace('/\s*[×x]?\d+\s*(kg|g|l)?\s*$/iu', '', $this->product));
+
+        return $name === '' ? $this->product : $name;
+    }
+
+    /**
+     * The URL of the owner-checked route that serves the photo, or null without a photo.
+     */
+    public function photoUrl(): ?string
+    {
+        return $this->photo_path === null ? null : route('promos.photo', $this);
     }
 
     /**

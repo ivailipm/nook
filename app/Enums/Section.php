@@ -112,6 +112,7 @@ enum Section: string
         return match ($this) {
             self::Home => 'add-something',
             self::Groceries => 'add-item',
+            self::Promos => 'add-promo',
             default => null,
         };
     }

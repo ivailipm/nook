@@ -11,6 +11,7 @@ use Livewire\Component;
 
 #[Title('Promo board')]
 #[On('grocery-item-added')]
+#[On('promo-changed')]
 class PromoBoard extends Component
 {
     /**
