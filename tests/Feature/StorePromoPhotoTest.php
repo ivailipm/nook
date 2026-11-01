@@ -187,6 +187,18 @@ it('rejects a header over the pixel limit without decoding it', function () {
     expect(Storage::disk(Promo::PHOTO_DISK)->allFiles())->toBe([]);
 });
 
+it('allows up to 50 megapixels by the header', function () {
+    // Under the limit, so it gets as far as decoding, which then fails for the missing image data.
+    $png = "\x89PNG\r\n\x1a\n".pack('N', 13).'IHDR'.pack('NN', 7071, 7071)."\x08\x06\x00\x00\x00\x00\x00\x00\x00";
+
+    try {
+        storePhoto($png, 'large.png');
+        $this->fail('Expected a validation error.');
+    } catch (ValidationException $exception) {
+        expect($exception->errors())->toBe(['photo' => ["That file can't be read as a photo."]]);
+    }
+});
+
 it('throws when the disk refuses the write, rather than returning a dead path', function () {
     $bytes = photoBytes(40, 30);
 
