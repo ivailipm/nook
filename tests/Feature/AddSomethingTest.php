@@ -36,7 +36,7 @@ it('puts the Add something chooser on every section page', function (string $uri
             ['BUTTON', null, 'Grocery item add to the list'],
             ['BUTTON', null, 'Promo photo or screenshot'],
             ['BUTTON', null, 'Task with a due date'],
-            ['A', route('subscriptions'), 'Subscription or a free trial'],
+            ['BUTTON', null, 'Subscription or a free trial'],
         ]);
 })->with('section pages');
 
@@ -64,6 +64,22 @@ it('lets the Task tile close the chooser and open the add-task sheet', function 
         ->and($tile->getAttribute('type'))->toBe('button')
         ->and($tile->getAttribute('aria-haspopup'))->toBe('dialog')
         ->and($tile->getAttribute('x-on:click'))->toBe("\$root.close(); \$dispatch('open-sheet', { name: 'add-task' })");
+})->with('section pages');
+
+it('lets the Subscription tile close the chooser and open the add-subscription sheet', function (string $uri) {
+    $tile = sectionPage($uri)->querySelectorAll('dialog#sheet-add-something button:not([aria-label="Close"])')->item(3);
+
+    expect(trim($tile->querySelector('span')->textContent))->toBe('Subscription')
+        ->and($tile->getAttribute('type'))->toBe('button')
+        ->and($tile->getAttribute('aria-haspopup'))->toBe('dialog')
+        ->and($tile->getAttribute('x-on:click'))->toBe("\$root.close(); \$dispatch('open-sheet', { name: 'add-subscription' })");
+})->with('section pages');
+
+it('puts the add-subscription sheet on every section page once', function (string $uri) {
+    $dialogs = sectionPage($uri)->querySelectorAll('dialog#sheet-add-subscription');
+
+    expect($dialogs)->toHaveCount(1)
+        ->and(trim($dialogs->item(0)->querySelector('h2')->textContent))->toBe('New subscription');
 })->with('section pages');
 
 it('puts the add-task sheet on every section page once', function (string $uri) {
@@ -145,19 +161,20 @@ it('lets the To-do FAB open the add-task sheet', function () {
         ->and($fab->getAttribute('x-on:click'))->toBe("\$dispatch('open-sheet', { name: 'add-task' })");
 });
 
-it('leaves the other FABs without an action until their sheets exist', function (string $uri) {
-    $fab = fabButton($uri);
+it('lets the Subscriptions FAB open the add-subscription sheet', function () {
+    $fab = fabButton('/subscriptions');
 
-    expect($fab->hasAttribute('aria-haspopup'))->toBeFalse()
-        ->and($fab->hasAttribute('x-on:click'))->toBeFalse();
-})->with(['subscriptions' => '/subscriptions']);
+    expect($fab->getAttribute('aria-label'))->toBe('New subscription')
+        ->and($fab->getAttribute('aria-haspopup'))->toBe('dialog')
+        ->and($fab->getAttribute('x-on:click'))->toBe("\$dispatch('open-sheet', { name: 'add-subscription' })");
+});
 
-it('names the sheet each FAB opens', function (Section $section, ?string $sheet) {
+it('names the sheet each FAB opens', function (Section $section, string $sheet) {
     expect($section->fabSheet())->toBe($sheet);
 })->with([
     'home' => [Section::Home, 'add-something'],
     'groceries' => [Section::Groceries, 'add-item'],
     'promo board' => [Section::Promos, 'add-promo'],
     'to-do' => [Section::Todo, 'add-task'],
-    'subscriptions' => [Section::Subscriptions, null],
+    'subscriptions' => [Section::Subscriptions, 'add-subscription'],
 ]);
