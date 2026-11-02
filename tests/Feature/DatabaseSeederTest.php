@@ -2,17 +2,20 @@
 
 use App\Enums\GroceryCategory;
 use App\Enums\Store;
+use App\Enums\SubscriptionCategory;
+use App\Enums\SubscriptionCycle;
 use App\Enums\TaskPriority;
 use App\Enums\TaskTag;
 use App\Models\GroceryItem;
 use App\Models\Promo;
+use App\Models\Subscription;
 use App\Models\Task;
 use App\Models\User;
 use Database\Seeders\PromoSeeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 
-it('seeds the local account, its grocery items, its promos and its tasks once', function (string $environment) {
+it('seeds the local account, its grocery items, its promos, its tasks and its subscriptions once', function (string $environment) {
     $this->app['env'] = $environment;
     $this->freezeTime();
 
@@ -73,6 +76,21 @@ it('seeds the local account, its grocery items, its promos and its tasks once', 
             ['Read deep learning chapter 5', TaskTag::School, $day(4), TaskPriority::Low, null, false, null, false],
             ['Take out the trash', TaskTag::Home, $day(5), null, $weekday(5), false, null, false],
         ]);
+
+    $subscriptions = Subscription::orderBy('id')->get();
+
+    expect($subscriptions->pluck('user_id')->unique()->all())->toBe([$user->id])
+        ->and($subscriptions->map(fn (Subscription $subscription) => [
+            $subscription->name, $subscription->price, $subscription->cycle, $subscription->next_payment_date->toDateString(),
+            $subscription->category, $subscription->is_trial, $subscription->trial_reminder, $subscription->cancelled_at?->toDateString(),
+        ])->all())->toBe([
+            ['Gym', '24.99', SubscriptionCycle::Monthly, $day(3), SubscriptionCategory::Health, false, false, null],
+            ['Netflix', '13.49', SubscriptionCycle::Monthly, $day(5), SubscriptionCategory::Entertainment, false, false, null],
+            ['Spotify', '6.49', SubscriptionCycle::Monthly, $day(2), SubscriptionCategory::Entertainment, false, false, null],
+            ['iCloud+', '2.99', SubscriptionCycle::Monthly, $day(16), SubscriptionCategory::Storage, false, false, null],
+            ['Duolingo Super', '12.99', SubscriptionCycle::Monthly, $day(4), SubscriptionCategory::Education, true, false, null],
+            ['Disney+', '7.99', SubscriptionCycle::Monthly, $day(0), SubscriptionCategory::Entertainment, false, false, $day(-61)],
+        ]);
 })->with(['local', 'testing']);
 
 it('repeats the seeded recurring tasks on the weekday of their due dates', function (string $today, int $first, int $second) {
@@ -106,5 +124,6 @@ it('seeds no user outside local and testing', function (string $environment) {
     expect(User::count())->toBe(0)
         ->and(GroceryItem::count())->toBe(0)
         ->and(Promo::count())->toBe(0)
-        ->and(Task::count())->toBe(0);
+        ->and(Task::count())->toBe(0)
+        ->and(Subscription::count())->toBe(0);
 })->with(['production', 'staging']);
