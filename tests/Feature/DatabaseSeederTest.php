@@ -2,13 +2,17 @@
 
 use App\Enums\GroceryCategory;
 use App\Enums\Store;
+use App\Enums\TaskPriority;
+use App\Enums\TaskTag;
 use App\Models\GroceryItem;
 use App\Models\Promo;
+use App\Models\Task;
 use App\Models\User;
 use Database\Seeders\PromoSeeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 
-it('seeds the local account, its grocery items and its promos once', function (string $environment) {
+it('seeds the local account, its grocery items, its promos and its tasks once', function (string $environment) {
     $this->app['env'] = $environment;
     $this->freezeTime();
 
@@ -52,7 +56,35 @@ it('seeds the local account, its grocery items and its promos once', function (s
             ['Bananas', '6', Store::Aldi, GroceryCategory::FruitAndVeg, true, null],
             ['Laundry pods', null, Store::Colruyt, GroceryCategory::Household, false, $promos[4]->id],
         ]);
+
+    $tasks = Task::orderBy('id')->get();
+    $weekday = fn (int $offset) => today()->addDays($offset)->dayOfWeek;
+
+    expect($tasks->pluck('user_id')->unique()->all())->toBe([$user->id])
+        ->and($tasks->map(fn (Task $task) => [
+            $task->title, $task->tag, $task->due_date->toDateString(), $task->priority, $task->repeat_weekday,
+            $task->done, $task->completed_at?->toDateTimeString(), $task->rolled_over,
+        ])->all())->toBe([
+            ['Return library book', TaskTag::School, $day(-1), TaskPriority::Med, null, false, null, false],
+            ['Send CV to two companies', TaskTag::Internship, $day(0), TaskPriority::High, null, false, null, false],
+            ['Put out the PMD bag', TaskTag::Home, $day(0), null, $weekday(0), false, null, false],
+            ['Water the plants', TaskTag::Home, $day(0), TaskPriority::Low, null, true, now()->toDateTimeString(), false],
+            ['Finish cloud lab report', TaskTag::School, $day(1), TaskPriority::High, null, false, null, false],
+            ['Read deep learning chapter 5', TaskTag::School, $day(4), TaskPriority::Low, null, false, null, false],
+            ['Take out the trash', TaskTag::Home, $day(5), null, $weekday(5), false, null, false],
+        ]);
 })->with(['local', 'testing']);
+
+it('repeats the seeded recurring tasks on the weekday of their due dates', function (string $today, int $first, int $second) {
+    $this->travelTo(Carbon::parse("{$today} 12:00", 'Europe/Brussels'));
+
+    $this->seed();
+
+    expect(Task::whereNotNull('repeat_weekday')->orderBy('id')->pluck('repeat_weekday')->all())->toBe([$first, $second]);
+})->with([
+    'the prototype\'s Thursday' => ['2026-10-29', 4, 2],
+    'a Monday' => ['2026-11-02', 1, 6],
+]);
 
 it('seeds the promos for a user without the sample items, linking the items that exist', function () {
     $user = User::factory()->create();
@@ -73,5 +105,6 @@ it('seeds no user outside local and testing', function (string $environment) {
 
     expect(User::count())->toBe(0)
         ->and(GroceryItem::count())->toBe(0)
-        ->and(Promo::count())->toBe(0);
+        ->and(Promo::count())->toBe(0)
+        ->and(Task::count())->toBe(0);
 })->with(['production', 'staging']);
