@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             $this->callWith(GroceryItemSeeder::class, ['user' => $user]);
             $this->callWith(PromoSeeder::class, ['user' => $user]);
             $this->callWith(TaskSeeder::class, ['user' => $user]);
+            $this->callWith(SubscriptionSeeder::class, ['user' => $user]);
         }
     }
 }
