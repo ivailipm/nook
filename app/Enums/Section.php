@@ -105,16 +105,16 @@ enum Section: string
     }
 
     /**
-     * The sheet the FAB opens, or null until that section's add sheet exists.
+     * The sheet the FAB opens.
      */
-    public function fabSheet(): ?string
+    public function fabSheet(): string
     {
         return match ($this) {
             self::Home => 'add-something',
             self::Groceries => 'add-item',
             self::Promos => 'add-promo',
             self::Todo => 'add-task',
-            default => null,
+            self::Subscriptions => 'add-subscription',
         };
     }
 }

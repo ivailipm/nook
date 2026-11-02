@@ -28,6 +28,7 @@
             <livewire:sheets.promo-sheet />
             <livewire:sheets.add-promo />
             <livewire:sheets.add-task />
+            <livewire:sheets.add-subscription />
         </div>
     </body>
 </html>

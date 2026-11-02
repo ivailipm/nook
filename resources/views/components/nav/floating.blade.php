@@ -9,11 +9,9 @@
                 <button
                     type="button"
                     aria-label="{{ $current->fabLabel() }}"
-                    @if ($current->fabSheet())
-                        x-data
-                        x-on:click="$dispatch('open-sheet', { name: @js($current->fabSheet()) })"
-                        aria-haspopup="dialog"
-                    @endif
+                    x-data
+                    x-on:click="$dispatch('open-sheet', { name: @js($current->fabSheet()) })"
+                    aria-haspopup="dialog"
                     class="-mt-7.5 grid size-[54px] cursor-pointer place-items-center rounded-full border-4 border-[rgb(18_12_10/0.9)] bg-peach text-on-peach shadow-fab"
                 >
                     <x-lucide-plus class="size-[22px] stroke-[2.5]" aria-hidden="true" />

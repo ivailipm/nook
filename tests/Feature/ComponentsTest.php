@@ -48,6 +48,24 @@ it('renders the group card with tighter padding and a smaller title', function (
         ->and($card->querySelector('p')->textContent)->toBe('Oat milk');
 });
 
+it('renders the money card with its own border and background, a 20px title and no padding', function () {
+    $card = renderBlade('<x-card title="By category" variant="money" class="p-4"><x-slot:aside>per month</x-slot:aside><p>Health</p></x-card>')->querySelector('section');
+    $header = $card->querySelector('h2')->parentElement;
+
+    expect($card->getAttribute('class'))->toBe('rounded-card border border-white/12 bg-black/28 p-4')
+        ->and($header->getAttribute('class'))->toBe('mb-3 flex items-baseline justify-between')
+        ->and($card->querySelector('h2')->getAttribute('class'))->toBe('font-display text-[20px] font-semibold')
+        ->and(trim($header->lastElementChild->textContent))->toBe('per month')
+        ->and($card->querySelector('p')->textContent)->toBe('Health');
+});
+
+it('gives the money card no padding unless it is passed one', function () {
+    $card = renderBlade('<x-card variant="money"><p>Body</p></x-card>')->querySelector('section');
+
+    expect($card->getAttribute('class'))->toBe('rounded-card border border-white/12 bg-black/28')
+        ->and($card->querySelector('h2'))->toBeNull();
+});
+
 it('adds a title class to the card\'s heading only', function () {
     $card = renderBlade('<x-card title="Overdue" variant="group" title-class="text-overdue"><p>Body</p></x-card>')->querySelector('section');
 
