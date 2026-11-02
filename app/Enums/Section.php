@@ -113,6 +113,7 @@ enum Section: string
             self::Home => 'add-something',
             self::Groceries => 'add-item',
             self::Promos => 'add-promo',
+            self::Todo => 'add-task',
             default => null,
         };
     }
