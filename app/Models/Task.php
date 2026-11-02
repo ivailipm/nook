@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\TaskPriority;
 use App\Enums\TaskTag;
+use App\Support\RelativeDate;
 use Database\Factories\TaskFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +16,8 @@ class Task extends Model
 {
     /** @use HasFactory<TaskFactory> */
     use HasFactory;
+
+    private const array WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
     /**
      * Get the attributes that should be cast.
@@ -32,6 +35,42 @@ class Task extends Model
             'completed_at' => 'datetime',
             'rolled_over' => 'boolean',
         ];
+    }
+
+    /**
+     * Whole calendar days to the due date: 0 today, 1 tomorrow, negative once past, or null without a due date.
+     */
+    public function daysUntilDue(): ?int
+    {
+        return $this->due_date === null ? null : RelativeDate::daysFromToday($this->due_date);
+    }
+
+    /**
+     * Open and due before today. A done task is never overdue.
+     */
+    public function isOverdue(): bool
+    {
+        return ! $this->done && $this->due_date !== null && $this->daysUntilDue() < 0;
+    }
+
+    /**
+     * The row's due label: "no date", "overdue · was yesterday", "due today", "due Sat" or "due 5 Nov".
+     */
+    public function dueLabel(): string
+    {
+        if ($this->due_date === null) {
+            return 'no date';
+        }
+
+        return ($this->isOverdue() ? 'overdue · was ' : 'due ').RelativeDate::format($this->due_date);
+    }
+
+    /**
+     * The row's repeat label: "every Thursday", or null for a one-off.
+     */
+    public function repeatLabel(): ?string
+    {
+        return $this->repeat_weekday === null ? null : 'every '.self::WEEKDAYS[$this->repeat_weekday];
     }
 
     /**

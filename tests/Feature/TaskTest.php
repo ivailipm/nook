@@ -6,6 +6,11 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
+beforeEach(function () {
+    // Thursday 29 October 2026, the prototype's base date.
+    $this->travelTo(Carbon::parse('2026-10-29 12:00', 'Europe/Brussels'));
+});
+
 it('persists a factory task as an open, one-off task for a user', function () {
     $task = Task::factory()->create()->fresh();
 
@@ -61,3 +66,57 @@ it('deletes the user\'s tasks with the user', function () {
 
     expect(Task::pluck('id')->all())->toBe([$other->id]);
 });
+
+it('labels the due date', function (?int $days, bool $done, string $label) {
+    $task = Task::factory()->create(['due_date' => $days === null ? null : today()->addDays($days), 'done' => $done])->fresh();
+
+    expect($task->dueLabel())->toBe($label);
+})->with([
+    'no date' => [null, false, 'no date'],
+    'open, yesterday' => [-1, false, 'overdue · was yesterday'],
+    'open, 2 days ago' => [-2, false, 'overdue · was 27 Oct'],
+    'open, today' => [0, false, 'due today'],
+    'open, tomorrow' => [1, false, 'due tomorrow'],
+    'open, in 2 days' => [2, false, 'due Sat'],
+    'open, in 6 days' => [6, false, 'due Wed'],
+    'open, in 7 days' => [7, false, 'due 5 Nov'],
+    'done, yesterday' => [-1, true, 'due yesterday'],
+    'done, 3 days ago' => [-3, true, 'due 26 Oct'],
+    'done, today' => [0, true, 'due today'],
+]);
+
+it('labels the repeat', function (?int $weekday, ?string $label) {
+    expect(Task::factory()->create(['repeat_weekday' => $weekday])->fresh()->repeatLabel())->toBe($label);
+})->with([
+    'Sunday is 0' => [0, 'every Sunday'],
+    'Thursday' => [4, 'every Thursday'],
+    'Saturday' => [6, 'every Saturday'],
+    'a one-off' => [null, null],
+]);
+
+it('counts the days until the due date', function (?int $days) {
+    $task = Task::factory()->create(['due_date' => $days === null ? null : today()->addDays($days)])->fresh();
+
+    expect($task->daysUntilDue())->toBe($days);
+})->with(['past' => -2, 'today' => 0, 'ahead' => 7, 'no date' => [null]]);
+
+it('is overdue only while open and due before today', function (?int $days, bool $done, bool $overdue) {
+    $task = Task::factory()->create(['due_date' => $days === null ? null : today()->addDays($days), 'done' => $done])->fresh();
+
+    expect($task->isOverdue())->toBe($overdue);
+})->with([
+    'open, yesterday' => [-1, false, true],
+    'open, today' => [0, false, false],
+    'open, tomorrow' => [1, false, false],
+    'open, no date' => [null, false, false],
+    'done, yesterday' => [-1, true, false],
+    'done, today' => [0, true, false],
+]);
+
+it('labels each priority', function (TaskPriority $priority, string $label) {
+    expect($priority->label())->toBe($label);
+})->with([
+    [TaskPriority::High, 'High'],
+    [TaskPriority::Med, 'Medium'],
+    [TaskPriority::Low, 'Low'],
+]);
