@@ -1,4 +1,4 @@
-@props(['title' => null, 'variant' => 'default'])
+@props(['title' => null, 'variant' => 'default', 'titleClass' => ''])
 
 {{-- Callers separate the body's rows with `border-t border-hairline`. The group variant is the Groceries group card: tighter padding and a 19px title. --}}
 <section {{ $attributes->class([
@@ -17,6 +17,7 @@
                 'text-[21px]' => $variant === 'default',
                 'text-[19px]' => $variant === 'group',
                 'font-semibold',
+                $titleClass => $titleClass !== '',
             ])>{{ $title }}</h2>
             @isset($aside)
                 <div class="text-[12px] text-cream-muted">{{ $aside }}</div>

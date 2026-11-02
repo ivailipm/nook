@@ -27,6 +27,7 @@
             <livewire:sheets.add-item />
             <livewire:sheets.promo-sheet />
             <livewire:sheets.add-promo />
+            <livewire:sheets.add-task />
         </div>
     </body>
 </html>

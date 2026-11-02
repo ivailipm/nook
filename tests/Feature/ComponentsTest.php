@@ -48,6 +48,14 @@ it('renders the group card with tighter padding and a smaller title', function (
         ->and($card->querySelector('p')->textContent)->toBe('Oat milk');
 });
 
+it('adds a title class to the card\'s heading only', function () {
+    $card = renderBlade('<x-card title="Overdue" variant="group" title-class="text-overdue"><p>Body</p></x-card>')->querySelector('section');
+
+    expect($card->querySelector('h2')->getAttribute('class'))->toBe('font-display text-[19px] font-semibold text-overdue')
+        ->and($card->getAttribute('class'))->toBe('rounded-card border border-card-border bg-card-bg px-4 pt-2 pb-1.5')
+        ->and($card->hasAttribute('title-class'))->toBeFalse();
+});
+
 it('renders a card without a header when it has no title', function () {
     $card = renderBlade('<x-card><p>Body</p></x-card>')->querySelector('section');
 

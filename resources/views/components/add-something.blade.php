@@ -6,7 +6,7 @@
         @foreach ([
             [Section::Groceries, 'Grocery item', 'add to the list', 'bg-[rgb(47_107_72/0.35)]', 'add-item'],
             [Section::Promos, 'Promo', 'photo or screenshot', 'bg-gold/20', 'add-promo'],
-            [Section::Todo, 'Task', 'with a due date', 'bg-[rgb(107_83_38/0.45)]', null],
+            [Section::Todo, 'Task', 'with a due date', 'bg-[rgb(107_83_38/0.45)]', 'add-task'],
             [Section::Subscriptions, 'Subscription', 'or a free trial', 'bg-[rgb(17_57_60/0.6)]', null],
         ] as [$section, $label, $hint, $background, $sheet])
             <{{ $sheet ? 'button' : 'a' }}
