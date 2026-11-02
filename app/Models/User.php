@@ -11,12 +11,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'morning_nudge'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * The database default, so a just-created model reads it without a refresh.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = ['morning_nudge' => true];
 
     /**
      * Get the attributes that should be cast.
@@ -28,6 +35,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'morning_nudge' => 'boolean',
         ];
     }
 
