@@ -120,3 +120,16 @@ it('labels each priority', function (TaskPriority $priority, string $label) {
     [TaskPriority::Med, 'Medium'],
     [TaskPriority::Low, 'Low'],
 ]);
+
+it('gives the Home card its meta line', function (TaskTag $tag, ?int $days, bool $done, string $meta) {
+    $task = Task::factory()->create(['tag' => $tag, 'due_date' => $days === null ? null : today()->addDays($days), 'done' => $done])->fresh();
+
+    expect($task->homeMeta())->toBe($meta);
+})->with([
+    'overdue' => [TaskTag::School, -1, false, 'School · overdue'],
+    'due today' => [TaskTag::Internship, 0, false, 'Internship · due today'],
+    'done' => [TaskTag::Home, 0, true, 'Home · done'],
+    'overdue and done' => [TaskTag::Home, -3, true, 'Home · done'],
+    'due later' => [TaskTag::School, 2, false, 'School · due Sat'],
+    'no date' => [TaskTag::Home, null, false, 'Home · no date'],
+]);

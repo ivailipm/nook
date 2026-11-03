@@ -155,6 +155,22 @@ class Subscription extends Model
     }
 
     /**
+     * The Coming up row's line: "pays Sun 1 Nov" or "trial ends Mon 2 Nov".
+     */
+    public function comingUpLabel(): string
+    {
+        return ($this->is_trial ? 'trial ends ' : 'pays ').$this->next_payment_date->format('D j M');
+    }
+
+    /**
+     * The Coming up row's amount, the real charge and not a twelfth of it: "€120.00", or "then €12.99" for a trial.
+     */
+    public function comingUpAmount(): string
+    {
+        return ($this->is_trial ? 'then ' : '').Money::format((float) $this->price);
+    }
+
+    /**
      * What cancelling has saved so far: the monthly price for every 30 days since, and at least one month.
      * Not named saved(), which Eloquent's models already have as a static event method.
      */

@@ -4,6 +4,7 @@ use App\Enums\Store;
 use App\Models\GroceryItem;
 use App\Models\Promo;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -112,3 +113,16 @@ it('deletes the user\'s promos with the user', function () {
 
     expect(Promo::pluck('id')->all())->toBe([$other->id]);
 });
+
+it('scopes to promos ending from today to 3 days ahead', function (int $days, bool $in) {
+    $this->travelTo(Carbon::parse('2026-10-29 12:00', 'Europe/Brussels'));
+
+    $promo = Promo::factory()->for($this->user)->create(['valid_until' => today()->addDays($days)]);
+
+    expect(Promo::endingSoon()->pluck('id')->all())->toBe($in ? [$promo->id] : []);
+})->with([
+    'ended yesterday' => [-1, false],
+    'ends today' => [0, true],
+    'ends in 3 days' => [3, true],
+    'ends in 4 days' => [4, false],
+]);

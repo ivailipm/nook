@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 #[Fillable(['title', 'tag', 'due_date', 'priority', 'repeat_weekday', 'done', 'completed_at', 'rolled_over'])]
 class Task extends Model
@@ -63,6 +64,20 @@ class Task extends Model
         }
 
         return ($this->isOverdue() ? 'overdue · was ' : 'due ').RelativeDate::format($this->due_date);
+    }
+
+    /**
+     * The Home card's meta: "School · overdue", "Internship · due today" or "Home · done".
+     */
+    public function homeMeta(): string
+    {
+        $state = match (true) {
+            $this->done => 'done',
+            $this->isOverdue() => 'overdue',
+            default => $this->dueLabel(),
+        };
+
+        return Str::ucfirst($this->tag->value)." · {$state}";
     }
 
     /**

@@ -78,11 +78,7 @@
 
                 @forelse ($rows as $subscription)
                     <div wire:key="subscription-{{ $subscription->id }}" class="flex min-h-[54px] items-center gap-2.5 border-t border-hairline py-1">
-                        <span aria-hidden="true" @class([
-                            'grid size-[34px] flex-none place-items-center rounded-avatar bg-white/8 font-display font-bold inset-ring-[1.5px]',
-                            $subscription->category->ringClass(),
-                            'opacity-60' => $subscription->isCancelled(),
-                        ])>{{ Str::substr($subscription->name, 0, 1) }}</span>
+                        <x-subscription-avatar :subscription="$subscription" />
                         <div class="flex min-w-0 flex-1 flex-col break-words">
                             <span @class(['text-[14px] font-semibold', 'line-through opacity-60' => $subscription->isCancelled()])>{{ $subscription->name }}</span>
                             <span class="text-[12px] text-cream-muted">{{ $subscription->listMeta() }}</span>
