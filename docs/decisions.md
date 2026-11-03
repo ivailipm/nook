@@ -17,7 +17,7 @@ Where these differ from `docs/nook-design/` (the prototype included), these win.
   - Weekday matching only takes real weekday words (`mon`, `monday`, `tue`, `tues`, `tuesday`, …), so "monitor" isn't Monday and "sunscreen" isn't Sunday.
   - `!medium` is read as a whole and leaves nothing behind (the prototype left "ium" in the title).
 - Recurring tasks: completing one creates the next, due 7 days after the completed one's due date. If that date is still in the past, the next one is due on the next of that weekday from today. Unticking and re-ticking doesn't create a second copy.
-- Home "Today" card: tasks due today plus open overdue tasks. Tasks completed on earlier days don't show.
+- Home "Today" card: tasks due today, open overdue tasks, and overdue tasks ticked today, which stay struck through until midnight so a mis-tap can be undone in place. Tasks completed on earlier days don't show. Confirmed on 2026-11-03.
 - To-do "Done" group: tasks completed in the last 7 days.
 - The add-promo form has an optional Note field (the promo sheet shows the note).
 - The promo board's store filter includes an "Other" chip.
@@ -26,12 +26,14 @@ Where these differ from `docs/nook-design/` (the prototype included), these win.
 - The 08:00 push is skipped when nothing is due. "A deal on your list ends today" is a line in that same push, not a separate notification.
 - Ticking a grocery item moves it to the end of its group, as the prototype does (FEATURES.md says it stays in place). Confirmed on 2026-10-31.
 - Expired promos leave the board and show in the archive during the week they expired (Monday to Sunday). A daily job deletes each promo and its photo 30 days after its `valid_until`. Confirmed on 2026-10-31.
+- When a subscription's next payment date passes, a daily job moves it on by one month or one year, following its billing cycle, so Home's "Coming up" always shows the next charge. Cancelled subscriptions don't move. Confirmed on 2026-11-03.
+- A trial whose end date passes without Keep it or Cancel trial becomes a normal paid subscription at its price, and its date then rolls forward the same way. Confirmed on 2026-11-03.
+- Every trial gets pushes 3 days and 1 day before it turns paid, by default. The trial card's button turns them off for that trial. Confirmed on 2026-11-03.
+- A cancelled free trial doesn't count as money saved; only cancelled paid subscriptions do. Cancelling a trial must leave it recognisable as a trial. Confirmed on 2026-11-03.
+- Offline in the shop: the PWA shows the last-loaded grocery list read-only. Ticking offline and syncing later is a separate, later job. Confirmed on 2026-11-03.
+- Tasks and subscriptions can be edited and deleted: tapping one opens its sheet to change or delete it. Confirmed on 2026-11-03.
+- The Home all-clear line changes with the time of day, on the greeting's boundaries (05:00, 12:00, 18:00). The evening wording stays `all clear today. go enjoy your evening`; the morning and afternoon wording is approved in that job's PR. Confirmed on 2026-11-03.
 
 ## Still open
 
-These get decided before the milestone that needs them, and recorded above.
-
-- Trial reminders: FEATURES.md gives every trial pushes 3 days and 1 day before it converts, but the "Remind me" button toggles a day-before reminder. (M5)
-- What happens when a subscription's next payment date passes, and when a trial ends without Keep it or Cancel trial. (M5)
-- Offline in the shop: the last-loaded list read-only, or ticking offline and syncing later. (M7)
-- Editing and deleting tasks and subscriptions (the spec only has cancel and resume). (M4, M5)
+Nothing right now. New questions get decided before the milestone that needs them, and recorded above.

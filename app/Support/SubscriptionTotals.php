@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 
 /**
  * A user's monthly and yearly totals, category breakdown and savings, following the prototype.
- * Totals and the breakdown count paying subscriptions, and savings count every cancelled one.
+ * Totals and the breakdown count paying subscriptions, and savings count cancelled paid ones, not cancelled trials.
  * Amounts stay unrounded until Money::format() prints them.
  */
 final readonly class SubscriptionTotals
@@ -29,7 +29,7 @@ final readonly class SubscriptionTotals
     {
         $subscriptions = $user->subscriptions()->orderBy('id')->get();
         $paying = $subscriptions->filter(fn (Subscription $subscription) => $subscription->isPaying());
-        $cancelled = $subscriptions->filter(fn (Subscription $subscription) => $subscription->isCancelled());
+        $cancelled = $subscriptions->filter(fn (Subscription $subscription) => $subscription->isCancelled() && ! $subscription->is_trial);
 
         $monthly = self::sumMonthly($paying);
         $saved = (float) $cancelled->sum(fn (Subscription $subscription) => $subscription->savedAmount());

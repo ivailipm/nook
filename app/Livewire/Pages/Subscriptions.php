@@ -53,7 +53,7 @@ class Subscriptions extends Component
             return;
         }
 
-        $subscription->update(['is_trial' => false, 'cancelled_at' => today()]);
+        $subscription->update(['cancelled_at' => today()]);
 
         // Once the date has passed it may already have been charged.
         $this->dispatch('toast', message: $subscription->daysUntilNextPayment() < 0 ? 'Trial cancelled' : 'Trial cancelled. Nothing will be charged');

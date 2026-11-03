@@ -416,7 +416,7 @@ it('keeps a trial as a paid subscription', function () {
         ->and(subscriptionsHtml($component)->querySelector('.bg-receipt')->textContent)->toContain('€60.95');
 });
 
-it('cancels a trial and adds it to the savings', function () {
+it('cancels a trial, keeps it a trial and leaves it out of the savings', function () {
     app(SubscriptionSeeder::class)->run($this->user);
     $trial = seededSubscription('Duolingo Super');
 
@@ -424,12 +424,25 @@ it('cancels a trial and adds it to the savings', function () {
         ->call('cancelTrial', $trial->id)
         ->assertDispatched('toast', message: 'Trial cancelled. Nothing will be charged');
 
-    expect($trial->fresh()->is_trial)->toBeFalse()
+    expect($trial->fresh()->is_trial)->toBeTrue()
         ->and($trial->fresh()->cancelled_at->toDateString())->toBe('2026-10-29')
         ->and($trial->fresh()->next_payment_date->toDateString())->toBe('2026-11-02')
         ->and(trialCard($component))->toBeNull()
+        ->and(last(listRows($component)))->toBe('Duolingo Super | trial cancelled today · Education | €12.99/mo | Resume')
         ->and(subscriptionsHtml($component)->querySelector('.bg-receipt')->textContent)->toContain('€47.96')
-        ->and(savingsLine($component))->toBe('saved €28.97 since cancelling Duolingo Super, Disney+');
+        ->and(savingsLine($component))->toBe('saved €15.98 since cancelling Disney+');
+});
+
+it('words a trial cancelled from its list row the same and leaves it out of the savings', function () {
+    app(SubscriptionSeeder::class)->run($this->user);
+    $trial = seededSubscription('Duolingo Super');
+
+    $component = Livewire::test(Subscriptions::class)
+        ->call('cancel', $trial->id)
+        ->assertDispatched('toast', message: 'Duolingo Super marked as cancelled');
+
+    expect(last(listRows($component)))->toBe('Duolingo Super | trial cancelled today · Education | €12.99/mo | Resume')
+        ->and(savingsLine($component))->toBe('saved €15.98 since cancelling Disney+');
 });
 
 it('says only that a trial is cancelled once its date has passed', function () {
@@ -439,7 +452,7 @@ it('says only that a trial is cancelled once its date has passed', function () {
         ->call('cancelTrial', $trial->id)
         ->assertDispatched('toast', message: 'Trial cancelled');
 
-    expect($trial->fresh()->is_trial)->toBeFalse()
+    expect($trial->fresh()->is_trial)->toBeTrue()
         ->and($trial->fresh()->cancelled_at->toDateString())->toBe('2026-10-29');
 });
 
@@ -522,14 +535,31 @@ it('brings a trial cancelled from the list back as a trial', function () {
         ->and($trial->fresh()->isCancelled())->toBeFalse();
 });
 
-it('brings a trial cancelled from its card back as a paying one', function () {
+it('brings a trial cancelled from its card back as a live trial', function () {
     $trial = Subscription::factory()->for($this->user)->create(['is_trial' => true, 'next_payment_date' => '2026-11-02']);
 
     Livewire::test(Subscriptions::class)->call('cancelTrial', $trial->id);
     Livewire::test(Subscriptions::class)->call('resume', $trial->id);
 
-    expect($trial->fresh()->is_trial)->toBeFalse()
-        ->and($trial->fresh()->isPaying())->toBeTrue();
+    expect($trial->fresh()->isLiveTrial())->toBeTrue()
+        ->and($trial->fresh()->isPaying())->toBeFalse()
+        ->and($trial->fresh()->next_payment_date->toDateString())->toBe('2026-11-02');
+});
+
+it('shows a resumed trial on its card, its row and the receipt, with the total unchanged', function () {
+    app(SubscriptionSeeder::class)->run($this->user);
+    $trial = seededSubscription('Duolingo Super');
+
+    $component = Livewire::test(Subscriptions::class)
+        ->call('cancelTrial', $trial->id)
+        ->call('resume', $trial->id)
+        ->assertDispatched('toast', message: 'Duolingo Super is back on');
+
+    expect(squish(trialCard($component)->querySelector('h2')->textContent))->toBe('Duolingo Super turns paid on Monday')
+        ->and(listRows($component))->toContain('Duolingo Super | Education · trial until Mon | €12.99/mo | Cancel')
+        ->and(receiptRows($component))->toContain('Duolingo Super | free trial · ends Mon 2 Nov | €0.00')
+        ->and(squish(subscriptionsHtml($component)->querySelector('.bg-receipt .border-t-2')->textContent))->toBe('TOTAL / MONTH €47.96')
+        ->and(savingsLine($component))->toBe('saved €15.98 since cancelling Disney+');
 });
 
 // Another user's id
