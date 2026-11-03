@@ -2,7 +2,9 @@
 
 use App\Enums\Section;
 use App\Enums\Store;
+use App\Enums\SubscriptionCategory;
 use App\Models\Promo;
+use App\Models\Subscription;
 use Dom\Element;
 use Dom\HTMLDocument;
 use Illuminate\Support\Carbon;
@@ -336,3 +338,91 @@ it('renders existing fields as before, and a date field in mono with a dark pick
         ->and($date->getAttribute('type'))->toBe('date')
         ->and($gold->getAttribute('class'))->toBe('min-h-[46px] w-full rounded-[12px] border bg-black/30 px-3 font-mono text-[15px] [color-scheme:dark] border-gold');
 });
+
+it('keeps the md checkbox as it was', function (string $variant, string $box, string $check) {
+    $checkbox = renderBlade("<x-checkbox variant=\"{$variant}\" :checked=\"true\" label=\"Untick Milk\" />")->querySelector('button');
+
+    expect($checkbox->getAttribute('class'))->toBe('grid size-11 flex-none cursor-pointer place-items-center')
+        ->and($checkbox->querySelector('span')->getAttribute('class'))->toBe($box)
+        ->and($checkbox->querySelector('svg')->getAttribute('class'))->toContain($check);
+})->with([
+    'grocery' => ['grocery', 'grid size-[22px] place-items-center border-2 rounded-checkbox border-gold bg-gold text-on-gold', 'size-[15px] stroke-[3.5]'],
+    'task' => ['task', 'grid size-[22px] place-items-center border-2 rounded-full border-apricot bg-apricot text-on-apricot', 'size-3.5 stroke-[3.5]'],
+]);
+
+it('renders the sm checkbox with an 18px box and a 44px hit area, its radius the same for both variants', function (string $variant, string $fill) {
+    $open = renderBlade("<x-checkbox variant=\"{$variant}\" size=\"sm\" label=\"Tick off Milk\" />")->querySelector('button');
+    $ticked = renderBlade("<x-checkbox variant=\"{$variant}\" size=\"sm\" :checked=\"true\" label=\"Untick Milk\" />")->querySelector('button');
+
+    expect($open->getAttribute('class'))->toBe('grid size-11 flex-none cursor-pointer place-items-center')
+        ->and($open->querySelector('span')->getAttribute('class'))->toBe('grid size-[18px] place-items-center rounded-[4px] border-[1.5px] border-cream-faint')
+        ->and($open->querySelector('svg'))->toBeNull()
+        ->and($open->hasAttribute('size'))->toBeFalse()
+        ->and($ticked->querySelector('span')->getAttribute('class'))->toBe("grid size-[18px] place-items-center rounded-[4px] border-[1.5px] {$fill}")
+        ->and($ticked->querySelector('svg')->getAttribute('class'))->toContain('size-[13px] stroke-[3.5]');
+})->with([
+    'grocery' => ['grocery', 'border-gold bg-gold text-on-gold'],
+    'task' => ['task', 'border-apricot bg-apricot text-on-apricot'],
+]);
+
+it('renders the home promo badge in soft peach with the store at every width', function () {
+    $promo = componentPromo('2026-10-31');
+    $badge = renderBlade('<x-promo-badge :promo="$promo" variant="home" />', ['promo' => $promo])->querySelector('body > button');
+
+    expect($badge->getAttribute('class'))->toBe('relative inline-flex max-w-[60%] cursor-pointer items-center gap-[5px] rounded-full bg-[#f6d9c4] px-[9px] py-[3px] text-[11px] font-bold whitespace-nowrap text-[#4a1d10] before:absolute before:inset-x-0 before:-inset-y-3')
+        ->and($badge->hasAttribute('variant'))->toBeFalse()
+        ->and($badge->getAttribute('aria-haspopup'))->toBe('dialog')
+        ->and($badge->getAttribute('aria-label'))->toBe('Show the Colruyt deal: 2+1 free')
+        ->and($badge->getAttribute('x-on:click'))->toBe("\$dispatch('show-promo', { id: {$promo->id} })")
+        ->and($badge->querySelector('svg[aria-hidden="true"]')->getAttribute('class'))->toContain('size-3 flex-none stroke-[2.2]')
+        ->and($badge->querySelector('[class~="wide:inline"]'))->toBeNull()
+        ->and($badge->querySelector('[class~="hidden"]'))->toBeNull()
+        ->and(preg_replace('/\s+/u', ' ', trim($badge->textContent)))->toBe('2+1 free · Colruyt');
+});
+
+it('renders a compact polaroid with Home\'s values', function () {
+    $promo = componentPromo('2026-10-31', tone: 4);
+    $frame = renderBlade('<x-polaroid :promo="$promo" :linked="true" compact />', ['promo' => $promo])->querySelector('body > button');
+    [$tape, $photo, $labelRow] = componentChildren($frame);
+    [$tilt, $tapeTilt] = [['-rotate-[2.2deg]', '-rotate-4'], ['rotate-[1.8deg]', 'rotate-3'], ['-rotate-[1.2deg]', '-rotate-2'], ['rotate-[2.4deg]', 'rotate-5'], ['-rotate-[1.8deg]', '-rotate-3'], ['rotate-[1.2deg]', 'rotate-2']][$promo->id % 6];
+    $pill = componentChildren($labelRow)[1];
+
+    expect($frame->getAttribute('class'))->toBe("relative flex h-full w-full cursor-pointer flex-col rounded-polaroid bg-paper px-2 pt-2 pb-1.5 text-left shadow-[0_10px_22px_rgb(0_0_0/0.38)] {$tilt}")
+        ->and($frame->hasAttribute('compact'))->toBeFalse()
+        ->and($tape->getAttribute('class'))->toBe("absolute -top-[9px] left-1/2 -ml-[27px] h-[17px] w-[54px] opacity-88 bg-tone-4-tape {$tapeTilt}")
+        ->and($photo->getAttribute('class'))->toBe('relative flex aspect-square flex-col gap-1 overflow-hidden p-2.5 bg-tone-4-bg text-tone-4-text')
+        ->and(array_map(fn (Element $line) => [trim($line->textContent), $line->getAttribute('class')], componentChildren($photo)))->toBe([
+            ['Colruyt', 'relative text-[9px] font-bold tracking-[0.12em] uppercase'],
+            ['Coffee beans 1 kg', 'relative font-display text-[15px] leading-[1.1] font-semibold'],
+            ['2+1 free', 'relative font-display text-[20px] leading-[1.05] font-bold'],
+        ])
+        ->and($labelRow->getAttribute('class'))->toBe('flex min-h-[26px] items-center justify-between gap-1.5 pt-1')
+        ->and($labelRow->firstElementChild->getAttribute('class'))->toBe('font-script text-[17px] font-bold text-[#3a2a20]')
+        ->and(trim($pill->textContent))->toBe('on list')
+        ->and($pill->querySelector('svg'))->toBeNull();
+});
+
+it('renders a link chip as a link with a dot and a 44px hit area, not a toggle', function () {
+    $chip = renderBlade('<x-link-chip href="/groceries" dot="bg-peach">6 to buy</x-link-chip>')->querySelector('body > a');
+    $dot = $chip->firstElementChild;
+
+    expect($chip->getAttribute('href'))->toBe('/groceries')
+        ->and($chip->getAttribute('class'))->toBe('relative inline-flex min-h-[34px] items-center gap-2 rounded-full border border-white/14 bg-black/25 px-3.5 text-[13px] font-semibold text-cream before:absolute before:inset-x-0 before:-inset-y-[6px]')
+        ->and($chip->hasAttribute('aria-pressed'))->toBeFalse()
+        ->and($chip->hasAttribute('dot'))->toBeFalse()
+        ->and(trim($chip->textContent))->toBe('6 to buy')
+        ->and($dot->getAttribute('aria-hidden'))->toBe('true')
+        ->and($dot->getAttribute('class'))->toBe('size-[7px] rounded-full bg-peach');
+});
+
+it('renders a subscription avatar', function (?string $cancelledAt, string $classes) {
+    $subscription = Subscription::factory()->create(['name' => 'Éclair', 'category' => SubscriptionCategory::Health, 'cancelled_at' => $cancelledAt]);
+    $avatar = renderBlade('<x-subscription-avatar :subscription="$subscription" />', ['subscription' => $subscription])->querySelector('body > span');
+
+    expect($avatar->textContent)->toBe('É')
+        ->and($avatar->getAttribute('aria-hidden'))->toBe('true')
+        ->and($avatar->getAttribute('class'))->toBe($classes);
+})->with([
+    'live' => [null, 'grid size-[34px] flex-none place-items-center rounded-avatar bg-white/8 font-display font-bold inset-ring-[1.5px] inset-ring-cat-health'],
+    'cancelled' => ['2026-10-28', 'grid size-[34px] flex-none place-items-center rounded-avatar bg-white/8 font-display font-bold inset-ring-[1.5px] inset-ring-cat-health opacity-60'],
+]);
