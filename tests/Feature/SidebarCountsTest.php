@@ -173,6 +173,7 @@ it('dispatches nothing when an action changed nothing', function (Closure $actio
     $action($this->user)->assertNotDispatched('nav-counts-changed');
 })->with([
     'Groceries add with nothing typed' => fn () => Livewire::test(Groceries::class)->set('quickItem', '  ')->call('add'),
+    'Groceries clearTicked with nothing ticked' => fn () => Livewire::test(Groceries::class)->call('clearTicked'),
     'Todo add with nothing typed' => fn () => Livewire::test(Todo::class)->set('quickTask', '  ')->call('add'),
     'Subscriptions cancelTrial on a paying one' => fn (User $user) => Livewire::test(Subscriptions::class)->call('cancelTrial', Subscription::factory()->for($user)->create()->id),
     'Subscriptions cancel on a cancelled one' => fn (User $user) => Livewire::test(Subscriptions::class)->call('cancel', Subscription::factory()->for($user)->create(['cancelled_at' => today()])->id),

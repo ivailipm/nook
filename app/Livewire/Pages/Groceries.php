@@ -60,9 +60,9 @@ class Groceries extends Component
 
     public function clearTicked(): void
     {
-        auth()->user()->groceryItems()->where('done', true)->delete();
-
-        $this->dispatch('nav-counts-changed');
+        if (auth()->user()->groceryItems()->where('done', true)->delete() > 0) {
+            $this->dispatch('nav-counts-changed');
+        }
     }
 
     public function render(): View
