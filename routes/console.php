@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 // At 00:00 Europe/Brussels, the app timezone.
 Schedule::command('nook:expire-promos')->daily();
+Schedule::command('nook:roll-subscriptions')->daily();
