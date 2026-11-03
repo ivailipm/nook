@@ -3,6 +3,7 @@
 namespace App\Livewire\Pages;
 
 use App\Actions\CreateTask;
+use App\Actions\ToggleMorningNudge;
 use App\Actions\ToggleTask;
 use App\Enums\TaskTag;
 use App\Parsers\TaskParser;
@@ -52,13 +53,13 @@ class Todo extends Component
     /**
      * Saves the setting only. Nothing sends the nudge yet.
      */
-    public function toggleNudge(): void
+    public function toggleNudge(ToggleMorningNudge $toggle): void
     {
         $user = auth()->user();
 
-        $user->update(['morning_nudge' => ! $user->morning_nudge]);
+        $toggle->handle($user);
 
-        $this->dispatch('toast', message: $user->morning_nudge ? 'Morning nudge on · 08:00' : 'Morning nudge off');
+        $this->dispatch('toast', message: $toggle->message($user));
     }
 
     public function render(): View
