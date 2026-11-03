@@ -216,3 +216,14 @@ it('gives each category its full colour classes', function (SubscriptionCategory
     'Education' => [SubscriptionCategory::Education, 'bg-cat-education', 'inset-ring-cat-education'],
     'Other' => [SubscriptionCategory::Other, 'bg-cat-other', 'inset-ring-cat-other'],
 ]);
+
+it('gives the Coming up row its label and its real amount', function (string $price, SubscriptionCycle $cycle, bool $trial, string $label, string $amount) {
+    $subscription = Subscription::factory()->create(['price' => $price, 'cycle' => $cycle, 'is_trial' => $trial, 'next_payment_date' => '2026-11-01'])->fresh();
+
+    expect($subscription->comingUpLabel())->toBe($label)
+        ->and($subscription->comingUpAmount())->toBe($amount);
+})->with([
+    'monthly' => ['24.99', SubscriptionCycle::Monthly, false, 'pays Sun 1 Nov', '€24.99'],
+    'yearly' => ['120.00', SubscriptionCycle::Yearly, false, 'pays Sun 1 Nov', '€120.00'],
+    'trial' => ['12.99', SubscriptionCycle::Monthly, true, 'trial ends Sun 1 Nov', 'then €12.99'],
+]);

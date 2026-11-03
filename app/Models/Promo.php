@@ -99,6 +99,17 @@ class Promo extends Model
     }
 
     /**
+     * Promos that end within 3 days: from today to 3 days ahead, inclusive.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function endingSoon(Builder $query): void
+    {
+        $query->whereBetween('valid_until', [today()->toDateString(), today()->addDays(3)->toDateString()]);
+    }
+
+    /**
      * Whole calendar days left: 0 on the last day, 1 the day before, negative once expired.
      */
     public function daysLeft(): int
