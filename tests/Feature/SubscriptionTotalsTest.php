@@ -1,7 +1,9 @@
 <?php
 
+use App\Actions\RollSubscriptions;
 use App\Enums\SubscriptionCategory;
 use App\Enums\SubscriptionCycle;
+use App\Livewire\Pages\Subscriptions;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Support\Money;
@@ -9,6 +11,7 @@ use App\Support\RelativeDate;
 use App\Support\SubscriptionTotals;
 use Database\Seeders\SubscriptionSeeder;
 use Illuminate\Support\Carbon;
+use Livewire\Livewire;
 
 beforeEach(function () {
     // Thursday 29 October 2026, the prototype's base date.
@@ -177,15 +180,47 @@ it('saves a twelfth of a yearly price for every month', function () {
     expect(SubscriptionTotals::for($this->user)->savingsLine)->toBe('saved €20.00 since cancelling Gym');
 });
 
-it('counts a cancelled trial towards the savings', function () {
-    subscriptionFor($this->user, 12.99, SubscriptionCategory::Education, ['name' => 'Duolingo Super', 'is_trial' => true, 'cancelled_at' => today()]);
+it('leaves a cancelled trial out of the savings', function () {
+    $trial = subscriptionFor($this->user, 12.99, SubscriptionCategory::Education, ['name' => 'Duolingo Super', 'is_trial' => true, 'cancelled_at' => today()])->fresh();
 
     $totals = SubscriptionTotals::for($this->user);
 
-    expect($totals->savingsLine)->toBe('saved €12.99 since cancelling Duolingo Super')
+    expect($trial->savedAmount())->toBe(0.0)
+        ->and($totals->saved)->toBe(0.0)
+        ->and($totals->savingsLine)->toBeNull()
         ->and($totals->monthly)->toBe(0.0)
         ->and($totals->categories)->toBe([]);
 });
+
+it('names only the paid subscription beside a cancelled trial', function () {
+    subscriptionFor($this->user, 12.99, SubscriptionCategory::Education, ['name' => 'Duolingo Super', 'is_trial' => true, 'cancelled_at' => today()]);
+    subscriptionFor($this->user, 7.99, attributes: ['name' => 'Disney+', 'cancelled_at' => today()]);
+
+    $totals = SubscriptionTotals::for($this->user);
+
+    expect($totals->saved)->toBe(7.99)
+        ->and($totals->savingsLine)->toBe('saved €7.99 since cancelling Disney+');
+});
+
+it('counts a trial turned paid and cancelled later', function (Closure $turnPaid) {
+    $this->actingAs($this->user);
+    $trial = subscriptionFor($this->user, 12.99, SubscriptionCategory::Education, ['name' => 'Duolingo Super', 'is_trial' => true, 'next_payment_date' => '2026-10-28']);
+
+    $turnPaid($trial);
+
+    expect($trial->fresh()->is_trial)->toBeFalse();
+
+    Livewire::test(Subscriptions::class)->call('cancel', $trial->id);
+
+    $totals = SubscriptionTotals::for($this->user);
+
+    expect($trial->fresh()->savedAmount())->toBe(12.99)
+        ->and($totals->saved)->toBe(12.99)
+        ->and($totals->savingsLine)->toBe('saved €12.99 since cancelling Duolingo Super');
+})->with([
+    'by Keep it' => fn (Subscription $trial) => Livewire::test(Subscriptions::class)->call('keepTrial', $trial->id),
+    'by the job' => fn () => app(RollSubscriptions::class)->handle(),
+]);
 
 it('adds up the savings and names the subscriptions in id order, not by cancel date', function () {
     subscriptionFor($this->user, 7.99, attributes: ['name' => 'Disney+', 'cancelled_at' => today()]);

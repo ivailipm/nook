@@ -97,12 +97,13 @@ class Subscription extends Model
 
     /**
      * The list row's meta: "Entertainment · monthly · next Sat", "Education · trial until Mon",
-     * "was due" and "trial ended" once the date has passed, or "cancelled 29 Aug · Entertainment".
+     * "was due" and "trial ended" once the date has passed, "cancelled 29 Aug · Entertainment",
+     * or "trial cancelled 29 Aug · Education" for a cancelled trial.
      */
     public function listMeta(): string
     {
         if ($this->cancelled_at !== null) {
-            return 'cancelled '.RelativeDate::format($this->cancelled_at).' · '.$this->category->value;
+            return ($this->is_trial ? 'trial cancelled ' : 'cancelled ').RelativeDate::format($this->cancelled_at).' · '.$this->category->value;
         }
 
         $date = RelativeDate::format($this->next_payment_date);
@@ -172,11 +173,11 @@ class Subscription extends Model
 
     /**
      * What cancelling has saved so far: the monthly price for every 30 days since, and at least one month.
-     * Not named saved(), which Eloquent's models already have as a static event method.
+     * Nothing for a cancelled trial, which was free. Not named saved(), which Eloquent's models already have as a static event method.
      */
     public function savedAmount(): float
     {
-        if ($this->cancelled_at === null) {
+        if ($this->cancelled_at === null || $this->is_trial) {
             return 0.0;
         }
 

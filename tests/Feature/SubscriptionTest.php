@@ -73,11 +73,15 @@ it('tells paying, trial and cancelled subscriptions apart', function (bool $tria
     'a cancelled trial' => [true, '2026-10-28', true, false],
 ]);
 
-it('has saved nothing while it isn\'t cancelled', function (bool $trial) {
-    $subscription = Subscription::factory()->create(['is_trial' => $trial, 'price' => 10.00])->fresh();
+it('has saved nothing unless it\'s a cancelled paid one', function (bool $trial, ?string $cancelledAt) {
+    $subscription = Subscription::factory()->create(['is_trial' => $trial, 'price' => 10.00, 'cancelled_at' => $cancelledAt])->fresh();
 
     expect($subscription->savedAmount())->toBe(0.0);
-})->with(['paying' => false, 'on trial' => true]);
+})->with([
+    'paying' => [false, null],
+    'on trial' => [true, null],
+    'a cancelled trial' => [true, '2026-08-29'],
+]);
 
 it('lists only the user\'s own subscriptions', function () {
     $user = User::factory()->create();
@@ -131,13 +135,16 @@ it('words the receipt and list metas', function (array $attributes, string $rece
     'trial, three days ago' => [['next_payment_date' => '2026-10-26', 'category' => 'Education', 'is_trial' => true], 'free trial · ended Mon 26 Oct', 'Education · trial ended 26 Oct'],
 ]);
 
-it('words a cancelled row the same whatever its flags or date', function (array $attributes, string $listMeta) {
+it('words a cancelled row by whether it\'s a trial, whatever its date', function (array $attributes, string $listMeta) {
     expect(Subscription::factory()->create(['category' => 'Entertainment', ...$attributes])->fresh()->listMeta())->toBe($listMeta);
 })->with([
     'paying, date ahead' => [['cancelled_at' => '2026-08-29', 'next_payment_date' => '2026-11-02'], 'cancelled 29 Aug · Entertainment'],
     'paying, date passed' => [['cancelled_at' => '2026-08-29', 'next_payment_date' => '2026-10-26'], 'cancelled 29 Aug · Entertainment'],
-    'a trial, date ahead' => [['cancelled_at' => '2026-08-29', 'next_payment_date' => '2026-11-02', 'is_trial' => true], 'cancelled 29 Aug · Entertainment'],
-    'a trial, date passed' => [['cancelled_at' => '2026-08-29', 'next_payment_date' => '2026-10-26', 'is_trial' => true], 'cancelled 29 Aug · Entertainment'],
+    'a trial, date ahead' => [['cancelled_at' => '2026-08-29', 'next_payment_date' => '2026-11-02', 'is_trial' => true], 'trial cancelled 29 Aug · Entertainment'],
+    'a trial, date passed' => [['cancelled_at' => '2026-08-29', 'next_payment_date' => '2026-10-26', 'is_trial' => true], 'trial cancelled 29 Aug · Entertainment'],
+    'a trial, cancelled today' => [['cancelled_at' => '2026-10-29', 'is_trial' => true], 'trial cancelled today · Entertainment'],
+    'a trial, cancelled yesterday' => [['cancelled_at' => '2026-10-28', 'is_trial' => true], 'trial cancelled yesterday · Entertainment'],
+    'a trial in another category' => [['cancelled_at' => '2026-08-29', 'is_trial' => true, 'category' => 'Education'], 'trial cancelled 29 Aug · Education'],
     'yearly' => [['cancelled_at' => '2026-08-29', 'cycle' => 'yearly'], 'cancelled 29 Aug · Entertainment'],
     'cancelled today' => [['cancelled_at' => '2026-10-29'], 'cancelled today · Entertainment'],
     'cancelled yesterday' => [['cancelled_at' => '2026-10-28'], 'cancelled yesterday · Entertainment'],
