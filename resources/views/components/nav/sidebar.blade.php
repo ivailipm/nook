@@ -1,23 +1,9 @@
-@use('App\Enums\Section')
 @props(['current'])
 
 <nav aria-label="Main" class="hidden w-[236px] flex-none flex-col gap-1 border-r border-white/8 bg-black/28 px-4 py-7 wide:flex">
     <div class="px-3 pb-7 font-display text-[30px] leading-none font-semibold tracking-[-0.02em] italic">nook</div>
 
-    @foreach (Section::cases() as $section)
-        <a
-            href="{{ route($section->value) }}"
-            @if ($section === $current) aria-current="page" @endif
-            @class([
-                'flex min-h-11 items-center gap-3 rounded-button px-3 text-[15px]',
-                'bg-cream/12 font-bold text-cream' => $section === $current,
-                'font-medium text-cream-muted' => $section !== $current,
-            ])
-        >
-            <x-dynamic-component :component="'lucide-'.$section->icon()" class="size-5 flex-none stroke-[1.75]" aria-hidden="true" />
-            <span>{{ $section->label() }}</span>
-        </a>
-    @endforeach
+    <livewire:sidebar-links :current="$current" />
 
     <div class="flex-1"></div>
 

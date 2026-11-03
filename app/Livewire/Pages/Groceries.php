@@ -39,6 +39,7 @@ class Groceries extends Component
         $this->reset('quickItem');
 
         $this->dispatch('toast', message: $addGroceryItem->message($item));
+        $this->dispatch('nav-counts-changed');
     }
 
     public function toggle(int $id): void
@@ -46,16 +47,22 @@ class Groceries extends Component
         $item = auth()->user()->groceryItems()->findOrFail($id);
 
         $item->update(['done' => ! $item->done]);
+
+        $this->dispatch('nav-counts-changed');
     }
 
     public function remove(int $id): void
     {
         auth()->user()->groceryItems()->findOrFail($id)->delete();
+
+        $this->dispatch('nav-counts-changed');
     }
 
     public function clearTicked(): void
     {
         auth()->user()->groceryItems()->where('done', true)->delete();
+
+        $this->dispatch('nav-counts-changed');
     }
 
     public function render(): View

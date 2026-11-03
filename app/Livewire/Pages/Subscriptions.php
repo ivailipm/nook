@@ -57,6 +57,7 @@ class Subscriptions extends Component
 
         // Once the date has passed it may already have been charged.
         $this->dispatch('toast', message: $subscription->daysUntilNextPayment() < 0 ? 'Trial cancelled' : 'Trial cancelled. Nothing will be charged');
+        $this->dispatch('nav-counts-changed');
     }
 
     public function cancel(int $id): void
@@ -70,6 +71,7 @@ class Subscriptions extends Component
         $subscription->update(['cancelled_at' => today()]);
 
         $this->dispatch('toast', message: "{$subscription->name} marked as cancelled");
+        $this->dispatch('nav-counts-changed');
     }
 
     public function resume(int $id): void
@@ -83,6 +85,7 @@ class Subscriptions extends Component
         $subscription->update(['cancelled_at' => null]);
 
         $this->dispatch('toast', message: "{$subscription->name} is back on");
+        $this->dispatch('nav-counts-changed');
     }
 
     public function render(): View

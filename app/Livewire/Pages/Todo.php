@@ -39,6 +39,7 @@ class Todo extends Component
         $this->reset('quickTask');
 
         $this->dispatch('toast', message: $createTask->message($task));
+        $this->dispatch('nav-counts-changed');
     }
 
     public function toggle(int $id, ToggleTask $toggleTask): void
@@ -48,6 +49,8 @@ class Todo extends Component
         if ($next !== null) {
             $this->dispatch('toast', message: $toggleTask->message($next));
         }
+
+        $this->dispatch('nav-counts-changed');
     }
 
     /**

@@ -34,7 +34,7 @@ it('renders each section in the app shell', function (
     $sidebar = $navs->item(0);
     $floating = $navs->item(1);
     $current = fn (Element $nav) => array_map(
-        fn (Element $link) => trim($link->textContent),
+        fn (Element $link) => preg_replace('/\s+/', ' ', trim($link->textContent)),
         iterator_to_array($nav->querySelectorAll('[aria-current="page"]')),
     );
 
@@ -47,10 +47,10 @@ it('renders each section in the app shell', function (
         ->and($current($floating))->toBe([$currentTab]);
 })->with([
     'home' => ['/', Home::class, 'Home · nook', 'Good afternoon,<br><em>Ivayla</em>', 'home', 'Add something', 'Home', 'Home'],
-    'groceries' => ['/groceries', Groceries::class, 'Groceries · nook', 'Shopping <em>list</em>', 'groceries', 'Add to your list', 'Groceries', 'Groceries'],
-    'promo board' => ['/promos', PromoBoard::class, 'Promo board · nook', 'Promo <em>board</em>', 'groceries', 'Pin a deal', 'Promo board', 'Groceries'],
-    'to-do' => ['/todo', Todo::class, 'To-do · nook', 'Small <em>things</em>', 'todo', 'New task', 'To-do', 'To-do'],
-    'subscriptions' => ['/subscriptions', Subscriptions::class, 'Subscriptions · nook', 'Subscrip<em>tions</em>', 'subscriptions', 'New subscription', 'Subscriptions', 'Subs'],
+    'groceries' => ['/groceries', Groceries::class, 'Groceries · nook', 'Shopping <em>list</em>', 'groceries', 'Add to your list', 'Groceries 0', 'Groceries'],
+    'promo board' => ['/promos', PromoBoard::class, 'Promo board · nook', 'Promo <em>board</em>', 'groceries', 'Pin a deal', 'Promo board 0', 'Groceries'],
+    'to-do' => ['/todo', Todo::class, 'To-do · nook', 'Small <em>things</em>', 'todo', 'New task', 'To-do 0', 'To-do'],
+    'subscriptions' => ['/subscriptions', Subscriptions::class, 'Subscriptions · nook', 'Subscrip<em>tions</em>', 'subscriptions', 'New subscription', 'Subscriptions 0', 'Subs'],
 ]);
 
 it('shows today in Brussels in the sidebar and on Home', function () {
