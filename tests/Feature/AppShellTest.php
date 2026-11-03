@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
 
 beforeEach(function () {
     $this->withoutVite();
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->create(['name' => 'Ivayla']));
 });
 
 it('renders each section in the app shell', function (
@@ -25,6 +25,8 @@ it('renders each section in the app shell', function (
     string $currentLink,
     string $currentTab,
 ) {
+    $this->travelTo(Carbon::parse('2026-10-29 12:00', 'Europe/Brussels'));
+
     $response = $this->get($uri)->assertOk()->assertSeeLivewire($component);
 
     $page = HTMLDocument::createFromString($response->getContent(), LIBXML_NOERROR);
@@ -44,7 +46,7 @@ it('renders each section in the app shell', function (
         ->and($current($sidebar))->toBe([$currentLink])
         ->and($current($floating))->toBe([$currentTab]);
 })->with([
-    'home' => ['/', Home::class, 'Home · nook', 'Welcome <em>home</em>', 'home', 'Add something', 'Home', 'Home'],
+    'home' => ['/', Home::class, 'Home · nook', 'Good afternoon,<br><em>Ivayla</em>', 'home', 'Add something', 'Home', 'Home'],
     'groceries' => ['/groceries', Groceries::class, 'Groceries · nook', 'Shopping <em>list</em>', 'groceries', 'Add to your list', 'Groceries', 'Groceries'],
     'promo board' => ['/promos', PromoBoard::class, 'Promo board · nook', 'Promo <em>board</em>', 'groceries', 'Pin a deal', 'Promo board', 'Groceries'],
     'to-do' => ['/todo', Todo::class, 'To-do · nook', 'Small <em>things</em>', 'todo', 'New task', 'To-do', 'To-do'],
