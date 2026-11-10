@@ -5,6 +5,7 @@ namespace App\Livewire\Pages;
 use App\Models\Subscription;
 use App\Support\SubscriptionTotals;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -86,6 +87,16 @@ class Subscriptions extends Component
 
         $this->dispatch('toast', message: "{$subscription->name} is back on");
         $this->dispatch('nav-counts-changed');
+    }
+
+    /**
+     * The subscription sheet saved or deleted a row, so the page re-renders. A saved row can move, which can rebuild its
+     * button, so the button takes focus back by id once the page has changed; a deleted row has no button left.
+     */
+    #[On('subscription-changed')]
+    public function subscriptionChanged(int $id): void
+    {
+        $this->js("document.getElementById('subscription-open-{$id}')?.focus()");
     }
 
     public function render(): View

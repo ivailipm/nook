@@ -5,6 +5,7 @@ use App\Livewire\Pages\Groceries;
 use App\Livewire\Pages\Home;
 use App\Livewire\Pages\Subscriptions;
 use App\Livewire\Pages\Todo;
+use App\Livewire\Sheets\SubscriptionSheet;
 use App\Livewire\SidebarLinks;
 use App\Models\GroceryItem;
 use App\Models\Promo;
@@ -167,6 +168,9 @@ it('dispatches nav-counts-changed after each action that changes a count', funct
     'Subscriptions cancelTrial' => fn (User $user) => Livewire::test(Subscriptions::class)->call('cancelTrial', Subscription::factory()->for($user)->create(['is_trial' => true])->id),
     'Subscriptions cancel' => fn (User $user) => Livewire::test(Subscriptions::class)->call('cancel', Subscription::factory()->for($user)->create()->id),
     'Subscriptions resume' => fn (User $user) => Livewire::test(Subscriptions::class)->call('resume', Subscription::factory()->for($user)->create(['cancelled_at' => today()])->id),
+    'SubscriptionSheet deleteSubscription' => fn (User $user) => Livewire::test(SubscriptionSheet::class)
+        ->dispatch('show-subscription', id: Subscription::factory()->for($user)->create()->id)
+        ->call('deleteSubscription'),
 ]);
 
 it('dispatches nothing when an action changed nothing', function (Closure $action) {
@@ -178,6 +182,13 @@ it('dispatches nothing when an action changed nothing', function (Closure $actio
     'Subscriptions cancelTrial on a paying one' => fn (User $user) => Livewire::test(Subscriptions::class)->call('cancelTrial', Subscription::factory()->for($user)->create()->id),
     'Subscriptions cancel on a cancelled one' => fn (User $user) => Livewire::test(Subscriptions::class)->call('cancel', Subscription::factory()->for($user)->create(['cancelled_at' => today()])->id),
     'Subscriptions resume on a live one' => fn (User $user) => Livewire::test(Subscriptions::class)->call('resume', Subscription::factory()->for($user)->create()->id),
+    'SubscriptionSheet save' => fn (User $user) => Livewire::test(SubscriptionSheet::class)
+        ->dispatch('show-subscription', id: Subscription::factory()->for($user)->create()->id)
+        ->set('editSubscriptionName', 'Renamed')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertDispatched('subscription-changed'),
+    'SubscriptionSheet deleteSubscription with nothing loaded' => fn () => Livewire::test(SubscriptionSheet::class)->call('deleteSubscription'),
 ]);
 
 it('dispatches nothing from the actions that leave every count alone', function () {

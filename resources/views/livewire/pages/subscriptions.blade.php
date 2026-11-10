@@ -77,12 +77,19 @@
                 </div>
 
                 @forelse ($rows as $subscription)
-                    <div wire:key="subscription-{{ $subscription->id }}" class="flex min-h-[54px] items-center gap-2.5 border-t border-hairline py-1">
+                    <div wire:key="subscription-{{ $subscription->id }}" class="relative flex min-h-[54px] items-center gap-2.5 border-t border-hairline py-1">
                         <x-subscription-avatar :subscription="$subscription" />
-                        <div class="flex min-w-0 flex-1 flex-col break-words">
+                        {{-- Opens the edit sheet. Its ::before covers the whole row, so the avatar and the price open it too; the Cancel / Resume button comes later and is positioned, so it stays on top. --}}
+                        <button
+                            type="button"
+                            id="subscription-open-{{ $subscription->id }}"
+                            aria-haspopup="dialog"
+                            x-on:click="$dispatch('show-subscription', { id: {{ $subscription->id }} })"
+                            class="flex min-w-0 flex-1 cursor-pointer flex-col text-left break-words before:absolute before:inset-0"
+                        >
                             <span @class(['text-[14px] font-semibold', 'line-through opacity-60' => $subscription->isCancelled()])>{{ $subscription->name }}</span>
                             <span class="text-[12px] text-cream-muted">{{ $subscription->listMeta() }}</span>
-                        </div>
+                        </button>
                         <span @class(['flex-none text-right font-mono text-[13px]', 'opacity-60' => $subscription->isCancelled()])>{{ $subscription->priceLabel() }}</span>
                         {{-- Cancelling or resuming moves the row, which can rebuild the button, so a button that had focus takes it back by id. The ::before reaches 7px past the 32px button, so the hit area is 44px; its insets start inside the 1px border. --}}
                         <button

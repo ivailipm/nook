@@ -82,6 +82,13 @@ it('puts the add-subscription sheet on every section page once', function (strin
         ->and(trim($dialogs->item(0)->querySelector('h2')->textContent))->toBe('New subscription');
 })->with('section pages');
 
+it('puts the subscription sheet on every section page once', function (string $uri) {
+    $dialogs = sectionPage($uri)->querySelectorAll('dialog#sheet-subscription');
+
+    expect($dialogs)->toHaveCount(1)
+        ->and(trim($dialogs->item(0)->querySelector('h2')->textContent))->toBe('Edit subscription');
+})->with('section pages');
+
 it('puts the add-task sheet on every section page once', function (string $uri) {
     $dialogs = sectionPage($uri)->querySelectorAll('dialog#sheet-add-task');
 
