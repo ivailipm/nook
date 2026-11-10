@@ -370,6 +370,30 @@ it('opens the add sheet from the + Add button', function () {
         ->and($add->getAttribute('x-on:click'))->toBe("\$dispatch('open-sheet', { name: 'add-subscription' })");
 });
 
+it('opens the edit sheet from a live and a cancelled row, with the whole row as the hit area', function (string $name) {
+    app(SubscriptionSeeder::class)->run($this->user);
+    $subscription = seededSubscription($name);
+
+    $page = subscriptionsHtml(Livewire::test(Subscriptions::class));
+    $open = $page->querySelector("button#subscription-open-{$subscription->id}");
+    $row = $open->parentElement;
+
+    expect($open->getAttribute('type'))->toBe('button')
+        ->and($open->getAttribute('aria-haspopup'))->toBe('dialog')
+        ->and($open->getAttribute('x-on:click'))->toBe("\$dispatch('show-subscription', { id: {$subscription->id} })")
+        ->and($open->hasAttribute('aria-pressed'))->toBeFalse()
+        ->and($open->hasAttribute('aria-label'))->toBeFalse()
+        ->and(squish($open->firstElementChild->textContent))->toBe($name)
+        ->and($open->previousElementSibling->getAttribute('aria-hidden'))->toBe('true')
+        ->and($open->previousElementSibling->textContent)->toBe(mb_substr($name, 0, 1))
+        ->and($open->nextElementSibling->textContent)->toBe($subscription->priceLabel())
+        ->and($open->nextElementSibling->nextElementSibling->getAttribute('id'))->toBe("subscription-action-{$subscription->id}")
+        ->and($open->querySelector('div'))->toBeNull()
+        ->and($open->getAttribute('class'))->toBe('flex min-w-0 flex-1 cursor-pointer flex-col text-left break-words before:absolute before:inset-0')
+        ->and($row->getAttribute('wire:key'))->toBe("subscription-{$subscription->id}")
+        ->and($row->classList->contains('relative'))->toBeTrue();
+})->with(['live' => 'Netflix', 'cancelled' => 'Disney+']);
+
 // Actions
 
 it('flips the reminder, with a toast only when turning it on', function () {
@@ -560,6 +584,25 @@ it('shows a resumed trial on its card, its row and the receipt, with the total u
         ->and(receiptRows($component))->toContain('Duolingo Super | free trial · ends Mon 2 Nov | €0.00')
         ->and(squish(subscriptionsHtml($component)->querySelector('.bg-receipt .border-t-2')->textContent))->toBe('TOTAL / MONTH €47.96')
         ->and(savingsLine($component))->toBe('saved €15.98 since cancelling Disney+');
+});
+
+it('refreshes on subscription-changed and gives the saved row its focus back', function () {
+    app(SubscriptionSeeder::class)->run($this->user);
+    $netflix = seededSubscription('Netflix');
+    $component = Livewire::test(Subscriptions::class);
+
+    $netflix->update(['price' => '15.99', 'cycle' => SubscriptionCycle::Yearly]);
+
+    expect(listRows($component))->toContain('Netflix | Entertainment · monthly · next Tue | €13.49/mo | Cancel');
+
+    $component->dispatch('subscription-changed', id: $netflix->id)
+        ->assertJs("document.getElementById('subscription-open-{$netflix->id}')?.focus()");
+    $receipt = subscriptionsHtml($component)->querySelector('.bg-receipt');
+
+    expect(listRows($component))->toContain('Netflix | Entertainment · yearly · next Tue | €15.99/yr | Cancel')
+        ->and(receiptRows($component))->toContain('Netflix | yearly · next Tue 3 Nov | €1.33')
+        ->and(squish($receipt->querySelector('.border-t-2')->textContent))->toBe('TOTAL / MONTH €35.80')
+        ->and($receipt->textContent)->toContain('≈ €429.63 a year');
 });
 
 // Another user's id

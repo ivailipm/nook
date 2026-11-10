@@ -1,6 +1,3 @@
-@use('App\Enums\SubscriptionCategory')
-@use('App\Enums\SubscriptionCycle')
-
 {{-- Every close (the close button, Escape or the scrim) resets the form, so the sheet always opens empty with the date 30 days ahead. A dialog's close event doesn't bubble, hence the capture. --}}
 <div x-on:close.capture="$wire.resetForm()">
     <x-sheet name="add-subscription" title="New subscription">
@@ -10,29 +7,7 @@
                 <x-field label="Price €" name="subscriptionPrice" wire:model="subscriptionPrice" inputmode="decimal" placeholder="9.99" class="font-mono" />
             </div>
 
-            <div class="flex flex-col gap-1.5">
-                <span id="add-subscription-billing" class="text-[13px] font-semibold">Billing</span>
-                <div role="group" aria-labelledby="add-subscription-billing" class="flex flex-wrap gap-2">
-                    @foreach (SubscriptionCycle::cases() as $option)
-                        <x-chip :pressed="$cycle === $option->value" wire:click="$set('cycle', '{{ $option->value }}')">{{ Str::ucfirst($option->value) }}</x-chip>
-                    @endforeach
-                </div>
-                @error('cycle')
-                    <p class="text-[13px] text-destructive">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div class="flex flex-col gap-1.5">
-                <span id="add-subscription-category" class="text-[13px] font-semibold">Category</span>
-                <div role="group" aria-labelledby="add-subscription-category" class="flex flex-wrap gap-2">
-                    @foreach (SubscriptionCategory::cases() as $option)
-                        <x-chip :pressed="$category === $option->value" wire:click="$set('category', '{{ $option->value }}')">{{ $option->value }}</x-chip>
-                    @endforeach
-                </div>
-                @error('category')
-                    <p class="text-[13px] text-destructive">{{ $message }}</p>
-                @enderror
-            </div>
+            <x-subscription-chips prefix="add-subscription" :cycle="$cycle" :category="$category" />
 
             <div class="grid grid-cols-2 items-end gap-2.5">
                 <x-field :label="$isTrial ? 'Trial ends' : 'Next payment'" name="nextPaymentDate" type="date" wire:model="nextPaymentDate" />
