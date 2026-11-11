@@ -280,6 +280,21 @@ it('says the greeting in the app timezone', function () {
     expect(homeHtml(Livewire::test(Home::class))->querySelector('h1')->textContent)->toStartWith('Good evening,');
 });
 
+it('ends the all-clear on the part of the day the greeting names', function (string $time, string $greeting, string $line) {
+    homeSignedInUser();
+
+    $this->travelTo(Carbon::parse("2026-10-29 {$time}", 'Europe/Brussels'));
+
+    $component = Livewire::test(Home::class);
+
+    expect(homeHtml($component)->querySelector('h1')->textContent)->toStartWith("{$greeting},")
+        ->and(homeTodayLine($component))->toBe($line);
+})->with([
+    ['08:00', 'Good morning', 'all clear today. go enjoy your morning'],
+    ['14:00', 'Good afternoon', 'all clear today. go enjoy your afternoon'],
+    ['20:00', 'Good evening', 'all clear today. go enjoy your evening'],
+]);
+
 it('reads a yearly subscription\'s real charge', function () {
     $user = homeSignedInUser();
 
@@ -360,7 +375,7 @@ it('reads all clear once every task is ticked', function () {
         $component->call('toggleTask', Task::where('title', $title)->sole()->id);
     }
 
-    expect(homeTodayLine($component))->toBe('all clear today. go enjoy your evening')
+    expect(homeTodayLine($component))->toBe('all clear today. go enjoy your afternoon')
         ->and(homeAside($component, 'Today'))->toBe('0 left');
 });
 
@@ -489,7 +504,7 @@ it('shows every empty line and leaves the deals card out when there is no data',
 
     $component = Livewire::test(Home::class);
 
-    expect(homeTodayLine($component))->toBe('all clear today. go enjoy your evening')
+    expect(homeTodayLine($component))->toBe('all clear today. go enjoy your afternoon')
         ->and(homeChipTexts($component))->toBe(['0 to buy', '0 deals ending', '€0.00 / mo'])
         ->and(homeAside($component, 'Today'))->toBe('0 left')
         ->and(homeCard($component, 'Today')->querySelector('p')->textContent)->toBe('nothing due today')

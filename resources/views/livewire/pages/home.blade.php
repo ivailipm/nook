@@ -33,10 +33,10 @@
     </div>
 
     <div class="flex flex-col gap-1.5">
-        <span class="text-[11px] font-bold tracking-[0.14em] text-cream-muted">{{ Str::upper(now()->format('l · j F')) }}</span>
-        <h1 class="font-display text-[38px] leading-[1.02] font-semibold tracking-[-0.02em] break-words wide:text-[52px] [&_em]:font-medium [&_em]:text-accent [&_em]:italic">{{ HomeDashboard::greeting(now()) }},<br><em>{{ $user->name }}</em></h1>
+        <span class="text-[11px] font-bold tracking-[0.14em] text-cream-muted">{{ Str::upper($now->format('l · j F')) }}</span>
+        <h1 class="font-display text-[38px] leading-[1.02] font-semibold tracking-[-0.02em] break-words wide:text-[52px] [&_em]:font-medium [&_em]:text-accent [&_em]:italic">{{ HomeDashboard::greeting($now) }},<br><em>{{ $user->name }}</em></h1>
         <svg viewBox="0 0 120 12" width="120" height="12" aria-hidden="true" stroke-linecap="round" class="-mt-0.5 ml-1 fill-none stroke-accent stroke-2 wide:ml-1.5"><path d="M2 8c12-8 20 6 32 0s20-6 32 0 20 6 32 0 14-5 20-2"></path></svg>
-        <span class="font-script text-[21px] text-cream/80">{{ HomeDashboard::todayLine($dashboard->todayLeft) }}</span>
+        <span class="font-script text-[21px] text-cream/80">{{ HomeDashboard::todayLine($dashboard->todayLeft, $now) }}</span>
     </div>
 
     <div class="flex flex-wrap gap-2">

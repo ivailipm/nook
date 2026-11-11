@@ -36,13 +36,41 @@ it('reads the hour in the app timezone and leaves the date it was given alone', 
 });
 
 it('counts today\'s open tasks in words up to nine', function (int $open, string $line) {
-    expect(HomeDashboard::todayLine($open))->toBe($line);
+    expect(HomeDashboard::todayLine($open, now()))->toBe($line);
 })->with([
-    [0, 'all clear today. go enjoy your evening'],
+    [0, 'all clear today. go enjoy your afternoon'],
     [1, 'one small thing and you’re done'],
     [2, 'two small things and you’re done'],
     [3, 'three small things and you’re done'],
     [9, 'nine small things and you’re done'],
+    [10, '10 small things and you’re done'],
+]);
+
+it('says all clear for the part of the day the greeting names', function (string $time, string $line) {
+    expect(HomeDashboard::todayLine(0, Carbon::parse("2026-10-29 {$time}", 'Europe/Brussels')))->toBe($line);
+})->with([
+    ['04:59', 'all clear today. go enjoy your evening'],
+    ['05:00', 'all clear today. go enjoy your morning'],
+    ['11:59', 'all clear today. go enjoy your morning'],
+    ['12:00', 'all clear today. go enjoy your afternoon'],
+    ['17:59', 'all clear today. go enjoy your afternoon'],
+    ['18:00', 'all clear today. go enjoy your evening'],
+    ['23:30', 'all clear today. go enjoy your evening'],
+]);
+
+it('reads the all-clear hour in the app timezone and leaves the date it was given alone', function () {
+    $at = Carbon::parse('2026-10-29 17:30', 'UTC');
+
+    expect(HomeDashboard::todayLine(0, $at))->toBe('all clear today. go enjoy your evening')
+        ->and($at->timezoneName)->toBe('UTC');
+});
+
+it('counts the same at any hour', function (int $open, string $line) {
+    expect(HomeDashboard::todayLine($open, Carbon::parse('2026-10-29 08:00', 'Europe/Brussels')))->toBe($line)
+        ->and(HomeDashboard::todayLine($open, Carbon::parse('2026-10-29 20:00', 'Europe/Brussels')))->toBe($line);
+})->with([
+    [1, 'one small thing and you’re done'],
+    [3, 'three small things and you’re done'],
     [10, '10 small things and you’re done'],
 ]);
 

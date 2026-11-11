@@ -74,24 +74,43 @@ final readonly class HomeDashboard
      */
     public static function greeting(CarbonInterface $at): string
     {
-        $hour = $at->copy()->setTimezone(config()->string('app.timezone'))->hour;
-
-        return match (true) {
-            $hour >= 5 && $hour < 12 => 'Good morning',
-            $hour >= 12 && $hour < 18 => 'Good afternoon',
-            default => 'Good evening',
+        return match (self::partOfDay($at)) {
+            'morning' => 'Good morning',
+            'afternoon' => 'Good afternoon',
+            'evening' => 'Good evening',
         };
     }
 
     /**
-     * The handwritten line under the greeting, with the number in words up to nine.
+     * The handwritten line under the greeting, with the number in words up to nine. The all-clear names the same part
+     * of the day as the greeting.
      */
-    public static function todayLine(int $open): string
+    public static function todayLine(int $open, CarbonInterface $at): string
     {
         return match ($open) {
-            0 => 'all clear today. go enjoy your evening',
+            0 => match (self::partOfDay($at)) {
+                'morning' => 'all clear today. go enjoy your morning',
+                'afternoon' => 'all clear today. go enjoy your afternoon',
+                'evening' => 'all clear today. go enjoy your evening',
+            },
             1 => 'one small thing and you’re done',
             default => (self::WORDS[$open] ?? $open).' small things and you’re done',
+        };
+    }
+
+    /**
+     * Morning from 05:00, afternoon from 12:00 and evening from 18:00 to 04:59, read in the app's timezone on a copy.
+     *
+     * @return 'morning'|'afternoon'|'evening'
+     */
+    private static function partOfDay(CarbonInterface $at): string
+    {
+        $hour = $at->copy()->setTimezone(config()->string('app.timezone'))->hour;
+
+        return match (true) {
+            $hour >= 5 && $hour < 12 => 'morning',
+            $hour >= 12 && $hour < 18 => 'afternoon',
+            default => 'evening',
         };
     }
 }
