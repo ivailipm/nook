@@ -6,6 +6,7 @@ use App\Livewire\Pages\Home;
 use App\Livewire\Pages\Subscriptions;
 use App\Livewire\Pages\Todo;
 use App\Livewire\Sheets\SubscriptionSheet;
+use App\Livewire\Sheets\TaskSheet;
 use App\Livewire\SidebarLinks;
 use App\Models\GroceryItem;
 use App\Models\Promo;
@@ -171,6 +172,9 @@ it('dispatches nav-counts-changed after each action that changes a count', funct
     'SubscriptionSheet deleteSubscription' => fn (User $user) => Livewire::test(SubscriptionSheet::class)
         ->dispatch('show-subscription', id: Subscription::factory()->for($user)->create()->id)
         ->call('deleteSubscription'),
+    'TaskSheet deleteTask' => fn (User $user) => Livewire::test(TaskSheet::class)
+        ->dispatch('show-task', id: Task::factory()->for($user)->create()->id)
+        ->call('deleteTask'),
 ]);
 
 it('dispatches nothing when an action changed nothing', function (Closure $action) {
@@ -189,6 +193,13 @@ it('dispatches nothing when an action changed nothing', function (Closure $actio
         ->assertHasNoErrors()
         ->assertDispatched('subscription-changed'),
     'SubscriptionSheet deleteSubscription with nothing loaded' => fn () => Livewire::test(SubscriptionSheet::class)->call('deleteSubscription'),
+    'TaskSheet save' => fn (User $user) => Livewire::test(TaskSheet::class)
+        ->dispatch('show-task', id: Task::factory()->for($user)->create()->id)
+        ->set('editTaskTitle', 'Renamed')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertDispatched('task-changed'),
+    'TaskSheet deleteTask with nothing loaded' => fn () => Livewire::test(TaskSheet::class)->call('deleteTask'),
 ]);
 
 it('dispatches nothing from the actions that leave every count alone', function () {

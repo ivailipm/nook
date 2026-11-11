@@ -523,3 +523,50 @@ it('escapes every value the user typed', function () {
     expect($this->get('/')->assertOk()->getContent())->not->toContain($script)->toContain(e($script))
         ->and(Livewire::test(Home::class)->html())->not->toContain($script);
 });
+
+it('makes each Today row\'s text a button that opens the edit sheet', function () {
+    homeSeededUser();
+
+    $page = homeHtml(Livewire::test(Home::class));
+
+    foreach (['Return library book', 'Send CV to two companies', 'Put out the PMD bag', 'Water the plants'] as $title) {
+        $task = Task::where('title', $title)->sole();
+        $button = $page->getElementById("task-open-{$task->id}");
+
+        expect($button->tagName)->toBe('BUTTON')
+            ->and(trim($button->closest('section')->querySelector('h2')->textContent))->toBe('Today')
+            ->and($button->getAttribute('type'))->toBe('button')
+            ->and($button->getAttribute('aria-haspopup'))->toBe('dialog')
+            ->and($button->getAttribute('x-on:click'))->toBe("\$dispatch('show-task', { id: {$task->id} })")
+            ->and($button->hasAttribute('aria-pressed'))->toBeFalse()
+            ->and($button->hasAttribute('aria-label'))->toBeFalse()
+            ->and($button->previousElementSibling->getAttribute('id'))->toBe("today-check-{$task->id}")
+            ->and($button->querySelector('div'))->toBeNull()
+            ->and($button->getAttribute('class'))->toBe('relative flex min-w-0 flex-1 cursor-pointer flex-col text-left break-words before:absolute before:inset-x-0 before:-inset-y-2')
+            ->and(array_map(fn (string $class) => $button->classList->contains($class), ['cursor-pointer', 'text-left', 'relative', 'before:absolute', 'before:inset-x-0', 'before:-inset-y-2']))
+            ->toBe([true, true, true, true, true, true])
+            ->and(homeText($button->firstElementChild))->toBe($title);
+    }
+});
+
+it('refreshes on task-changed and gives the saved row its focus back', function () {
+    homeSeededUser();
+
+    $task = Task::where('title', 'Send CV to two companies')->sole();
+    $component = Livewire::test(Home::class);
+
+    $task->update(['due_date' => null]);
+
+    expect(homeAside($component, 'Today'))->toBe('3 left');
+
+    $component->dispatch('task-changed', id: $task->id)
+        ->assertJs("document.getElementById('task-open-{$task->id}')?.focus()");
+
+    expect(homeAside($component, 'Today'))->toBe('2 left')
+        ->and(homeTodayLine($component))->toBe('two small things and you’re done')
+        ->and(homeTodayRows($component))->toBe([
+            'Return library book: School · overdue',
+            'Put out the PMD bag: Home · due today',
+            'Water the plants: Home · done (done)',
+        ]);
+});

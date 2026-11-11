@@ -455,3 +455,43 @@ it('reads the morning nudge as on for a row inserted without it', function () {
 
     expect(User::find($id)->morning_nudge)->toBeTrue();
 });
+
+it('makes each row\'s text a button that opens the edit sheet, in every group', function () {
+    app(TaskSeeder::class)->run($this->user);
+
+    $page = todoHtml(Livewire::test(Todo::class));
+
+    foreach (['Return library book' => 'Overdue', 'Water the plants' => 'Done'] as $title => $group) {
+        $task = $this->user->tasks()->where('title', $title)->sole();
+        $button = $page->getElementById("task-open-{$task->id}");
+
+        expect($button->tagName)->toBe('BUTTON')
+            ->and(trim($button->closest('section')->querySelector('h2')->textContent))->toBe($group)
+            ->and($button->getAttribute('type'))->toBe('button')
+            ->and($button->getAttribute('aria-haspopup'))->toBe('dialog')
+            ->and($button->getAttribute('x-on:click'))->toBe("\$dispatch('show-task', { id: {$task->id} })")
+            ->and($button->hasAttribute('aria-pressed'))->toBeFalse()
+            ->and($button->hasAttribute('aria-label'))->toBeFalse()
+            ->and($button->previousElementSibling->getAttribute('id'))->toBe("task-check-{$task->id}")
+            ->and($button->querySelector('div'))->toBeNull()
+            ->and($button->getAttribute('class'))->toBe('flex min-w-0 flex-1 cursor-pointer flex-col gap-1 pt-2.5 text-left break-words')
+            ->and($button->classList->contains('cursor-pointer'))->toBeTrue()
+            ->and($button->classList->contains('text-left'))->toBeTrue()
+            ->and(trim($button->firstElementChild->textContent))->toBe($title)
+            ->and($button->lastElementChild->getAttribute('class'))->toBe('flex flex-wrap items-center gap-2 text-[12px] text-cream-muted');
+    }
+});
+
+it('refreshes on task-changed and gives the saved row its focus back', function () {
+    $task = Task::factory()->for($this->user)->create(['title' => 'Stamps', 'tag' => TaskTag::Home, 'due_date' => today()]);
+    $component = Livewire::test(Todo::class);
+
+    $task->update(['due_date' => today()->addDay()]);
+
+    expect(todoCards($component))->toBe(['Today · 1 task' => ['Stamps: due today | home']]);
+
+    $component->dispatch('task-changed', id: $task->id)
+        ->assertJs("document.getElementById('task-open-{$task->id}')?.focus()");
+
+    expect(todoCards($component))->toBe(['Upcoming · 1 task' => ['Stamps: due tomorrow | home']]);
+});

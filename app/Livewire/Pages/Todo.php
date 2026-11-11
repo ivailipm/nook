@@ -65,6 +65,16 @@ class Todo extends Component
         $this->dispatch('toast', message: $toggle->message($user));
     }
 
+    /**
+     * The task sheet saved or deleted a task, so the page re-renders. A saved task can move to another group, which
+     * rebuilds its row, so the row's button takes focus back by id once the page has changed; a deleted task has none.
+     */
+    #[On('task-changed')]
+    public function taskChanged(int $id): void
+    {
+        $this->js("document.getElementById('task-open-{$id}')?.focus()");
+    }
+
     public function render(): View
     {
         $user = auth()->user();

@@ -55,9 +55,16 @@
                                 x-on:click="const focused = document.activeElement === $el; $wire.toggle({{ $task->id }}).then(() => focused && document.getElementById('task-check-{{ $task->id }}')?.focus())"
                                 class="-ml-3"
                             />
-                            <div class="flex min-w-0 flex-1 flex-col gap-1 pt-2.5 break-words">
+                            {{-- Opens the edit sheet. The checkbox stays its own button, so ticking never opens it. --}}
+                            <button
+                                type="button"
+                                id="task-open-{{ $task->id }}"
+                                aria-haspopup="dialog"
+                                x-on:click="$dispatch('show-task', { id: {{ $task->id }} })"
+                                class="flex min-w-0 flex-1 cursor-pointer flex-col gap-1 pt-2.5 text-left break-words"
+                            >
                                 <span @class(['text-[15px] font-semibold', 'line-through opacity-55' => $task->done])>{{ $task->title }}</span>
-                                <div class="flex flex-wrap items-center gap-2 text-[12px] text-cream-muted">
+                                <span class="flex flex-wrap items-center gap-2 text-[12px] text-cream-muted">
                                     @if ($task->priority !== null)
                                         <span @class([
                                             'inline-flex items-center gap-1 font-bold',
@@ -86,8 +93,8 @@
                                         </span>
                                     @endif
                                     <span class="rounded-full bg-white/9 px-2 py-px text-cream">{{ $task->tag->value }}</span>
-                                </div>
-                            </div>
+                                </span>
+                            </button>
                         </div>
                     @endforeach
                 </x-card>

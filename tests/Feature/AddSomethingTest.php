@@ -96,6 +96,13 @@ it('puts the add-task sheet on every section page once', function (string $uri) 
         ->and(trim($dialogs->item(0)->querySelector('h2')->textContent))->toBe('New task');
 })->with('section pages');
 
+it('puts the task sheet on every section page once', function (string $uri) {
+    $dialogs = sectionPage($uri)->querySelectorAll('dialog#sheet-task');
+
+    expect($dialogs)->toHaveCount(1)
+        ->and(trim($dialogs->item(0)->querySelector('h2')->textContent))->toBe('Edit task');
+})->with('section pages');
+
 it('puts the promo sheet and the add-promo sheet on every section page once', function (string $uri) {
     $page = sectionPage($uri);
 
