@@ -55,6 +55,16 @@ class Home extends Component
         $this->dispatch('toast', message: $toggle->message($user));
     }
 
+    /**
+     * The task sheet saved or deleted a task, so the page re-renders. A saved task can move on the Today card or leave
+     * it, so the row's button takes focus back by id once the page has changed, when the row is still there.
+     */
+    #[On('task-changed')]
+    public function taskChanged(int $id): void
+    {
+        $this->js("document.getElementById('task-open-{$id}')?.focus()");
+    }
+
     public function render(): View
     {
         $user = auth()->user();

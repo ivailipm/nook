@@ -61,10 +61,17 @@
                         x-on:click="const focused = document.activeElement === $el; $wire.toggleTask({{ $task->id }}).then(() => focused && document.getElementById('today-check-{{ $task->id }}')?.focus())"
                         class="-mt-2.5 -mr-2 -ml-3"
                     />
-                    <div class="flex min-w-0 flex-1 flex-col break-words">
+                    {{-- Opens the edit sheet. The ::before covers the row's padding above and below, so the hit area is at least 44px without moving the layout, and it doesn't reach sideways over the checkbox. --}}
+                    <button
+                        type="button"
+                        id="task-open-{{ $task->id }}"
+                        aria-haspopup="dialog"
+                        x-on:click="$dispatch('show-task', { id: {{ $task->id }} })"
+                        class="relative flex min-w-0 flex-1 cursor-pointer flex-col text-left break-words before:absolute before:inset-x-0 before:-inset-y-2"
+                    >
                         <span @class(['text-[14px] font-semibold', 'line-through opacity-55' => $task->done])>{{ $task->title }}</span>
                         <span class="text-[12px] text-cream-muted">{{ $task->homeMeta() }}</span>
-                    </div>
+                    </button>
                 </div>
             @empty
                 <p class="py-5 text-center font-script text-[21px] text-cream/78">nothing due today</p>
