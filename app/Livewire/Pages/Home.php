@@ -72,6 +72,8 @@ class Home extends Component
         return view('livewire.pages.home', [
             'user' => $user,
             'dashboard' => HomeDashboard::for($user),
+            // Read once, so the date, the greeting and the line under it can't disagree at a boundary.
+            'now' => now(),
         ]);
     }
 }
