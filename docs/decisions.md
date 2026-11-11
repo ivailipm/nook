@@ -32,7 +32,7 @@ Where these differ from `docs/nook-design/` (the prototype included), these win.
 - A cancelled free trial doesn't count as money saved; only cancelled paid subscriptions do. Cancelling a trial must leave it recognisable as a trial. Confirmed on 2026-11-03.
 - Offline in the shop: the PWA shows the last-loaded grocery list read-only. Ticking offline and syncing later is a separate, later job. Confirmed on 2026-11-03.
 - Tasks and subscriptions can be edited and deleted: tapping one opens its sheet to change or delete it. Confirmed on 2026-11-03.
-- The Home all-clear line changes with the time of day, on the greeting's boundaries (05:00, 12:00, 18:00). The evening wording stays `all clear today. go enjoy your evening`; the morning and afternoon wording is approved in that job's PR. Confirmed on 2026-11-03.
+- The Home all-clear line changes with the time of day, on the greeting's boundaries (05:00, 12:00, 18:00). The evening wording stays `all clear today. go enjoy your evening`; from 05:00 to 11:59 it reads `all clear today. go enjoy your morning` and from 12:00 to 17:59 `all clear today. go enjoy your afternoon`. Confirmed on 2026-11-03.
 
 ## Still open
 
