@@ -118,8 +118,24 @@ it('colours the group titles and strikes through a done title', function () {
         'font-display text-[19px] font-semibold',
         'font-display text-[19px] font-semibold text-cream-muted',
     ])
-        ->and($titleOf('Water the plants')->getAttribute('class'))->toBe('text-[15px] font-semibold line-through opacity-55')
-        ->and($titleOf('Return library book')->getAttribute('class'))->toBe('text-[15px] font-semibold');
+        ->and($titleOf('Water the plants')->getAttribute('class'))->toBe('text-[15px] font-semibold in-data-done:line-through in-data-done:opacity-55')
+        ->and($titleOf('Return library book')->getAttribute('class'))->toBe('text-[15px] font-semibold in-data-done:line-through in-data-done:opacity-55');
+});
+
+it('marks only a done row with data-done and gives its checkbox both labels', function () {
+    app(TaskSeeder::class)->run($this->user);
+
+    $component = Livewire::test(Todo::class);
+    $done = todoCheckbox($component, $this->user->tasks()->where('title', 'Water the plants')->sole());
+    $open = todoCheckbox($component, $this->user->tasks()->where('title', 'Return library book')->sole());
+    $labels = fn (Element $checkbox) => array_map(fn (string $name) => $checkbox->getAttribute($name), ['aria-pressed', 'aria-label', 'data-label', 'data-checked-label']);
+
+    expect(array_map(fn (Element $row) => $row->getAttribute('wire:key'), iterator_to_array(todoHtml($component)->querySelectorAll('[data-done]'))))
+        ->toBe([$done->parentElement->getAttribute('wire:key')])
+        ->and($done->parentElement->getAttribute('wire:key'))->toStartWith('task-')
+        ->and($open->parentElement->hasAttribute('data-done'))->toBeFalse()
+        ->and($labels($done))->toBe(['true', 'Mark not done: Water the plants', 'Complete: Water the plants', 'Mark not done: Water the plants'])
+        ->and($labels($open))->toBe(['false', 'Complete: Return library book', 'Complete: Return library book', 'Mark not done: Return library book']);
 });
 
 it('colours the due label by its state', function (?int $days, bool $done, ?string $colour) {
@@ -236,7 +252,7 @@ it('refuses to tick another user\'s task', function (?int $repeatWeekday) {
     $theirs = Task::factory()->create(['due_date' => today(), 'repeat_weekday' => $repeatWeekday]);
 
     Livewire::test(Todo::class)
-        ->call('toggle', $theirs->id)
+        ->call('toggle', $theirs->id, true)
         ->assertNotFound();
 
     expect($theirs->fresh()->done)->toBeFalse()
@@ -255,7 +271,7 @@ it('rolls a recurring task over and shows the next one under Upcoming', function
     $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => TaskTag::Home, 'due_date' => today(), 'repeat_weekday' => 4]);
 
     $component = Livewire::test(Todo::class)
-        ->call('toggle', $task->id)
+        ->call('toggle', $task->id, true)
         ->assertDispatched('toast', message: 'Done. Next one: Thu 5 Nov');
 
     expect(todoCards($component))->toBe([
@@ -268,12 +284,12 @@ it('ticks a one-off without a toast, and unticking returns it to its group', fun
     $task = Task::factory()->for($this->user)->create(['title' => 'Stamps', 'tag' => TaskTag::Home, 'due_date' => today()]);
 
     $component = Livewire::test(Todo::class)
-        ->call('toggle', $task->id)
+        ->call('toggle', $task->id, true)
         ->assertNotDispatched('toast');
 
     expect(todoCards($component))->toBe(['Done · 1 task' => ['Stamps: due today | home (done)']]);
 
-    $component->call('toggle', $task->id)->assertNotDispatched('toast');
+    $component->call('toggle', $task->id, false)->assertNotDispatched('toast');
 
     expect(todoCards($component))->toBe(['Today · 1 task' => ['Stamps: due today | home']]);
 });
@@ -281,12 +297,46 @@ it('ticks a one-off without a toast, and unticking returns it to its group', fun
 it('unticks and re-ticks a recurring task without a second copy or toast', function () {
     $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => TaskTag::Home, 'due_date' => today(), 'repeat_weekday' => 4]);
 
-    $component = Livewire::test(Todo::class)->call('toggle', $task->id);
+    $component = Livewire::test(Todo::class)->call('toggle', $task->id, true);
 
-    $component->call('toggle', $task->id)->assertNotDispatched('toast');
-    $component->call('toggle', $task->id)->assertNotDispatched('toast');
+    $component->call('toggle', $task->id, false)->assertNotDispatched('toast');
+    $component->call('toggle', $task->id, true)->assertNotDispatched('toast');
 
     expect($this->user->tasks()->count())->toBe(2);
+});
+
+it('ticks a recurring task once when the same tick is saved twice', function () {
+    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => TaskTag::Home, 'due_date' => today(), 'repeat_weekday' => 4]);
+
+    $component = Livewire::test(Todo::class)
+        ->call('toggle', $task->id, true)
+        ->assertDispatched('toast', message: 'Done. Next one: Thu 5 Nov');
+
+    $component->call('toggle', $task->id, true)
+        ->assertNotDispatched('toast')
+        ->assertDispatched('nav-counts-changed');
+
+    expect($this->user->tasks()->count())->toBe(2)
+        ->and($task->fresh()->done)->toBeTrue()
+        ->and(todoCards($component))->toBe([
+            'Upcoming · 1 task' => ['Bins: due 5 Nov | every Thursday | home'],
+            'Done · 1 task' => ['Bins: due today | every Thursday | home (done)'],
+        ]);
+});
+
+it('leaves an open task alone when it is unticked', function () {
+    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => TaskTag::Home, 'due_date' => today(), 'repeat_weekday' => 4]);
+    $before = $task->fresh()->getAttributes();
+
+    $this->travel(1)->minutes();
+
+    $component = Livewire::test(Todo::class)
+        ->call('toggle', $task->id, false)
+        ->assertNotDispatched('toast');
+
+    expect($task->fresh()->getAttributes())->toBe($before)
+        ->and($this->user->tasks()->count())->toBe(1)
+        ->and(todoCards($component))->toBe(['Today · 1 task' => ['Bins: due today | every Thursday | home']]);
 });
 
 it('names the checkbox by the task and restores its focus by id', function () {
@@ -297,13 +347,14 @@ it('names the checkbox by the task and restores its focus by id', function () {
 
     expect($open->getAttribute('aria-label'))->toBe('Complete: Stamps')
         ->and($open->getAttribute('aria-pressed'))->toBe('false')
-        ->and($open->getAttribute('x-on:click'))->toBe("const focused = document.activeElement === \$el; \$wire.toggle({$task->id}).then(() => focused && document.getElementById('task-check-{$task->id}')?.focus())");
+        ->and($open->getAttribute('x-on:click'))->toBe("const focused = document.activeElement === \$el; \$tick((done) => \$wire.toggle({$task->id}, done)).then(() => focused && document.getElementById('task-check-{$task->id}')?.focus())");
 
-    $component->call('toggle', $task->id);
+    $component->call('toggle', $task->id, true);
     $done = todoCheckbox($component, $task);
 
     expect($done->getAttribute('aria-label'))->toBe('Mark not done: Stamps')
-        ->and($done->getAttribute('aria-pressed'))->toBe('true');
+        ->and($done->getAttribute('aria-pressed'))->toBe('true')
+        ->and($done->getAttribute('x-on:click'))->toBe($open->getAttribute('x-on:click'));
 });
 
 it('renders a title as text', function () {
@@ -316,7 +367,8 @@ it('renders a title as text', function () {
     expect($page->querySelector('img'))->toBeNull()
         ->and(trim($checkbox->nextElementSibling->firstElementChild->textContent))->toBe('<img src=x onerror=alert(1)>')
         ->and($checkbox->getAttribute('aria-label'))->toBe('Complete: <img src=x onerror=alert(1)>')
-        ->and($checkbox->getAttribute('x-on:click'))->not->toContain('img');
+        ->and($checkbox->getAttribute('x-on:click'))->not->toContain('img')
+        ->and($checkbox->getAttribute('data-checked-label'))->toBe('Mark not done: <img src=x onerror=alert(1)>');
 });
 
 it('stores a quick-add line\'s markup as typed', function () {

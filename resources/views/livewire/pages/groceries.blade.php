@@ -40,21 +40,23 @@
 
                 @foreach ($group['items'] as $item)
                     @php($detail = $byCategory ? $item->store->value : $item->category->value)
-                    <div wire:key="item-{{ $item->id }}" class="flex min-h-[54px] items-center gap-2 border-t border-hairline">
-                        {{-- Ticking moves the row, which drops focus, so a checkbox that had focus takes it back. --}}
+                    <div wire:key="item-{{ $item->id }}" @if ($item->done) data-done @endif class="flex min-h-[54px] items-center gap-2 border-t border-hairline">
+                        {{-- $tick flips the box, the struck-through name and the grey badge at once and saves the tapped state. The reply moves the row, which drops focus, so a checkbox that had focus takes it back. --}}
                         <x-checkbox
                             variant="grocery"
+                            id="item-check-{{ $item->id }}"
                             :checked="$item->done"
-                            :label="($item->done ? 'Untick ' : 'Tick off ').$item->name"
-                            x-on:click="const focused = document.activeElement === $el; $wire.toggle({{ $item->id }}).then(() => focused && $el.focus())"
+                            :label="'Tick off '.$item->name"
+                            :checked-label="'Untick '.$item->name"
+                            x-on:click="const focused = document.activeElement === $el; $tick((done) => $wire.toggle({{ $item->id }}, done)).then(() => focused && $el.focus())"
                             class="-ml-3"
                         />
                         <span class="flex min-w-0 flex-1 flex-col break-words">
-                            <span @class(['text-[15px] font-semibold', 'line-through opacity-55' => $item->done])>{{ $item->name }}</span>
+                            <span class="text-[15px] font-semibold in-data-done:line-through in-data-done:opacity-55">{{ $item->name }}</span>
                             <span class="text-[12px] text-cream-muted">{{ $item->qty === null ? $detail : $item->qty.' · '.$detail }}</span>
                         </span>
                         @if ($item->hasActivePromo())
-                            <x-promo-badge :promo="$item->promo" :done="$item->done" />
+                            <x-promo-badge :promo="$item->promo" />
                         @endif
                         <button
                             type="button"

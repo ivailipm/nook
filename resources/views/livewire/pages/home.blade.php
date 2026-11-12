@@ -50,15 +50,16 @@
             <x-slot:aside>{{ $dashboard->todayLeft }} left</x-slot:aside>
 
             @forelse ($dashboard->todayTasks as $task)
-                <div wire:key="today-{{ $task->id }}" class="flex items-start gap-2.5 border-t border-hairline py-2">
-                    {{-- Ticking moves the row, which can rebuild the checkbox, so a checkbox that had focus takes it back by id. The negative margins set the 18px box where the prototype's sits inside the 44px hit area. --}}
+                <div wire:key="today-{{ $task->id }}" @if ($task->done) data-done @endif class="flex items-start gap-2.5 border-t border-hairline py-2">
+                    {{-- $tick flips the box and the struck-through title at once and saves the tapped state. The reply moves the row, which can rebuild the checkbox, so a checkbox that had focus takes it back by id. The negative margins set the 18px box where the prototype's sits inside the 44px hit area. --}}
                     <x-checkbox
                         variant="task"
                         size="sm"
                         id="today-check-{{ $task->id }}"
                         :checked="$task->done"
-                        :label="($task->done ? 'Mark not done: ' : 'Complete: ').$task->title"
-                        x-on:click="const focused = document.activeElement === $el; $wire.toggleTask({{ $task->id }}).then(() => focused && document.getElementById('today-check-{{ $task->id }}')?.focus())"
+                        :label="'Complete: '.$task->title"
+                        :checked-label="'Mark not done: '.$task->title"
+                        x-on:click="const focused = document.activeElement === $el; $tick((done) => $wire.toggleTask({{ $task->id }}, done)).then(() => focused && document.getElementById('today-check-{{ $task->id }}')?.focus())"
                         class="-mt-2.5 -mr-2 -ml-3"
                     />
                     {{-- Opens the edit sheet. The ::before covers the row's padding above and below, so the hit area is at least 44px without moving the layout, and it doesn't reach sideways over the checkbox. --}}
@@ -69,7 +70,7 @@
                         x-on:click="$dispatch('show-task', { id: {{ $task->id }} })"
                         class="relative flex min-w-0 flex-1 cursor-pointer flex-col text-left break-words before:absolute before:inset-x-0 before:-inset-y-2"
                     >
-                        <span @class(['text-[14px] font-semibold', 'line-through opacity-55' => $task->done])>{{ $task->title }}</span>
+                        <span class="text-[14px] font-semibold in-data-done:line-through in-data-done:opacity-55">{{ $task->title }}</span>
                         <span class="text-[12px] text-cream-muted">{{ $task->homeMeta() }}</span>
                     </button>
                 </div>
@@ -85,15 +86,16 @@
 
             @forelse ($dashboard->groceries as $item)
                 <div wire:key="grocery-{{ $item->id }}" class="flex min-h-11 items-center gap-2.5 border-t border-hairline">
-                    {{-- Ticking removes the row, so a checkbox that had focus hands it to the one now in its place, else the last one, else the card's link. --}}
+                    {{-- $tick only ticks here: it flips the box and the struck-through name at once, and a second tap does nothing. The reply removes the row, so a checkbox that had focus hands it to the one now in its place, else the last one, else the card's link. --}}
                     <x-checkbox
                         variant="grocery"
                         size="sm"
+                        id="item-check-{{ $item->id }}"
                         :label="'Tick off '.$item->name"
-                        x-on:click="const focused = document.activeElement === $el, card = $el.closest('section'), boxes = () => [...card.querySelectorAll('button[aria-pressed]')], place = boxes().indexOf($el); $wire.tickItem({{ $item->id }}).then(() => focused && (boxes()[place] ?? boxes().at(-1) ?? card.querySelector('a')).focus())"
+                        x-on:click="const focused = document.activeElement === $el, card = $el.closest('section'), boxes = () => [...card.querySelectorAll('button[aria-pressed]')], place = boxes().indexOf($el); $tick(() => $wire.tickItem({{ $item->id }}), { tickOnly: true }).then(() => focused && (boxes()[place] ?? boxes().at(-1) ?? card.querySelector('a')).focus())"
                         class="-mr-2 -ml-3"
                     />
-                    <span class="min-w-0 flex-1 text-[14px] font-semibold break-words">{{ $item->name }}</span>
+                    <span class="min-w-0 flex-1 text-[14px] font-semibold break-words in-data-done:line-through in-data-done:opacity-55">{{ $item->name }}</span>
                     @if ($item->hasActivePromo())
                         <x-promo-badge :promo="$item->promo" variant="home" />
                     @else

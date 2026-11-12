@@ -45,14 +45,15 @@
                     <x-slot:aside>{{ $group['tasks']->count() }} {{ Str::plural('task', $group['tasks']->count()) }}</x-slot:aside>
 
                     @foreach ($group['tasks'] as $task)
-                        <div wire:key="task-{{ $task->id }}" class="flex min-h-14 items-start gap-2 border-t border-hairline py-1">
-                            {{-- Ticking moves the row to another card, which rebuilds the checkbox, so a checkbox that had focus takes it back by id. --}}
+                        <div wire:key="task-{{ $task->id }}" @if ($task->done) data-done @endif class="flex min-h-14 items-start gap-2 border-t border-hairline py-1">
+                            {{-- $tick flips the box and the struck-through title at once and saves the tapped state. The reply moves the row to another card, which rebuilds the checkbox, so a checkbox that had focus takes it back by id. --}}
                             <x-checkbox
                                 variant="task"
                                 id="task-check-{{ $task->id }}"
                                 :checked="$task->done"
-                                :label="($task->done ? 'Mark not done: ' : 'Complete: ').$task->title"
-                                x-on:click="const focused = document.activeElement === $el; $wire.toggle({{ $task->id }}).then(() => focused && document.getElementById('task-check-{{ $task->id }}')?.focus())"
+                                :label="'Complete: '.$task->title"
+                                :checked-label="'Mark not done: '.$task->title"
+                                x-on:click="const focused = document.activeElement === $el; $tick((done) => $wire.toggle({{ $task->id }}, done)).then(() => focused && document.getElementById('task-check-{{ $task->id }}')?.focus())"
                                 class="-ml-3"
                             />
                             {{-- Opens the edit sheet. The checkbox stays its own button, so ticking never opens it. --}}
@@ -63,7 +64,7 @@
                                 x-on:click="$dispatch('show-task', { id: {{ $task->id }} })"
                                 class="flex min-w-0 flex-1 cursor-pointer flex-col gap-1 pt-2.5 text-left break-words"
                             >
-                                <span @class(['text-[15px] font-semibold', 'line-through opacity-55' => $task->done])>{{ $task->title }}</span>
+                                <span class="text-[15px] font-semibold in-data-done:line-through in-data-done:opacity-55">{{ $task->title }}</span>
                                 <span class="flex flex-wrap items-center gap-2 text-[12px] text-cream-muted">
                                     @if ($task->priority !== null)
                                         <span @class([

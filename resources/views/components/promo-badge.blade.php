@@ -1,6 +1,6 @@
-@props(['promo', 'done' => false, 'variant' => 'list'])
+@props(['promo', 'variant' => 'list'])
 
-{{-- The deal on a list row, opening the promo sheet: gold while the item is open, greyed once it's ticked. The store shows from 900px. The home variant is Home's Groceries card: soft peach, smaller, and with the store at every width. The ::before reaches past the pill, so the hit area is at least 44px without moving the layout. A very long deal truncates, so it can't push the row's remove button away. --}}
+{{-- The deal on a list row, opening the promo sheet: gold while the item is open, greyed inside a row with data-done, which resources/js/ticks.js sets the moment the item is ticked. The store shows from 900px. The home variant is Home's Groceries card: soft peach, smaller, and with the store at every width. The ::before reaches past the pill, so the hit area is at least 44px without moving the layout. A very long deal truncates, so it can't push the row's remove button away. --}}
 <button
     type="button"
     aria-haspopup="dialog"
@@ -8,8 +8,7 @@
     x-on:click="$dispatch('show-promo', { id: {{ $promo->id }} })"
     {{ $attributes->class([
         'relative inline-flex max-w-[60%] cursor-pointer items-center gap-[5px] rounded-full px-2.5 py-1 text-[12px] font-bold whitespace-nowrap before:absolute before:inset-x-0 before:-inset-y-2.5' => $variant === 'list',
-        'bg-accent text-on-accent' => $variant === 'list' && ! $done,
-        'bg-white/12 text-cream/80' => $variant === 'list' && $done,
+        'bg-accent text-on-accent in-data-done:bg-white/12 in-data-done:text-cream/80' => $variant === 'list',
         'relative inline-flex max-w-[60%] cursor-pointer items-center gap-[5px] rounded-full bg-[#f6d9c4] px-[9px] py-[3px] text-[11px] font-bold whitespace-nowrap text-[#4a1d10] before:absolute before:inset-x-0 before:-inset-y-3' => $variant === 'home',
     ]) }}
 >

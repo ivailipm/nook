@@ -97,23 +97,42 @@ it('renders a chip as a toggle button', function () {
 });
 
 it('renders a checkbox with its state and label', function (string $variant, string $shape) {
-    $unchecked = renderBlade("<x-checkbox variant=\"{$variant}\" label=\"Tick off Milk\" />")->querySelector('button');
-    $checked = renderBlade("<x-checkbox variant=\"{$variant}\" :checked=\"true\" label=\"Untick Milk\" />")->querySelector('button');
+    $unchecked = renderBlade("<x-checkbox variant=\"{$variant}\" label=\"Tick off Milk\" checked-label=\"Untick Milk\" />")->querySelector('button');
+    $checked = renderBlade("<x-checkbox variant=\"{$variant}\" :checked=\"true\" label=\"Tick off Milk\" checked-label=\"Untick Milk\" />")->querySelector('button');
 
-    expect($unchecked->getAttribute('type'))->toBe('button')
-        ->and($unchecked->getAttribute('aria-label'))->toBe('Tick off Milk')
+    foreach ([$unchecked, $checked] as $checkbox) {
+        $check = $checkbox->querySelector('span > svg[aria-hidden="true"]');
+
+        // The check mark is always there, hidden by class until the button is pressed, so ticking moves nothing.
+        expect($checkbox->getAttribute('type'))->toBe('button')
+            ->and($checkbox->getAttribute('data-label'))->toBe('Tick off Milk')
+            ->and($checkbox->getAttribute('data-checked-label'))->toBe('Untick Milk')
+            ->and($checkbox->hasAttribute('checked-label'))->toBeFalse()
+            ->and($checkbox->querySelector('span')->classList->contains($shape))->toBeTrue()
+            ->and($check->classList->contains('hidden'))->toBeTrue()
+            ->and($check->classList->contains('group-aria-pressed/checkbox:block'))->toBeTrue();
+    }
+
+    expect($unchecked->getAttribute('aria-label'))->toBe('Tick off Milk')
         ->and($unchecked->getAttribute('aria-pressed'))->toBe('false')
-        ->and($unchecked->querySelector('svg'))->toBeNull()
-        ->and($unchecked->querySelector('span')->classList->contains($shape))->toBeTrue()
-        ->and($checked->getAttribute('type'))->toBe('button')
         ->and($checked->getAttribute('aria-label'))->toBe('Untick Milk')
         ->and($checked->getAttribute('aria-pressed'))->toBe('true')
-        ->and($checked->querySelector('svg[aria-hidden="true"]'))->not->toBeNull()
-        ->and($checked->querySelector('span')->classList->contains($shape))->toBeTrue();
+        ->and($checked->innerHTML)->toBe($unchecked->innerHTML);
 })->with([
     'grocery' => ['grocery', 'rounded-checkbox'],
     'task' => ['task', 'rounded-full'],
 ]);
+
+it('uses the label for both states without a checked-label', function () {
+    $unchecked = renderBlade('<x-checkbox label="Tick off Milk" />')->querySelector('button');
+    $checked = renderBlade('<x-checkbox :checked="true" label="Tick off Milk" />')->querySelector('button');
+
+    foreach ([$unchecked, $checked] as $checkbox) {
+        expect($checkbox->getAttribute('aria-label'))->toBe('Tick off Milk')
+            ->and($checkbox->getAttribute('data-label'))->toBe('Tick off Milk')
+            ->and($checkbox->getAttribute('data-checked-label'))->toBe('Tick off Milk');
+    }
+});
 
 it('renders a grocery checkbox by default', function () {
     $box = renderBlade('<x-checkbox label="Tick off Milk" />')->querySelector('button > span');
@@ -294,12 +313,13 @@ it('keeps an active polaroid in colour', function () {
         ->and($label->getAttribute('class'))->toBe('font-script text-[18px] font-bold text-ends-soon');
 });
 
-it('renders a promo badge, gold while the item is open and grey once it is done', function (bool $done, string $colours) {
+it('renders a promo badge, gold, and grey inside a row with data-done', function () {
     $promo = componentPromo('2026-10-31');
-    $badge = renderBlade('<x-promo-badge :promo="$promo" :done="$done" />', ['promo' => $promo, 'done' => $done])->querySelector('body > button');
+    $badge = renderBlade('<x-promo-badge :promo="$promo" />', ['promo' => $promo])->querySelector('body > button');
     $wide = $badge->querySelector('[class~="wide:inline"]');
 
-    expect($badge->getAttribute('class'))->toBe("relative inline-flex max-w-[60%] cursor-pointer items-center gap-[5px] rounded-full px-2.5 py-1 text-[12px] font-bold whitespace-nowrap before:absolute before:inset-x-0 before:-inset-y-2.5 {$colours}")
+    expect($badge->getAttribute('class'))->toBe('relative inline-flex max-w-[60%] cursor-pointer items-center gap-[5px] rounded-full px-2.5 py-1 text-[12px] font-bold whitespace-nowrap before:absolute before:inset-x-0 before:-inset-y-2.5 bg-accent text-on-accent in-data-done:bg-white/12 in-data-done:text-cream/80')
+        ->and($badge->hasAttribute('done'))->toBeFalse()
         ->and($badge->getAttribute('type'))->toBe('button')
         ->and($badge->getAttribute('aria-haspopup'))->toBe('dialog')
         ->and($badge->getAttribute('aria-label'))->toBe('Show the Colruyt deal: 2+1 free')
@@ -310,10 +330,7 @@ it('renders a promo badge, gold while the item is open and grey once it is done'
         ->and($wide->getAttribute('class'))->toBe('hidden wide:inline')
         ->and(preg_replace('/\s+/u', ' ', trim($badge->textContent)))->toBe('2+1 free · Colruyt')
         ->and($badge->querySelectorAll('button, a, [tabindex]'))->toHaveCount(0);
-})->with([
-    'open' => [false, 'bg-accent text-on-accent'],
-    'done' => [true, 'bg-white/12 text-cream/80'],
-]);
+});
 
 it('renders an empty toast live region', function () {
     $status = renderBlade('<x-toast />')->querySelector('[role="status"]');
@@ -347,30 +364,32 @@ it('renders existing fields as before, and a date field in mono with a dark pick
         ->and($gold->getAttribute('class'))->toBe('min-h-[46px] w-full rounded-[12px] border bg-black/30 px-3 font-mono text-[15px] [color-scheme:dark] border-gold');
 });
 
-it('keeps the md checkbox as it was', function (string $variant, string $box, string $check) {
-    $checkbox = renderBlade("<x-checkbox variant=\"{$variant}\" :checked=\"true\" label=\"Untick Milk\" />")->querySelector('button');
+it('keeps the md checkbox as it was, its fill following aria-pressed', function (string $variant, string $box, string $check) {
+    foreach (['false', 'true'] as $checked) {
+        $checkbox = renderBlade("<x-checkbox variant=\"{$variant}\" :checked=\"{$checked}\" label=\"Tick off Milk\" />")->querySelector('button');
 
-    expect($checkbox->getAttribute('class'))->toBe('grid size-11 flex-none cursor-pointer place-items-center')
-        ->and($checkbox->querySelector('span')->getAttribute('class'))->toBe($box)
-        ->and($checkbox->querySelector('svg')->getAttribute('class'))->toContain($check);
+        expect($checkbox->getAttribute('class'))->toBe('group/checkbox grid size-11 flex-none cursor-pointer place-items-center')
+            ->and($checkbox->querySelector('span')->getAttribute('class'))->toBe($box)
+            ->and($checkbox->querySelector('svg')->getAttribute('class'))->toContain($check);
+    }
 })->with([
-    'grocery' => ['grocery', 'grid size-[22px] place-items-center border-2 rounded-checkbox border-gold bg-gold text-on-gold', 'size-[15px] stroke-[3.5]'],
-    'task' => ['task', 'grid size-[22px] place-items-center border-2 rounded-full border-apricot bg-apricot text-on-apricot', 'size-3.5 stroke-[3.5]'],
+    'grocery' => ['grocery', 'grid size-[22px] place-items-center border-2 rounded-checkbox border-cream-faint group-aria-pressed/checkbox:border-gold group-aria-pressed/checkbox:bg-gold group-aria-pressed/checkbox:text-on-gold', 'size-[15px] stroke-[3.5] hidden group-aria-pressed/checkbox:block'],
+    'task' => ['task', 'grid size-[22px] place-items-center border-2 rounded-full border-cream-faint group-aria-pressed/checkbox:border-apricot group-aria-pressed/checkbox:bg-apricot group-aria-pressed/checkbox:text-on-apricot', 'size-3.5 stroke-[3.5] hidden group-aria-pressed/checkbox:block'],
 ]);
 
 it('renders the sm checkbox with an 18px box and a 44px hit area, its radius the same for both variants', function (string $variant, string $fill) {
     $open = renderBlade("<x-checkbox variant=\"{$variant}\" size=\"sm\" label=\"Tick off Milk\" />")->querySelector('button');
     $ticked = renderBlade("<x-checkbox variant=\"{$variant}\" size=\"sm\" :checked=\"true\" label=\"Untick Milk\" />")->querySelector('button');
 
-    expect($open->getAttribute('class'))->toBe('grid size-11 flex-none cursor-pointer place-items-center')
-        ->and($open->querySelector('span')->getAttribute('class'))->toBe('grid size-[18px] place-items-center rounded-[4px] border-[1.5px] border-cream-faint')
-        ->and($open->querySelector('svg'))->toBeNull()
+    expect($open->getAttribute('class'))->toBe('group/checkbox grid size-11 flex-none cursor-pointer place-items-center')
+        ->and($open->querySelector('span')->getAttribute('class'))->toBe("grid size-[18px] place-items-center rounded-[4px] border-[1.5px] border-cream-faint {$fill}")
+        ->and($open->querySelector('svg')->getAttribute('class'))->toContain('size-[13px] stroke-[3.5] hidden group-aria-pressed/checkbox:block')
         ->and($open->hasAttribute('size'))->toBeFalse()
-        ->and($ticked->querySelector('span')->getAttribute('class'))->toBe("grid size-[18px] place-items-center rounded-[4px] border-[1.5px] {$fill}")
-        ->and($ticked->querySelector('svg')->getAttribute('class'))->toContain('size-[13px] stroke-[3.5]');
+        ->and($ticked->querySelector('span')->getAttribute('class'))->toBe("grid size-[18px] place-items-center rounded-[4px] border-[1.5px] border-cream-faint {$fill}")
+        ->and($ticked->querySelector('svg')->getAttribute('class'))->toContain('size-[13px] stroke-[3.5] hidden group-aria-pressed/checkbox:block');
 })->with([
-    'grocery' => ['grocery', 'border-gold bg-gold text-on-gold'],
-    'task' => ['task', 'border-apricot bg-apricot text-on-apricot'],
+    'grocery' => ['grocery', 'group-aria-pressed/checkbox:border-gold group-aria-pressed/checkbox:bg-gold group-aria-pressed/checkbox:text-on-gold'],
+    'task' => ['task', 'group-aria-pressed/checkbox:border-apricot group-aria-pressed/checkbox:bg-apricot group-aria-pressed/checkbox:text-on-apricot'],
 ]);
 
 it('renders the home promo badge in soft peach with the store at every width', function () {

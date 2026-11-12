@@ -319,7 +319,7 @@ it('moves a ticked task after the open ones and updates the line and the aside',
     homeSeededUser();
 
     $component = Livewire::test(Home::class)
-        ->call('toggleTask', Task::where('title', 'Send CV to two companies')->sole()->id)
+        ->call('toggleTask', Task::where('title', 'Send CV to two companies')->sole()->id, true)
         ->assertDispatched('nav-counts-changed')
         ->assertNotDispatched('toast');
 
@@ -337,12 +337,12 @@ it('keeps an overdue task on the card once ticked, and undoes it', function () {
     homeSeededUser();
 
     $task = Task::where('title', 'Return library book')->sole();
-    $component = Livewire::test(Home::class)->call('toggleTask', $task->id);
+    $component = Livewire::test(Home::class)->call('toggleTask', $task->id, true);
 
     expect(homeTodayRows($component))->toContain('Return library book: School · done (done)')
         ->and(homeAside($component, 'Today'))->toBe('2 left');
 
-    $component->call('toggleTask', $task->id);
+    $component->call('toggleTask', $task->id, false);
 
     expect(homeTodayRows($component)[0])->toBe('Return library book: School · overdue')
         ->and(homeAside($component, 'Today'))->toBe('3 left');
@@ -354,16 +354,54 @@ it('toasts the next recurring task once, and a retick makes no second copy', fun
     $task = Task::where('title', 'Put out the PMD bag')->sole();
 
     Livewire::test(Home::class)
-        ->call('toggleTask', $task->id)
+        ->call('toggleTask', $task->id, true)
         ->assertDispatched('toast', message: 'Done. Next one: Thu 5 Nov')
         ->assertDispatched('nav-counts-changed');
 
     expect(Task::where('title', 'Put out the PMD bag')->count())->toBe(2);
 
-    Livewire::test(Home::class)->call('toggleTask', $task->id)->assertNotDispatched('toast');
-    Livewire::test(Home::class)->call('toggleTask', $task->id)->assertNotDispatched('toast');
+    Livewire::test(Home::class)->call('toggleTask', $task->id, false)->assertNotDispatched('toast');
+    Livewire::test(Home::class)->call('toggleTask', $task->id, true)->assertNotDispatched('toast');
 
     expect(Task::where('title', 'Put out the PMD bag')->count())->toBe(2);
+});
+
+it('ticks a recurring task once when the same tick is saved twice', function () {
+    homeSeededUser();
+
+    $task = Task::where('title', 'Put out the PMD bag')->sole();
+
+    $component = Livewire::test(Home::class)
+        ->call('toggleTask', $task->id, true)
+        ->assertDispatched('toast', message: 'Done. Next one: Thu 5 Nov');
+
+    $component->call('toggleTask', $task->id, true)
+        ->assertNotDispatched('toast')
+        ->assertDispatched('nav-counts-changed');
+
+    expect(Task::where('title', 'Put out the PMD bag')->count())->toBe(2)
+        ->and($task->fresh()->done)->toBeTrue()
+        ->and(homeTodayRows($component))->toContain('Put out the PMD bag: Home · done (done)')
+        ->and(homeAside($component, 'Today'))->toBe('2 left');
+});
+
+it('leaves an open task alone when it is unticked', function () {
+    homeSeededUser();
+
+    $task = Task::where('title', 'Send CV to two companies')->sole();
+    $before = $task->fresh()->getAttributes();
+    $count = Task::count();
+
+    $this->travel(1)->minutes();
+
+    $component = Livewire::test(Home::class)
+        ->call('toggleTask', $task->id, false)
+        ->assertNotDispatched('toast');
+
+    expect($task->fresh()->getAttributes())->toBe($before)
+        ->and(Task::count())->toBe($count)
+        ->and(homeTodayRows($component)[1])->toBe('Send CV to two companies: Internship · due today')
+        ->and(homeAside($component, 'Today'))->toBe('3 left');
 });
 
 it('reads all clear once every task is ticked', function () {
@@ -372,7 +410,7 @@ it('reads all clear once every task is ticked', function () {
     $component = Livewire::test(Home::class);
 
     foreach (['Return library book', 'Send CV to two companies', 'Put out the PMD bag'] as $title) {
-        $component->call('toggleTask', Task::where('title', $title)->sole()->id);
+        $component->call('toggleTask', Task::where('title', $title)->sole()->id, true);
     }
 
     expect(homeTodayLine($component))->toBe('all clear today. go enjoy your afternoon')
@@ -422,7 +460,7 @@ it('gives a 404 for another user\'s task and leaves it unchanged', function () {
 
     $theirs = Task::factory()->create(['due_date' => today()]);
 
-    Livewire::test(Home::class)->call('toggleTask', $theirs->id)->assertNotFound();
+    Livewire::test(Home::class)->call('toggleTask', $theirs->id, true)->assertNotFound();
 
     expect($theirs->fresh()->done)->toBeFalse();
 });
@@ -561,6 +599,50 @@ it('makes each Today row\'s text a button that opens the edit sheet', function (
             ->and(array_map(fn (string $class) => $button->classList->contains($class), ['cursor-pointer', 'text-left', 'relative', 'before:absolute', 'before:inset-x-0', 'before:-inset-y-2']))
             ->toBe([true, true, true, true, true, true])
             ->and(homeText($button->firstElementChild))->toBe($title);
+    }
+});
+
+it('marks only a done Today row with data-done and ticks with $tick, passing only the task\'s id', function () {
+    homeSeededUser();
+
+    $card = homeCard(Livewire::test(Home::class), 'Today');
+    $id = Task::where('title', 'Return library book')->sole()->id;
+    $done = $card->querySelector('#today-check-'.Task::where('title', 'Water the plants')->sole()->id);
+    $open = $card->querySelector("#today-check-{$id}");
+    $labels = fn (Element $checkbox) => array_map(fn (string $name) => $checkbox->getAttribute($name), ['aria-pressed', 'aria-label', 'data-label', 'data-checked-label']);
+    $title = fn (Element $checkbox) => $checkbox->nextElementSibling->firstElementChild;
+
+    expect(array_map(fn (Element $row) => $row->getAttribute('wire:key'), iterator_to_array($card->querySelectorAll('[data-done]'))))
+        ->toBe([$done->parentElement->getAttribute('wire:key')])
+        ->and($done->parentElement->getAttribute('wire:key'))->toStartWith('today-')
+        ->and($open->parentElement->hasAttribute('data-done'))->toBeFalse()
+        ->and($labels($done))->toBe(['true', 'Mark not done: Water the plants', 'Complete: Water the plants', 'Mark not done: Water the plants'])
+        ->and($labels($open))->toBe(['false', 'Complete: Return library book', 'Complete: Return library book', 'Mark not done: Return library book'])
+        ->and($title($done)->getAttribute('class'))->toBe('text-[14px] font-semibold in-data-done:line-through in-data-done:opacity-55')
+        ->and($title($open)->getAttribute('class'))->toBe($title($done)->getAttribute('class'))
+        ->and($open->getAttribute('x-on:click'))->toBe("const focused = document.activeElement === \$el; \$tick((done) => \$wire.toggleTask({$id}, done)).then(() => focused && document.getElementById('today-check-{$id}')?.focus())")
+        ->and($open->getAttribute('x-on:click'))->not->toContain('library');
+});
+
+it('gives each Groceries row a tick-only checkbox with one label and no data-done', function () {
+    homeSeededUser();
+
+    $card = homeCard(Livewire::test(Home::class), 'Groceries');
+    $coffee = GroceryItem::where('name', 'Coffee beans')->sole();
+    $checkbox = $card->querySelector("#item-check-{$coffee->id}");
+
+    expect($card->querySelectorAll('[data-done]'))->toHaveCount(0)
+        ->and($checkbox->parentElement->getAttribute('wire:key'))->toBe("grocery-{$coffee->id}")
+        ->and(array_map(fn (string $name) => $checkbox->getAttribute($name), ['aria-pressed', 'aria-label', 'data-label', 'data-checked-label']))
+        ->toBe(['false', 'Tick off Coffee beans', 'Tick off Coffee beans', 'Tick off Coffee beans'])
+        ->and($checkbox->nextElementSibling->getAttribute('class'))->toBe('min-w-0 flex-1 text-[14px] font-semibold break-words in-data-done:line-through in-data-done:opacity-55')
+        ->and($checkbox->getAttribute('x-on:click'))->toBe("const focused = document.activeElement === \$el, card = \$el.closest('section'), boxes = () => [...card.querySelectorAll('button[aria-pressed]')], place = boxes().indexOf(\$el); \$tick(() => \$wire.tickItem({$coffee->id}), { tickOnly: true }).then(() => focused && (boxes()[place] ?? boxes().at(-1) ?? card.querySelector('a')).focus())")
+        ->and($checkbox->getAttribute('x-on:click'))->not->toContain('Coffee');
+
+    foreach ($card->querySelectorAll('button[aria-pressed]') as $box) {
+        expect($box->getAttribute('id'))->toStartWith('item-check-')
+            ->and($box->getAttribute('data-checked-label'))->toBe($box->getAttribute('data-label'))
+            ->and($box->getAttribute('aria-label'))->toBe($box->getAttribute('data-label'));
     }
 });
 
