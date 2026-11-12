@@ -22,15 +22,19 @@
 
             <x-nav.floating :current="$section" />
 
-            <x-toast />
-            <x-add-something />
-            <livewire:sheets.add-item />
-            <livewire:sheets.promo-sheet />
-            <livewire:sheets.add-promo />
-            <livewire:sheets.add-task />
-            <livewire:sheets.task-sheet />
-            <livewire:sheets.add-subscription />
-            <livewire:sheets.subscription-sheet />
+            {{-- A navigation carries this block over as it is (the same toast, sheets and Livewire components), while the rest of the page comes fresh from the server. resources/js/app.js writes each new page's title into the live region. --}}
+            @persist('overlays')
+                <x-toast />
+                <div id="page-announcer" aria-live="polite" class="sr-only"></div>
+                <x-add-something />
+                <livewire:sheets.add-item />
+                <livewire:sheets.promo-sheet />
+                <livewire:sheets.add-promo />
+                <livewire:sheets.add-task />
+                <livewire:sheets.task-sheet />
+                <livewire:sheets.add-subscription />
+                <livewire:sheets.subscription-sheet />
+            @endpersist
         </div>
     </body>
 </html>

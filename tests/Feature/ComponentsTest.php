@@ -170,6 +170,14 @@ it('renders the groceries switch without a promo count by default', function () 
     expect(trim($links->item(1)->textContent))->toBe('Promo board');
 });
 
+it('makes both groceries switch links navigate with wire:navigate', function () {
+    $links = renderBlade('<x-groceries-switch :current="$current" />', ['current' => Section::Promos])->querySelectorAll('nav a');
+
+    expect($links)->toHaveCount(2)
+        ->and($links->item(0)->hasAttribute('wire:navigate'))->toBeTrue()
+        ->and($links->item(1)->hasAttribute('wire:navigate'))->toBeTrue();
+});
+
 /**
  * A Colruyt promo on Thursday 29 October 2026 that ends on the given date.
  */
@@ -413,6 +421,13 @@ it('renders a link chip as a link with a dot and a 44px hit area, not a toggle',
         ->and(trim($chip->textContent))->toBe('6 to buy')
         ->and($dot->getAttribute('aria-hidden'))->toBe('true')
         ->and($dot->getAttribute('class'))->toBe('size-[7px] rounded-full bg-peach');
+});
+
+it('makes a link chip navigate with wire:navigate', function () {
+    $chip = renderBlade('<x-link-chip href="/groceries" dot="bg-peach">6 to buy</x-link-chip>')->querySelector('body > a');
+
+    expect($chip->hasAttribute('wire:navigate'))->toBeTrue()
+        ->and($chip->getAttribute('wire:navigate'))->toBe('');
 });
 
 it('renders a subscription avatar', function (?string $cancelledAt, string $classes) {

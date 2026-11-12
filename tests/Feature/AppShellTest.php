@@ -63,3 +63,35 @@ it('shows today in Brussels in the sidebar and on Home', function () {
     expect($sidebar->lastElementChild->textContent)->toBe('Thursday · 29 October')
         ->and($eyebrow->textContent)->toBe('THURSDAY · 29 OCTOBER');
 });
+
+it('navigates with wire:navigate and keeps the toast, the announcer and the sheets in @persist', function (string $uri) {
+    $page = HTMLDocument::createFromString($this->get($uri)->assertOk()->getContent(), LIBXML_NOERROR);
+    $persisted = fn (Element $element) => $element->closest('[x-persist]') !== null;
+    $links = iterator_to_array($page->querySelectorAll('a'));
+    $announcer = $page->querySelector('[aria-live="polite"]');
+    $dialogs = array_map(
+        fn (string $id) => $page->getElementById($id),
+        ['sheet-add-something', 'sheet-add-item', 'sheet-promo', 'sheet-add-promo', 'sheet-add-task', 'sheet-task', 'sheet-add-subscription', 'sheet-subscription'],
+    );
+
+    expect($links)->not->toBeEmpty()
+        ->and(array_map(fn (Element $link) => $link->hasAttribute('wire:navigate'), $links))->each->toBeTrue()
+        ->and($page->querySelectorAll('[x-persist]'))->toHaveCount(1)
+        ->and($persisted($page->querySelector('[role="status"]')))->toBeTrue()
+        ->and($persisted($announcer))->toBeTrue()
+        ->and($announcer->textContent)->toBe('')
+        ->and(array_map(fn (Element $dialog) => $dialog->tagName, $dialogs))->each->toBe('DIALOG')
+        ->and(array_map($persisted, $dialogs))->each->toBeTrue()
+        ->and(array_map($persisted, iterator_to_array($page->querySelectorAll('nav[aria-label="Main"], main'))))->toBe([false, false, false]);
+})->with(['home' => '/', 'groceries' => '/groceries', 'promo board' => '/promos', 'to-do' => '/todo', 'subscriptions' => '/subscriptions']);
+
+it('colours the navigate progress bar peach', function () {
+    expect(config('livewire.navigate'))->toBe(['show_progress_bar' => true, 'progress_bar_color' => '#f0b48a']);
+});
+
+it('loads the CSS and JS without preload tags, which a navigation would fetch again', function () {
+    $head = HTMLDocument::createFromString($this->withVite()->get('/')->assertOk()->getContent(), LIBXML_NOERROR)->head;
+
+    expect($head->querySelectorAll('link[rel="stylesheet"], script[type="module"]'))->toHaveCount(2)
+        ->and($head->querySelectorAll('link[rel="preload"], link[rel="modulepreload"]'))->toHaveCount(0);
+});

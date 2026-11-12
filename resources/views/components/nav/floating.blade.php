@@ -21,6 +21,7 @@
 
         <a
             href="{{ route($section->value) }}"
+            wire:navigate
             @if ($section === $current->tab()) aria-current="page" @endif
             @class([
                 'flex h-full flex-col items-center justify-center gap-[3px] text-[10px]',
