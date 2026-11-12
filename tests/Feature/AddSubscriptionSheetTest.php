@@ -309,6 +309,21 @@ it('goes back to the defaults on resetForm', function (array $chips) {
         ->and(addSubscriptionHtml($component)->getElementById('subscriptionPrice')->hasAttribute('aria-invalid'))->toBeFalse();
 })->with('default chips');
 
+it('resets on open and on close', function () {
+    $wrapper = addSubscriptionHtml(Livewire::test(AddSubscription::class))->querySelector('body > div');
+
+    expect($wrapper->getAttribute('x-on:open-sheet.window'))->toBe("\$event.detail.name === 'add-subscription' && \$wire.resetForm()")
+        ->and($wrapper->getAttribute('x-on:close.capture'))->toBe('$wire.resetForm()');
+});
+
+it('works the date out from today on resetForm, for a sheet mounted on an earlier day', function () {
+    $component = Livewire::test(AddSubscription::class)->assertSet('nextPaymentDate', '2026-11-28');
+
+    $this->travelTo(Carbon::parse('2026-10-30 12:00', 'Europe/Brussels'));
+
+    $component->call('resetForm')->assertSet('nextPaymentDate', '2026-11-29');
+});
+
 it('creates the row with every attribute spelled out', function () {
     $createSubscription = new CreateSubscription;
 

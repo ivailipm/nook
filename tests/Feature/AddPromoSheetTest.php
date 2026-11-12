@@ -161,10 +161,10 @@ it('disables the submit button while the photo uploads or the form saves', funct
         ->and(trim($submit->textContent))->toBe('Pin to promo board');
 });
 
-it('refreshes on open and resets on close', function () {
+it('resets on open and on close', function () {
     $wrapper = addPromoHtml(addPromoForm())->querySelector('body > div');
 
-    expect($wrapper->getAttribute('x-on:open-sheet.window'))->toBe("\$event.detail.name === 'add-promo' && \$wire.\$refresh()")
+    expect($wrapper->getAttribute('x-on:open-sheet.window'))->toBe("\$event.detail.name === 'add-promo' && \$wire.resetForm()")
         ->and($wrapper->getAttribute('x-on:close.capture'))->toBe("\$wire.\$cancelUpload('photo'); \$wire.resetForm()");
 });
 

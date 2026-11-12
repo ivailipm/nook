@@ -1,5 +1,8 @@
-{{-- Every close (the close button, Escape or the scrim) resets the form, so the sheet always opens empty with the date 30 days ahead. A dialog's close event doesn't bubble, hence the capture. --}}
-<div x-on:close.capture="$wire.resetForm()">
+{{-- Every close (the close button, Escape or the scrim) resets the form, so the sheet always opens empty. A dialog's close event doesn't bubble, hence the capture. Opening resets the form too, so the date is 30 days from today on a page left open overnight (the layout keeps the sheet across navigations). --}}
+<div
+    x-on:close.capture="$wire.resetForm()"
+    x-on:open-sheet.window="$event.detail.name === 'add-subscription' && $wire.resetForm()"
+>
     <x-sheet name="add-subscription" title="New subscription">
         <form wire:submit="save" class="flex flex-col gap-3.5">
             <div class="grid grid-cols-[minmax(0,1fr)_120px] gap-2.5">

@@ -135,7 +135,7 @@ class AddPromo extends Component
     }
 
     /**
-     * Back to an empty form with today's dates, without errors or an upload. The view calls this whenever the sheet closes.
+     * Back to an empty form with today's dates, without errors or an upload. The view calls this whenever the sheet opens or closes.
      */
     public function resetForm(): void
     {
