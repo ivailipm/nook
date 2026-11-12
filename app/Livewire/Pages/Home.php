@@ -16,9 +16,9 @@ use Livewire\Component;
 #[On('promo-changed')]
 class Home extends Component
 {
-    public function toggleTask(int $id, ToggleTask $toggleTask): void
+    public function toggleTask(int $id, bool $done, ToggleTask $toggleTask): void
     {
-        $next = $toggleTask->handle(auth()->user()->tasks()->findOrFail($id));
+        $next = $toggleTask->handle(auth()->user()->tasks()->findOrFail($id), $done);
 
         if ($next !== null) {
             $this->dispatch('toast', message: $toggleTask->message($next));

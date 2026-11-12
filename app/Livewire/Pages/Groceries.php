@@ -42,11 +42,15 @@ class Groceries extends Component
         $this->dispatch('nav-counts-changed');
     }
 
-    public function toggle(int $id): void
+    /**
+     * Sets the state that was tapped, never the opposite of the stored one, so a stale tab or a repeated save lands
+     * the right way. An item already in that state isn't written.
+     */
+    public function toggle(int $id, bool $done): void
     {
         $item = auth()->user()->groceryItems()->findOrFail($id);
 
-        $item->update(['done' => ! $item->done]);
+        $item->update(['done' => $done]);
 
         $this->dispatch('nav-counts-changed');
     }

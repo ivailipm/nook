@@ -154,10 +154,10 @@ it('shows counts in the sidebar and none in the floating nav', function () {
 it('dispatches nav-counts-changed after each action that changes a count', function (Closure $action) {
     $action($this->user)->assertDispatched('nav-counts-changed');
 })->with([
-    'Home toggleTask' => fn (User $user) => Livewire::test(Home::class)->call('toggleTask', Task::factory()->for($user)->create(['due_date' => today()])->id),
+    'Home toggleTask' => fn (User $user) => Livewire::test(Home::class)->call('toggleTask', Task::factory()->for($user)->create(['due_date' => today()])->id, true),
     'Home tickItem' => fn (User $user) => Livewire::test(Home::class)->call('tickItem', GroceryItem::factory()->for($user)->create()->id),
     'Groceries add' => fn () => Livewire::test(Groceries::class)->set('quickItem', 'milk')->call('add'),
-    'Groceries toggle' => fn (User $user) => Livewire::test(Groceries::class)->call('toggle', GroceryItem::factory()->for($user)->create()->id),
+    'Groceries toggle' => fn (User $user) => Livewire::test(Groceries::class)->call('toggle', GroceryItem::factory()->for($user)->create()->id, true),
     'Groceries remove' => fn (User $user) => Livewire::test(Groceries::class)->call('remove', GroceryItem::factory()->for($user)->create()->id),
     'Groceries clearTicked' => function (User $user) {
         GroceryItem::factory()->for($user)->create(['done' => true]);
@@ -165,7 +165,7 @@ it('dispatches nav-counts-changed after each action that changes a count', funct
         return Livewire::test(Groceries::class)->call('clearTicked');
     },
     'Todo add' => fn () => Livewire::test(Todo::class)->set('quickTask', 'stamps today')->call('add'),
-    'Todo toggle' => fn (User $user) => Livewire::test(Todo::class)->call('toggle', Task::factory()->for($user)->create()->id),
+    'Todo toggle' => fn (User $user) => Livewire::test(Todo::class)->call('toggle', Task::factory()->for($user)->create()->id, true),
     'Subscriptions cancelTrial' => fn (User $user) => Livewire::test(Subscriptions::class)->call('cancelTrial', Subscription::factory()->for($user)->create(['is_trial' => true])->id),
     'Subscriptions cancel' => fn (User $user) => Livewire::test(Subscriptions::class)->call('cancel', Subscription::factory()->for($user)->create()->id),
     'Subscriptions resume' => fn (User $user) => Livewire::test(Subscriptions::class)->call('resume', Subscription::factory()->for($user)->create(['cancelled_at' => today()])->id),

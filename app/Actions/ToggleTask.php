@@ -7,21 +7,27 @@ use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Ticks or unticks a task. The first tick of a recurring task also creates the next one, and rolled_over
- * remembers that, so unticking and re-ticking doesn't create a second copy. Unticking leaves the next one in place.
+ * Sets a task to done or open, the state that was tapped, and leaves a task already in that state alone, so a stale
+ * tab or a repeated save can't invert it. The first tick of a recurring task also creates the next one, and
+ * rolled_over remembers that, so unticking and re-ticking doesn't create a second copy. Unticking leaves the next
+ * one in place.
  */
 class ToggleTask
 {
     /**
      * @return Task|null The next task, when this tick created one.
      */
-    public function handle(Task $task): ?Task
+    public function handle(Task $task, bool $done): ?Task
     {
-        $next = DB::transaction(function () use ($task) {
-            // Decide from the locked row, so two quick taps can't both see an open task.
+        $next = DB::transaction(function () use ($task, $done) {
+            // Decide from the locked row, so two saves of the same tick can't both see an open task.
             $current = Task::lockForUpdate()->findOrFail($task->id);
 
-            if ($current->done) {
+            if ($current->done === $done) {
+                return null;
+            }
+
+            if (! $done) {
                 $current->update(['done' => false, 'completed_at' => null]);
 
                 return null;

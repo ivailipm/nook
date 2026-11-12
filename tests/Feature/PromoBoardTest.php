@@ -286,7 +286,7 @@ it('drops the on-list pill when the linked item is ticked', function () {
 
     expect(boardPolaroids($component)[1][4])->toBeTrue();
 
-    Livewire::test(Groceries::class)->call('toggle', $coffee->id);
+    Livewire::test(Groceries::class)->call('toggle', $coffee->id, true);
 
     expect(boardPolaroids($component->call('$refresh'))[1])->toBe(['Colruyt', 'Coffee beans 1 kg', '2+1 free', 'until Sat', false]);
 });

@@ -42,9 +42,9 @@ class Todo extends Component
         $this->dispatch('nav-counts-changed');
     }
 
-    public function toggle(int $id, ToggleTask $toggleTask): void
+    public function toggle(int $id, bool $done, ToggleTask $toggleTask): void
     {
-        $next = $toggleTask->handle(auth()->user()->tasks()->findOrFail($id));
+        $next = $toggleTask->handle(auth()->user()->tasks()->findOrFail($id), $done);
 
         if ($next !== null) {
             $this->dispatch('toast', message: $toggleTask->message($next));

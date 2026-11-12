@@ -99,6 +99,7 @@ function seedGroceriesWithPromos(User $user): void
 
 /**
  * Each row's promo badge by item name, as [the text a phone reads, the part shown from 900px, gold], or null without one.
+ * Every badge has the same classes, which grey it inside a row with data-done, so gold means its row has none.
  *
  * @return array<string, array{string, string, bool}|null>
  */
@@ -118,15 +119,14 @@ function groceryBadges(Testable $component): array
 
         $wide = $badge->querySelector('[class~="wide:inline"]');
 
-        expect($badge->querySelector('svg[aria-hidden="true"]'))->not->toBeNull();
+        expect($badge->querySelector('svg[aria-hidden="true"]'))->not->toBeNull()
+            ->and(array_map(fn (string $class) => $badge->classList->contains($class), ['bg-accent', 'text-on-accent', 'in-data-done:bg-white/12', 'in-data-done:text-cream/80']))
+            ->toBe([true, true, true, true]);
 
         $badges[trim($name->firstElementChild->textContent)] = [
             trim($wide->previousSibling->textContent),
             $wide->textContent,
-            match (true) {
-                $badge->classList->contains('bg-accent') && $badge->classList->contains('text-on-accent') => true,
-                $badge->classList->contains('bg-white/12') && $badge->classList->contains('text-cream/80') => false,
-            },
+            ! $checkbox->parentElement->hasAttribute('data-done'),
         ];
     }
 
@@ -199,22 +199,42 @@ it('reads all done when nothing in a group is open', function () {
     expect(groceryCards(Livewire::test(Groceries::class)))->toBe(['Delhaize · all done' => ['Dish soap: Household (done)']]);
 });
 
-it('strikes through only a done item\'s name and labels its checkbox', function () {
-    seedGroceries($this->user);
+it('marks only a done row with data-done and gives every row the same name and badge classes', function () {
+    seedGroceriesWithPromos($this->user);
+    $bananas = groceryItem($this->user, 'Bananas');
+    $coffee = groceryItem($this->user, 'Coffee beans');
+    $pods = groceryItem($this->user, 'Laundry pods');
+    $coffee->update(['done' => true]);
 
     $page = groceriesHtml(Livewire::test(Groceries::class));
-    $done = $page->querySelector('button[aria-label="Untick Bananas"]');
-    $open = $page->querySelector('button[aria-label="Tick off Oat milk"]');
+    $done = $page->getElementById("item-check-{$coffee->id}");
+    $open = $page->getElementById("item-check-{$pods->id}");
+    $labels = fn (Element $checkbox) => array_map(fn (string $name) => $checkbox->getAttribute($name), ['aria-pressed', 'aria-label', 'data-label', 'data-checked-label']);
     $name = fn (Element $checkbox) => $checkbox->nextElementSibling->firstElementChild;
+    $badge = fn (Element $checkbox) => $checkbox->nextElementSibling->nextElementSibling;
 
-    expect($done->getAttribute('aria-pressed'))->toBe('true')
-        ->and($done->querySelector('svg'))->not->toBeNull()
-        ->and($name($done)->classList->contains('line-through'))->toBeTrue()
-        ->and($name($done)->classList->contains('opacity-55'))->toBeTrue()
-        ->and($done->nextElementSibling->lastElementChild->classList->contains('line-through'))->toBeFalse()
-        ->and($open->getAttribute('aria-pressed'))->toBe('false')
-        ->and($name($open)->classList->contains('line-through'))->toBeFalse()
+    expect(array_map(fn (Element $row) => $row->getAttribute('wire:key'), iterator_to_array($page->querySelectorAll('[data-done]'))))
+        ->toBe(["item-{$bananas->id}", "item-{$coffee->id}"])
+        ->and($done->parentElement->getAttribute('wire:key'))->toBe("item-{$coffee->id}")
+        ->and($open->parentElement->hasAttribute('data-done'))->toBeFalse()
+        ->and($labels($done))->toBe(['true', 'Untick Coffee beans', 'Tick off Coffee beans', 'Untick Coffee beans'])
+        ->and($labels($open))->toBe(['false', 'Tick off Laundry pods', 'Tick off Laundry pods', 'Untick Laundry pods'])
+        ->and($name($done)->getAttribute('class'))->toBe('text-[15px] font-semibold in-data-done:line-through in-data-done:opacity-55')
+        ->and($name($open)->getAttribute('class'))->toBe($name($done)->getAttribute('class'))
+        ->and($done->nextElementSibling->lastElementChild->getAttribute('class'))->toBe('text-[12px] text-cream-muted')
+        ->and($badge($done)->getAttribute('aria-haspopup'))->toBe('dialog')
+        ->and($badge($open)->getAttribute('class'))->toBe($badge($done)->getAttribute('class'))
         ->and($page->querySelector('button[aria-label="Remove Bananas"]'))->not->toBeNull();
+});
+
+it('ticks with $tick, passing only the item\'s id', function () {
+    $item = GroceryItem::factory()->for($this->user)->create(['name' => '<img src=x onerror=alert(1)>']);
+
+    $checkbox = groceriesHtml(Livewire::test(Groceries::class))->getElementById("item-check-{$item->id}");
+
+    expect($checkbox->getAttribute('x-on:click'))->toBe("const focused = document.activeElement === \$el; \$tick((done, \$wire) => \$wire.toggle({$item->id}, done)).then(() => focused && \$el.focus())")
+        ->and($checkbox->getAttribute('x-on:click'))->not->toContain('img')
+        ->and($checkbox->getAttribute('data-label'))->toBe('Tick off <img src=x onerror=alert(1)>');
 });
 
 it('counts the open items in the subtitle', function (array $done, string $subtitle) {
@@ -312,20 +332,38 @@ it('ticks an item, moving it to the end of its group, and unticks it', function 
     seedGroceries($this->user);
     $coffee = groceryItem($this->user, 'Coffee beans');
 
-    $component = Livewire::test(Groceries::class)->call('toggle', $coffee->id)->assertNotDispatched('toast');
+    $component = Livewire::test(Groceries::class)->call('toggle', $coffee->id, true)->assertNotDispatched('toast');
 
     expect($coffee->fresh()->done)->toBeTrue()
         ->and(groceryCards($component)['Colruyt · 1 left'])->toBe(['Laundry pods: Household', 'Coffee beans: 1kg · Pantry (done)'])
         ->and(grocerySubtitle($component))->toBe('5 things to grab, 0 with a deal')
         ->and(trim(clearButton($component)->textContent))->toBe('Clear 2 ticked');
 
-    $component->call('toggle', $coffee->id);
+    $component->call('toggle', $coffee->id, false);
 
     expect($coffee->fresh()->done)->toBeFalse()
         ->and(groceryCards($component)['Colruyt · 2 left'])->toBe(['Coffee beans: 1kg · Pantry', 'Laundry pods: Household'])
         ->and(grocerySubtitle($component))->toBe('6 things to grab, 0 with a deal')
         ->and(trim(clearButton($component)->textContent))->toBe('Clear 1 ticked');
 });
+
+it('sets the tapped state, so the same tap twice writes nothing the second time', function (string $name, bool $done) {
+    seedGroceries($this->user);
+    $item = groceryItem($this->user, $name);
+    $component = Livewire::test(Groceries::class)->call('toggle', $item->id, $done);
+    $updatedAt = $item->fresh()->updated_at;
+
+    $this->travel(1)->minutes();
+
+    $component->call('toggle', $item->id, $done)->assertDispatched('nav-counts-changed')->assertNotDispatched('toast');
+
+    expect($item->fresh()->done)->toBe($done)
+        ->and($item->fresh()->updated_at->equalTo($updatedAt))->toBeTrue()
+        ->and(grocerySubtitle($component))->toBe($done ? '5 things to grab, 0 with a deal' : '7 things to grab, 0 with a deal');
+})->with([
+    'tick twice' => ['Coffee beans', true],
+    'untick twice' => ['Bananas', false],
+]);
 
 it('removes an item and hides a card left empty', function () {
     seedGroceries($this->user);
@@ -343,7 +381,7 @@ it('clears every ticked item', function () {
     $spinach = groceryItem($this->user, 'Spinach');
     $bananas = groceryItem($this->user, 'Bananas');
 
-    $component = Livewire::test(Groceries::class)->call('toggle', $spinach->id);
+    $component = Livewire::test(Groceries::class)->call('toggle', $spinach->id, true);
 
     expect(trim(clearButton($component)->textContent))->toBe('Clear 2 ticked');
 
@@ -362,7 +400,7 @@ it('shows no cards and no clear button once everything is cleared', function () 
     $component = Livewire::test(Groceries::class);
 
     foreach ($this->user->groceryItems()->where('done', false)->pluck('id') as $id) {
-        $component->call('toggle', $id);
+        $component->call('toggle', $id, true);
     }
 
     $component->call('clearTicked');
@@ -372,15 +410,18 @@ it('shows no cards and no clear button once everything is cleared', function () 
         ->and(grocerySubtitle($component))->toBe('list is empty. nice.');
 });
 
-it('refuses to tick or remove another user\'s item', function (string $action) {
+it('refuses to tick or remove another user\'s item', function (string $action, array $params) {
     $theirs = GroceryItem::factory()->create(['done' => false]);
 
-    Livewire::test(Groceries::class)->call($action, $theirs->id)->assertNotFound();
+    Livewire::test(Groceries::class)->call($action, $theirs->id, ...$params)->assertNotFound();
 
     $this->assertModelExists($theirs);
 
     expect($theirs->fresh()->done)->toBeFalse();
-})->with(['toggle', 'remove']);
+})->with([
+    'toggle' => ['toggle', [true]],
+    'remove' => ['remove', []],
+]);
 
 it('clears only the user\'s ticked items', function () {
     $mine = GroceryItem::factory()->for($this->user)->create(['done' => true]);
@@ -453,7 +494,7 @@ it('renders the badge between the name and the remove button', function () {
     expect($badge->tagName)->toBe('BUTTON')
         ->and($badge->getAttribute('aria-label'))->toBe('Show the Colruyt deal: 2+1 free')
         ->and($badge->getAttribute('aria-haspopup'))->toBe('dialog')
-        ->and($badge->getAttribute('class'))->toBe('relative inline-flex max-w-[60%] cursor-pointer items-center gap-[5px] rounded-full px-2.5 py-1 text-[12px] font-bold whitespace-nowrap before:absolute before:inset-x-0 before:-inset-y-2.5 bg-accent text-on-accent')
+        ->and($badge->getAttribute('class'))->toBe('relative inline-flex max-w-[60%] cursor-pointer items-center gap-[5px] rounded-full px-2.5 py-1 text-[12px] font-bold whitespace-nowrap before:absolute before:inset-x-0 before:-inset-y-2.5 bg-accent text-on-accent in-data-done:bg-white/12 in-data-done:text-cream/80')
         ->and($badge->querySelector('[class~="wide:inline"]')->getAttribute('class'))->toBe('hidden wide:inline')
         ->and($badge->previousElementSibling->classList->contains('flex-1'))->toBeTrue();
 });
@@ -461,7 +502,7 @@ it('renders the badge between the name and the remove button', function () {
 it('greys a ticked item\'s badge and leaves it out of the deal count', function () {
     seedGroceriesWithPromos($this->user);
 
-    $component = Livewire::test(Groceries::class)->call('toggle', groceryItem($this->user, 'Coffee beans')->id);
+    $component = Livewire::test(Groceries::class)->call('toggle', groceryItem($this->user, 'Coffee beans')->id, true);
 
     expect(groceryBadges($component)['Coffee beans'])->toBe(['2+1 free', ' · Colruyt', false])
         ->and(grocerySubtitle($component))->toBe('5 things to grab, 3 with a deal');
