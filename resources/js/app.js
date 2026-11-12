@@ -1,5 +1,6 @@
 import './bootstrap';
 import './ticks';
+import './pwa';
 
 // The detail ({ history, cached }) of the latest livewire:navigate, still null after a full page load.
 let navigation = null;

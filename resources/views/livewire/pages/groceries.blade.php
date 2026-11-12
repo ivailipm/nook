@@ -3,6 +3,13 @@
 <div class="flex flex-col gap-4.5 wide:gap-6">
     <x-page-header eyebrow="GROCERIES" :subtitle="$open === 0 ? 'list is empty. nice.' : $open.' '.Str::plural('thing', $open).' to grab, '.$deals.' with a deal'">Shopping <em>list</em></x-page-header>
 
+    {{-- Shows only on the copy of this page that the service worker (resources/js/sw.js) answers with when nook can't be reached, which it marks with data-offline-copy on <html>; resources/js/pwa.js then disables every control but "Try again" and announces this text. "Try again" is a plain onclick, so it works even if the copy opens without Alpine. --}}
+    <div id="offline-copy" class="hidden items-center gap-3 rounded-card border border-card-border bg-card-bg py-2 pr-2 pl-4 text-cream in-data-offline-copy:flex">
+        <x-lucide-cloud-off class="size-5 flex-none stroke-[1.75]" aria-hidden="true" />
+        <p class="flex-1 text-[13px]">Can't reach nook, so this is your list as of {{ now()->format('D j M, H:i') }}. Ticking and adding need a connection.</p>
+        <button type="button" onclick="location.reload()" class="min-h-11 flex-none cursor-pointer rounded-button border border-cream/40 px-3.5 text-[13px] font-bold text-cream">Try again</button>
+    </div>
+
     <x-groceries-switch :current="Section::Groceries" :promo-count="$activePromos" />
 
     {{-- The bar takes the focus ring while its input is focused. --}}

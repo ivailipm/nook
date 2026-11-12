@@ -158,3 +158,9 @@
         --color-on-accent: var(--color-on-peach);
     }
 }
+
+/* The read-only copy of the grocery list: resources/js/pwa.js disables every control but "Try again". Outside the layers, so it beats the controls' cursor-pointer. */
+[data-offline-copy] :is(button, input):disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
