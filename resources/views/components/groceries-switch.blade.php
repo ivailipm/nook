@@ -9,6 +9,7 @@
     ] as [$section, $label])
         <a
             href="{{ route($section->value) }}"
+            wire:navigate
             @if ($section === $current) aria-current="page" @endif
             @class([
                 'relative flex min-h-9 items-center rounded-full px-4 text-[13px] before:absolute before:inset-x-0 before:-inset-y-1',

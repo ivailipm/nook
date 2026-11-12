@@ -77,11 +77,11 @@
                 <p class="py-5 text-center font-script text-[21px] text-cream/78">nothing due today</p>
             @endforelse
 
-            <a href="{{ route('todo') }}" @class([$link, 'mt-1.5'])>All tasks →</a>
+            <a href="{{ route('todo') }}" wire:navigate @class([$link, 'mt-1.5'])>All tasks →</a>
         </x-card>
 
         <x-card title="Groceries">
-            <x-slot:aside><a href="{{ route('promos') }}" class="{{ $link }}">Promo board →</a></x-slot:aside>
+            <x-slot:aside><a href="{{ route('promos') }}" wire:navigate class="{{ $link }}">Promo board →</a></x-slot:aside>
 
             @forelse ($dashboard->groceries as $item)
                 <div wire:key="grocery-{{ $item->id }}" class="flex min-h-11 items-center gap-2.5 border-t border-hairline">
@@ -125,7 +125,7 @@
     @endif
 
     <x-card title="Coming up">
-        <x-slot:aside><a href="{{ route('subscriptions') }}" class="{{ $link }}">All subscriptions →</a></x-slot:aside>
+        <x-slot:aside><a href="{{ route('subscriptions') }}" wire:navigate class="{{ $link }}">All subscriptions →</a></x-slot:aside>
 
         @forelse ($dashboard->comingUp as $subscription)
             <div wire:key="coming-up-{{ $subscription->id }}" class="flex min-h-[46px] items-center gap-2.5 border-t border-hairline">

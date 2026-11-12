@@ -4,6 +4,7 @@
     @foreach (Section::cases() as $section)
         <a
             href="{{ route($section->value) }}"
+            wire:navigate
             @if ($section === $current) aria-current="page" @endif
             @class([
                 'flex min-h-11 items-center gap-3 rounded-button px-3 text-[15px]',

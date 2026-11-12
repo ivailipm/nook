@@ -82,7 +82,7 @@ class AddSubscription extends Component
     }
 
     /**
-     * Back to an empty monthly form with the date 30 days ahead, without errors. The view calls this whenever the sheet closes.
+     * Back to an empty monthly form with the date 30 days ahead, without errors. The view calls this whenever the sheet opens or closes.
      */
     public function resetForm(): void
     {

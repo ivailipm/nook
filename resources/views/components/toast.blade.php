@@ -1,6 +1,6 @@
 @php($flashed = session('toast'))
 
-{{-- Shows the window event toast with { message } for 2.6s; a new message replaces the current one and restarts the timer. A flashed session('toast') shows the same way once the page has loaded: set after load, the role="status" region announces it. --}}
+{{-- Shows the window event toast with { message } for 2.6s; a new message replaces the current one and restarts the timer. The layout keeps the toast across a navigation, so a toast that is showing finishes on the next page. A flashed session('toast') shows the same way, but only after a full page load: set after load, the role="status" region announces it. A navigation keeps this element and never runs the new page's x-init, so a redirect that flashes a toast must not use navigate: true. --}}
 <div
     role="status"
     x-data="{ message: '', timer: null, show(message) { this.message = message; clearTimeout(this.timer); this.timer = setTimeout(() => this.message = '', 2600) } }"

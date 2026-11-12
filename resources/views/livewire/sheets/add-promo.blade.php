@@ -1,9 +1,9 @@
 @use('App\Enums\Store')
 
-{{-- Every close (the close button, Escape or the scrim) stops an upload still under way, deletes a finished one and resets the form. A dialog's close event doesn't bubble, hence the capture. Opening refreshes the sheet, so the link chips follow the list. --}}
+{{-- Every close (the close button, Escape or the scrim) stops an upload still under way, deletes a finished one and resets the form. A dialog's close event doesn't bubble, hence the capture. Opening resets the form too, so the dates start from today on a page left open overnight (the layout keeps the sheet across navigations), and the re-render makes the link chips follow the list. --}}
 <div
     x-on:close.capture="$wire.$cancelUpload('photo'); $wire.resetForm()"
-    x-on:open-sheet.window="$event.detail.name === 'add-promo' && $wire.$refresh()"
+    x-on:open-sheet.window="$event.detail.name === 'add-promo' && $wire.resetForm()"
 >
     <x-sheet name="add-promo" title="Pin a deal">
         <form wire:submit="save" class="flex flex-col gap-3.5">
