@@ -33,6 +33,7 @@
                 <livewire:sheets.add-item />
                 <livewire:sheets.promo-sheet />
                 <livewire:sheets.add-promo />
+                <livewire:sheets.stores />
                 <livewire:sheets.add-task />
                 <livewire:sheets.task-sheet />
                 <livewire:sheets.add-subscription />

@@ -96,7 +96,7 @@ function boardChips(Testable $component): array
 {
     return array_map(
         fn (Element $chip) => [trim($chip->textContent), $chip->getAttribute('aria-pressed')],
-        iterator_to_array(boardHtml($component)->querySelectorAll('[role="group"][aria-label="Filter by store"] button')),
+        iterator_to_array(boardHtml($component)->querySelectorAll('[role="group"][aria-label="Filter by store"] button[aria-pressed]')),
     );
 }
 
@@ -271,7 +271,7 @@ it('shows the empty state in an empty archive', function () {
 });
 
 it('leaves a promo that expired last week out of both views', function () {
-    $this->user->promos()->create(['store' => Store::Aldi, 'product' => 'Old cheese', 'deal' => '−50%', 'valid_until' => '2026-10-24']);
+    $this->user->promos()->create(['store' => 'Aldi', 'product' => 'Old cheese', 'deal' => '−50%', 'valid_until' => '2026-10-24']);
 
     $component = Livewire::test(PromoBoard::class);
 
@@ -299,8 +299,8 @@ it('shows no pill for a promo linked only to a done item', function () {
 
 it('never shows or counts another user\'s promos or items', function () {
     $other = User::factory()->create();
-    Promo::factory()->for($other)->create(['store' => Store::Lidl, 'product' => 'Their butter', 'valid_until' => today()->addDay()]);
-    Promo::factory()->for($other)->create(['store' => Store::Lidl, 'product' => 'Their bread', 'valid_until' => today()->subDay()]);
+    Promo::factory()->for($other)->create(['store' => 'Lidl', 'product' => 'Their butter', 'valid_until' => today()->addDay()]);
+    Promo::factory()->for($other)->create(['store' => 'Lidl', 'product' => 'Their bread', 'valid_until' => today()->subDay()]);
     GroceryItem::factory()->for($other)->create(['done' => false, 'promo_id' => boardPromo($this->user, 'Avocados ×4')->id]);
 
     $component = Livewire::test(PromoBoard::class);
@@ -312,7 +312,7 @@ it('never shows or counts another user\'s promos or items', function () {
 });
 
 it('reads "ends today!" in red on a promo\'s last day', function () {
-    $this->user->promos()->create(['store' => Store::Other, 'product' => 'Market flowers', 'deal' => '€5', 'valid_until' => today()]);
+    $this->user->promos()->create(['store' => 'Other', 'product' => 'Market flowers', 'deal' => '€5', 'valid_until' => today()]);
 
     $component = Livewire::test(PromoBoard::class)->set('storeFilter', 'Other');
     $label = boardFrames($component)[0]->lastElementChild->firstElementChild;
@@ -322,7 +322,7 @@ it('reads "ends today!" in red on a promo\'s last day', function () {
 });
 
 it('leaves out the product line when a promo has no product', function () {
-    $this->user->promos()->create(['store' => Store::Other, 'product' => null, 'deal' => '−20% on everything', 'valid_until' => today()->addDays(3)]);
+    $this->user->promos()->create(['store' => 'Other', 'product' => null, 'deal' => '−20% on everything', 'valid_until' => today()->addDays(3)]);
 
     $component = Livewire::test(PromoBoard::class)->set('storeFilter', 'Other');
 
@@ -332,7 +332,7 @@ it('leaves out the product line when a promo has no product', function () {
 
 it('colours each polaroid with its tone', function (int $tone) {
     $this->user->promos()->delete();
-    $this->user->promos()->create(['store' => Store::Aldi, 'product' => 'Rice', 'deal' => '€1', 'valid_until' => today()->addDays(3), 'tone' => $tone]);
+    $this->user->promos()->create(['store' => 'Aldi', 'product' => 'Rice', 'deal' => '€1', 'valid_until' => today()->addDays(3), 'tone' => $tone]);
 
     $frame = boardFrames(Livewire::test(PromoBoard::class))[0];
     $classes = fn (Element $element) => iterator_to_array($element->classList);
@@ -388,7 +388,7 @@ it('shows the on-list pill when the add-item sheet links an item', function () {
 
     expect(boardPolaroids($component)[2][4])->toBeFalse();
 
-    app(AddGroceryItem::class)->handle($this->user, 'Avocados', null, Store::Lidl, GroceryCategory::FruitAndVeg);
+    app(AddGroceryItem::class)->handle($this->user, 'Avocados', null, 'Lidl', GroceryCategory::FruitAndVeg);
 
     $component->dispatch('grocery-item-added');
 
@@ -408,7 +408,7 @@ it('renders the board without a query per polaroid', function () {
     $before = $queries();
 
     foreach (['Rice', 'Flour', 'Sugar'] as $product) {
-        $promo = $this->user->promos()->create(['store' => Store::Aldi, 'product' => $product, 'deal' => '€1', 'valid_until' => today()->addDays(3)]);
+        $promo = $this->user->promos()->create(['store' => 'Aldi', 'product' => $product, 'deal' => '€1', 'valid_until' => today()->addDays(3)]);
         GroceryItem::factory()->for($this->user)->create(['done' => false, 'promo_id' => $promo->id]);
     }
 

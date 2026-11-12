@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\GroceryCategory;
-use App\Enums\Store;
 use App\Enums\SubscriptionCategory;
 use App\Enums\SubscriptionCycle;
 use App\Enums\TaskPriority;
@@ -36,28 +35,28 @@ it('seeds the local account, its grocery items, its promos, its tasks and its su
             $promo->store, $promo->product, $promo->deal, $promo->note,
             $promo->valid_from->toDateString(), $promo->valid_until->toDateString(), $promo->photo_path, $promo->tone,
         ])->all())->toBe([
-            [Store::Colruyt, 'Coffee beans 1 kg', '2+1 free', '€11.98 for three', $day(-2), $day(2), null, 0],
-            [Store::Delhaize, 'Dish soap', '−30%', '€2.09 instead of €2.99', $day(-5), $day(1), null, 1],
-            [Store::Lidl, 'Greek yoghurt', '2nd ½ price', null, $day(-1), $day(5), null, 2],
-            [Store::Aldi, 'Pasta 1 kg', '€1.79', 'instead of €2.39', $day(0), $day(6), null, 3],
-            [Store::Colruyt, 'Laundry pods', '−25%', null, $day(-3), $day(12), null, 4],
-            [Store::Lidl, 'Avocados ×4', '€2.49', null, $day(-1), $day(2), null, 5],
-            [Store::Aldi, 'Mandarins 2 kg', '1+1', null, $day(-8), $day(-2), null, 3],
-            [Store::Delhaize, 'Kitchen roll', '−40%', null, $day(-10), $day(-4), null, 1],
-            [Store::Lidl, 'Gouda slices', '€1.99', null, $day(-7), $day(-1), null, 2],
+            ['Colruyt', 'Coffee beans 1 kg', '2+1 free', '€11.98 for three', $day(-2), $day(2), null, 0],
+            ['Delhaize', 'Dish soap', '−30%', '€2.09 instead of €2.99', $day(-5), $day(1), null, 1],
+            ['Lidl', 'Greek yoghurt', '2nd ½ price', null, $day(-1), $day(5), null, 2],
+            ['Aldi', 'Pasta 1 kg', '€1.79', 'instead of €2.39', $day(0), $day(6), null, 3],
+            ['Colruyt', 'Laundry pods', '−25%', null, $day(-3), $day(12), null, 4],
+            ['Lidl', 'Avocados ×4', '€2.49', null, $day(-1), $day(2), null, 5],
+            ['Aldi', 'Mandarins 2 kg', '1+1', null, $day(-8), $day(-2), null, 3],
+            ['Delhaize', 'Kitchen roll', '−40%', null, $day(-10), $day(-4), null, 1],
+            ['Lidl', 'Gouda slices', '€1.99', null, $day(-7), $day(-1), null, 2],
         ]);
 
     $items = GroceryItem::orderBy('id')->get();
 
     expect($items->pluck('user_id')->unique()->all())->toBe([$user->id])
         ->and($items->map(fn (GroceryItem $item) => [$item->name, $item->qty, $item->store, $item->category, $item->done, $item->promo_id])->all())->toBe([
-            ['Coffee beans', '1kg', Store::Colruyt, GroceryCategory::Pantry, false, $promos[0]->id],
-            ['Dish soap', null, Store::Delhaize, GroceryCategory::Household, false, $promos[1]->id],
-            ['Oat milk', '2', Store::Aldi, GroceryCategory::Dairy, false, null],
-            ['Spinach', '300g', Store::Lidl, GroceryCategory::FruitAndVeg, false, null],
-            ['Greek yoghurt', '2', Store::Lidl, GroceryCategory::Dairy, false, $promos[2]->id],
-            ['Bananas', '6', Store::Aldi, GroceryCategory::FruitAndVeg, true, null],
-            ['Laundry pods', null, Store::Colruyt, GroceryCategory::Household, false, $promos[4]->id],
+            ['Coffee beans', '1kg', 'Colruyt', GroceryCategory::Pantry, false, $promos[0]->id],
+            ['Dish soap', null, 'Delhaize', GroceryCategory::Household, false, $promos[1]->id],
+            ['Oat milk', '2', 'Aldi', GroceryCategory::Dairy, false, null],
+            ['Spinach', '300g', 'Lidl', GroceryCategory::FruitAndVeg, false, null],
+            ['Greek yoghurt', '2', 'Lidl', GroceryCategory::Dairy, false, $promos[2]->id],
+            ['Bananas', '6', 'Aldi', GroceryCategory::FruitAndVeg, true, null],
+            ['Laundry pods', null, 'Colruyt', GroceryCategory::Household, false, $promos[4]->id],
         ]);
 
     $tasks = Task::orderBy('id')->get();

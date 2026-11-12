@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\Store;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -53,6 +54,28 @@ class User extends Authenticatable
     public function promos(): HasMany
     {
         return $this->hasMany(Promo::class);
+    }
+
+    /**
+     * @return HasMany<CustomStore, $this>
+     */
+    public function customStores(): HasMany
+    {
+        return $this->hasMany(CustomStore::class);
+    }
+
+    /**
+     * The user's stores in chip order: the built-in ones, then the user's own in the order they were added, then Other.
+     *
+     * @return list<string>
+     */
+    public function storeNames(): array
+    {
+        return [
+            ...array_column(array_filter(Store::cases(), fn (Store $store) => $store !== Store::Other), 'value'),
+            ...$this->customStores()->orderBy('id')->pluck('name')->map(fn (mixed $name) => (string) $name)->all(),
+            Store::Other->value,
+        ];
     }
 
     /**

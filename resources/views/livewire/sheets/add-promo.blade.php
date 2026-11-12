@@ -1,9 +1,10 @@
-@use('App\Enums\Store')
+@use('Illuminate\Support\Js')
 
 {{-- Every close (the close button, Escape or the scrim) stops an upload still under way, deletes a finished one and resets the form. A dialog's close event doesn't bubble, hence the capture. Opening resets the form too, so the dates start from today on a page left open overnight (the layout keeps the sheet across navigations), and the re-render makes the link chips follow the list. --}}
 <div
     x-on:close.capture="$wire.$cancelUpload('photo'); $wire.resetForm()"
     x-on:open-sheet.window="$event.detail.name === 'add-promo' && $wire.resetForm()"
+    x-on:store-added.window="$el.querySelector('dialog').open && $wire.set('store', $event.detail.name)"
 >
     <x-sheet name="add-promo" title="Pin a deal">
         <form wire:submit="save" class="flex flex-col gap-3.5">
@@ -39,9 +40,10 @@
             <div class="flex flex-col gap-1.5">
                 <span id="add-promo-store" class="text-[13px] font-semibold">Store *</span>
                 <div role="group" aria-labelledby="add-promo-store" class="flex flex-wrap gap-2">
-                    @foreach (Store::cases() as $option)
-                        <x-chip :pressed="$store === $option->value" wire:click="$set('store', '{{ $option->value }}')">{{ $option->value }}</x-chip>
+                    @foreach ($stores as $option)
+                        <x-chip :pressed="$store === $option" wire:key="store-{{ $option }}" wire:click="$set('store', {{ Js::from($option) }})">{{ $option }}</x-chip>
                     @endforeach
+                    <x-plus-chip sheet="stores" label="Add or remove stores" />
                 </div>
                 @error('store')
                     <p class="text-[13px] text-destructive">{{ $message }}</p>

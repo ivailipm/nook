@@ -22,7 +22,7 @@ class PromoFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'store' => fake()->randomElement(Store::cases()),
+            'store' => fake()->randomElement(Store::cases())->value,
             'product' => Str::ucfirst(fake()->word()),
             'deal' => fake()->randomElement(['2+1 free', '1+1', '−30%', '2nd ½ price', '€1.99']),
             'note' => null,

@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\Section;
-use App\Enums\Store;
 use App\Enums\SubscriptionCategory;
 use App\Models\Promo;
 use App\Models\Subscription;
@@ -204,7 +203,7 @@ function componentPromo(string $validUntil, int $tone = 0): Promo
 {
     test()->travelTo(Carbon::parse('2026-10-29 12:00', 'Europe/Brussels'));
 
-    return Promo::factory()->create(['store' => Store::Colruyt, 'product' => 'Coffee beans 1 kg', 'deal' => '2+1 free', 'valid_until' => $validUntil, 'tone' => $tone]);
+    return Promo::factory()->create(['store' => 'Colruyt', 'product' => 'Coffee beans 1 kg', 'deal' => '2+1 free', 'valid_until' => $validUntil, 'tone' => $tone]);
 }
 
 /**

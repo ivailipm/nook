@@ -14,6 +14,7 @@ use Livewire\Component;
 #[On('grocery-item-added')]
 #[On('task-added')]
 #[On('promo-changed')]
+#[On('stores-changed')]
 class Home extends Component
 {
     public function toggleTask(int $id, bool $done, ToggleTask $toggleTask): void

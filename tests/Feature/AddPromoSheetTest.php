@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\Store;
 use App\Livewire\Sheets\AddPromo;
 use App\Models\GroceryItem;
 use App\Models\Promo;
@@ -46,7 +45,7 @@ function addPromoChips(Testable $component): array
         $label = trim($page->getElementById($group->getAttribute('aria-labelledby'))->textContent);
         $rows[$label] = array_map(
             fn (Element $chip) => trim($chip->textContent).($chip->getAttribute('aria-pressed') === 'true' ? ' (pressed)' : ''),
-            iterator_to_array($group->querySelectorAll('button')),
+            iterator_to_array($group->querySelectorAll('button[aria-pressed]')),
         );
     }
 
@@ -225,7 +224,7 @@ it('saves every field for the signed-in user and lands on the board with a toast
 
     $promo = $this->user->promos()->sole();
 
-    expect([$promo->store, $promo->product, $promo->deal, $promo->note])->toBe([Store::Aldi, 'Coffee beans 1kg', '2+1 free', '€11.98 for three'])
+    expect([$promo->store, $promo->product, $promo->deal, $promo->note])->toBe(['Aldi', 'Coffee beans 1kg', '2+1 free', '€11.98 for three'])
         ->and($promo->valid_from->toDateString())->toBe('2026-10-29')
         ->and($promo->valid_until->toDateString())->toBe('2026-11-03')
         ->and($promo->tone)->toBe(0)
@@ -249,7 +248,7 @@ it('needs only a store and an until date', function () {
 
     $promo = $this->user->promos()->sole();
 
-    expect([$promo->store, $promo->product, $promo->deal, $promo->note, $promo->photo_path])->toBe([Store::Lidl, 'Lidl deal', 'Deal', null, null]);
+    expect([$promo->store, $promo->product, $promo->deal, $promo->note, $promo->photo_path])->toBe(['Lidl', 'Lidl deal', 'Deal', null, null]);
 });
 
 it('treats a blank product, deal or note as empty', function () {
@@ -331,13 +330,13 @@ it('rejects another user\'s item, a ticked item and an unknown one', function (C
 ]);
 
 it('links the chosen item and leaves its store alone', function () {
-    $item = GroceryItem::factory()->for($this->user)->create(['store' => Store::Aldi, 'done' => false, 'promo_id' => null]);
+    $item = GroceryItem::factory()->for($this->user)->create(['store' => 'Aldi', 'done' => false, 'promo_id' => null]);
     $other = GroceryItem::factory()->for($this->user)->create(['done' => false, 'promo_id' => null]);
 
     addPromoForm()->set('store', 'Colruyt')->set('linkItem', $item->id)->call('save')->assertHasNoErrors();
 
     expect($item->fresh()->promo_id)->toBe($this->user->promos()->sole()->id)
-        ->and($item->fresh()->store)->toBe(Store::Aldi)
+        ->and($item->fresh()->store)->toBe('Aldi')
         ->and($other->fresh()->promo_id)->toBeNull();
 });
 

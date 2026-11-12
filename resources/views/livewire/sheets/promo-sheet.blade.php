@@ -8,9 +8,9 @@
                 <div class="-rotate-1 rounded-polaroid bg-paper px-2.5 pt-2.5 pb-2 shadow-[0_12px_26px_rgb(0_0_0/0.45)]">
                     <div @class(['relative flex aspect-[4/3] flex-col gap-1.5 overflow-hidden p-4 wrap-anywhere', PolaroidStyle::photo($promo)])>
                         @if ($promo->photoUrl() !== null)
-                            <img src="{{ $promo->photoUrl() }}" alt="Photo of the {{ $promo->store->value }} deal" class="absolute inset-0 size-full bg-black object-contain">
+                            <img src="{{ $promo->photoUrl() }}" alt="Photo of the {{ $promo->store }} deal" class="absolute inset-0 size-full bg-black object-contain">
                         @endif
-                        <span class="relative text-[11px] font-bold tracking-[0.14em] uppercase">{{ $promo->store->value }}</span>
+                        <span class="relative text-[11px] font-bold tracking-[0.14em] uppercase">{{ $promo->store }}</span>
                         @if ($promo->product !== null)
                             <span class="relative font-display text-[26px] leading-[1.1] font-semibold">{{ $promo->product }}</span>
                         @endif

@@ -3,7 +3,6 @@
 namespace App\Actions;
 
 use App\Enums\GroceryCategory;
-use App\Enums\Store;
 use App\Models\GroceryItem;
 use App\Models\Promo;
 use App\Models\User;
@@ -15,7 +14,7 @@ use Illuminate\Support\Str;
  */
 class AddGroceryItem
 {
-    public function handle(User $user, string $name, ?string $qty, Store $store, GroceryCategory $category, ?Promo $promo = null): GroceryItem
+    public function handle(User $user, string $name, ?string $qty, string $store, GroceryCategory $category, ?Promo $promo = null): GroceryItem
     {
         $promo ??= $this->activePromoFor($user, $name, $store);
 
@@ -38,14 +37,14 @@ class AddGroceryItem
     {
         return $item->promo === null
             ? "Added {$item->name}"
-            : "Added, and linked to the {$item->promo->store->value} deal: {$item->promo->deal}";
+            : "Added, and linked to the {$item->promo->store} deal: {$item->promo->deal}";
     }
 
     /**
      * The user's oldest active promo whose product contains the name's first word (3 characters or more),
      * preferring one at the given store.
      */
-    private function activePromoFor(User $user, string $name, Store $store): ?Promo
+    private function activePromoFor(User $user, string $name, string $store): ?Promo
     {
         $word = Str::lower(Str::before($name, ' '));
 

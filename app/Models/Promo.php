@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\Store;
 use App\Support\RelativeDate;
 use Carbon\CarbonInterface;
 use Database\Factories\PromoFactory;
@@ -55,7 +54,6 @@ class Promo extends Model
     protected function casts(): array
     {
         return [
-            'store' => Store::class,
             'valid_from' => 'date',
             'valid_until' => 'date',
             'tone' => 'integer',
@@ -140,8 +138,8 @@ class Promo extends Model
         $until = RelativeDate::format($this->valid_until);
 
         return $this->valid_from === null
-            ? "{$this->store->value} · valid until {$until}"
-            : "{$this->store->value} · valid ".RelativeDate::format($this->valid_from)." – {$until}";
+            ? "{$this->store} · valid until {$until}"
+            : "{$this->store} · valid ".RelativeDate::format($this->valid_from)." – {$until}";
     }
 
     /**
@@ -151,7 +149,7 @@ class Promo extends Model
     public function listItemName(): string
     {
         if ($this->product === null) {
-            return "{$this->store->value} deal";
+            return "{$this->store} deal";
         }
 
         $name = Str::trim((string) preg_replace('/\s*[×x]?\d+\s*(kg|g|l)?\s*$/iu', '', $this->product));

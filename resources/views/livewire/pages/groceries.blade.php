@@ -46,7 +46,7 @@
                 <x-slot:aside>{{ $group['left'] === 0 ? 'all done' : $group['left'].' left' }}</x-slot:aside>
 
                 @foreach ($group['items'] as $item)
-                    @php($detail = $byCategory ? $item->store->value : $item->category->value)
+                    @php($detail = $byCategory ? $item->store : $item->category->value)
                     <div wire:key="item-{{ $item->id }}" @if ($item->done) data-done @endif class="flex min-h-[54px] items-center gap-2 border-t border-hairline">
                         {{-- $tick flips the box, the struck-through name and the grey badge at once and saves the tapped state. The reply moves the row, which drops focus, so a checkbox that had focus takes it back. --}}
                         <x-checkbox
