@@ -3,7 +3,6 @@
 namespace App\Parsers;
 
 use App\Enums\TaskPriority;
-use App\Enums\TaskTag;
 use Carbon\CarbonInterface;
 
 /**
@@ -16,7 +15,7 @@ final readonly class ParsedTask
         public string $title,
         public ?CarbonInterface $dueDate,
         public ?TaskPriority $priority,
-        public TaskTag $tag,
+        public string $tag,
         public ?int $repeatWeekday,
     ) {}
 }

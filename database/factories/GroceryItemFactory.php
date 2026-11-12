@@ -25,7 +25,7 @@ class GroceryItemFactory extends Factory
             'user_id' => User::factory(),
             'name' => Str::ucfirst(fake()->word()),
             'qty' => null,
-            'store' => fake()->randomElement(Store::cases()),
+            'store' => fake()->randomElement(Store::cases())->value,
             'category' => fake()->randomElement(GroceryCategory::cases()),
             'done' => false,
             'promo_id' => null,

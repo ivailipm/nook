@@ -3,7 +3,6 @@
 namespace App\Actions;
 
 use App\Enums\TaskPriority;
-use App\Enums\TaskTag;
 use App\Models\Task;
 use App\Support\RelativeDate;
 use Carbon\CarbonInterface;
@@ -14,7 +13,7 @@ use Carbon\CarbonInterface;
  */
 class UpdateTask
 {
-    public function handle(Task $task, string $title, ?CarbonInterface $dueDate, ?TaskPriority $priority, TaskTag $tag, bool $weekly): Task
+    public function handle(Task $task, string $title, ?CarbonInterface $dueDate, ?TaskPriority $priority, string $tag, bool $weekly): Task
     {
         $repeatWeekday = null;
 

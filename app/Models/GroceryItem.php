@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\GroceryCategory;
-use App\Enums\Store;
 use Database\Factories\GroceryItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,7 +23,6 @@ class GroceryItem extends Model
     protected function casts(): array
     {
         return [
-            'store' => Store::class,
             'category' => GroceryCategory::class,
             'done' => 'boolean',
         ];

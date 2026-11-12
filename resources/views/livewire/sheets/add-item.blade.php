@@ -1,8 +1,11 @@
 @use('App\Enums\GroceryCategory')
-@use('App\Enums\Store')
+@use('Illuminate\Support\Js')
 
-{{-- Every close (the close button, Escape, the scrim or a save) resets the form, so the sheet always opens empty at Lidl and Pantry. A dialog's close event doesn't bubble, hence the capture. --}}
-<div x-on:close.capture="$wire.resetForm()">
+{{-- Every close (the close button, Escape, the scrim or a save) resets the form, so the sheet always opens empty at Lidl and Pantry. A dialog's close event doesn't bubble, hence the capture. A store added in the Your stores sheet on top of this one gets picked. --}}
+<div
+    x-on:close.capture="$wire.resetForm()"
+    x-on:store-added.window="$el.querySelector('dialog').open && $wire.set('store', $event.detail.name)"
+>
     <x-sheet name="add-item" title="Add to your list">
         <form wire:submit="save" class="flex flex-col gap-3.5">
             <div class="grid grid-cols-[minmax(0,1fr)_96px] gap-2.5">
@@ -13,9 +16,10 @@
             <div class="flex flex-col gap-1.5">
                 <span id="add-item-store" class="text-[13px] font-semibold">Store</span>
                 <div role="group" aria-labelledby="add-item-store" class="flex flex-wrap gap-2">
-                    @foreach (Store::cases() as $option)
-                        <x-chip :pressed="$store === $option->value" wire:click="$set('store', '{{ $option->value }}')">{{ $option->value }}</x-chip>
+                    @foreach ($stores as $option)
+                        <x-chip :pressed="$store === $option" wire:key="store-{{ $option }}" wire:click="$set('store', {{ Js::from($option) }})">{{ $option }}</x-chip>
                     @endforeach
+                    <x-plus-chip sheet="stores" label="Add or remove stores" />
                 </div>
             </div>
 

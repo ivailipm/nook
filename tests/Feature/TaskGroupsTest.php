@@ -26,7 +26,7 @@ function groupedTask(User $user, string $title, array $attributes = []): Task
  *
  * @return array<string, list<string>>
  */
-function taskGroupTitles(User $user, ?TaskTag $tag = null): array
+function taskGroupTitles(User $user, ?string $tag = null): array
 {
     $groups = [];
 
@@ -107,15 +107,15 @@ it('puts a done task in Done whatever its due date', function () {
 });
 
 it('filters every group by tag', function () {
-    foreach (TaskTag::cases() as $tag) {
-        groupedTask($this->user, "overdue {$tag->value}", ['tag' => $tag, 'due_date' => today()->subDay()]);
-        groupedTask($this->user, "today {$tag->value}", ['tag' => $tag, 'due_date' => today()]);
-        groupedTask($this->user, "upcoming {$tag->value}", ['tag' => $tag, 'due_date' => today()->addDay()]);
-        groupedTask($this->user, "no date {$tag->value}", ['tag' => $tag]);
-        groupedTask($this->user, "done {$tag->value}", ['tag' => $tag, 'done' => true, 'completed_at' => now()]);
+    foreach (array_column(TaskTag::cases(), 'value') as $tag) {
+        groupedTask($this->user, "overdue {$tag}", ['tag' => $tag, 'due_date' => today()->subDay()]);
+        groupedTask($this->user, "today {$tag}", ['tag' => $tag, 'due_date' => today()]);
+        groupedTask($this->user, "upcoming {$tag}", ['tag' => $tag, 'due_date' => today()->addDay()]);
+        groupedTask($this->user, "no date {$tag}", ['tag' => $tag]);
+        groupedTask($this->user, "done {$tag}", ['tag' => $tag, 'done' => true, 'completed_at' => now()]);
     }
 
-    expect(taskGroupTitles($this->user, TaskTag::School))->toBe([
+    expect(taskGroupTitles($this->user, 'school'))->toBe([
         'Overdue' => ['overdue school'],
         'Today' => ['today school'],
         'Upcoming' => ['upcoming school', 'no date school'],
@@ -124,11 +124,11 @@ it('filters every group by tag', function () {
 });
 
 it('leaves out groups the tag empties', function () {
-    groupedTask($this->user, 'home', ['tag' => TaskTag::Home, 'due_date' => today()]);
-    groupedTask($this->user, 'school', ['tag' => TaskTag::School, 'due_date' => today()->addDay()]);
+    groupedTask($this->user, 'home', ['tag' => 'home', 'due_date' => today()]);
+    groupedTask($this->user, 'school', ['tag' => 'school', 'due_date' => today()->addDay()]);
 
-    expect(taskGroupTitles($this->user, TaskTag::School))->toBe(['Upcoming' => ['school']])
-        ->and(taskGroupTitles($this->user, TaskTag::Internship))->toBe([]);
+    expect(taskGroupTitles($this->user, 'school'))->toBe(['Upcoming' => ['school']])
+        ->and(taskGroupTitles($this->user, 'internship'))->toBe([]);
 });
 
 it('never returns another user\'s tasks', function () {

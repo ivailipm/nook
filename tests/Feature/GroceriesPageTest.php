@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\GroceryCategory;
-use App\Enums\Store;
 use App\Livewire\Pages\Groceries;
 use App\Livewire\Pages\PromoBoard;
 use App\Models\GroceryItem;
@@ -173,8 +172,8 @@ it('groups by store for any other group-by value', function (array $cards) {
 })->with('seeded cards by store');
 
 it('shows the stores and categories in enum order and hides empty groups', function () {
-    foreach ([[Store::Other, GroceryCategory::Household], [Store::Aldi, GroceryCategory::Dairy]] as [$store, $category]) {
-        GroceryItem::factory()->for($this->user)->create(['name' => "{$store->value} item", 'store' => $store, 'category' => $category]);
+    foreach ([['Other', GroceryCategory::Household], ['Aldi', GroceryCategory::Dairy]] as [$store, $category]) {
+        GroceryItem::factory()->for($this->user)->create(['name' => "{$store} item", 'store' => $store, 'category' => $category]);
     }
 
     $component = Livewire::test(Groceries::class);
@@ -185,7 +184,7 @@ it('shows the stores and categories in enum order and hides empty groups', funct
 
 it('lists open items before done ones, each in the order they were added', function () {
     foreach (['Rice' => true, 'Pasta' => false, 'Flour' => true, 'Sugar' => false] as $name => $done) {
-        GroceryItem::factory()->for($this->user)->create(['name' => $name, 'store' => Store::Lidl, 'category' => GroceryCategory::Pantry, 'done' => $done]);
+        GroceryItem::factory()->for($this->user)->create(['name' => $name, 'store' => 'Lidl', 'category' => GroceryCategory::Pantry, 'done' => $done]);
     }
 
     expect(groceryCards(Livewire::test(Groceries::class)))->toBe([
@@ -194,7 +193,7 @@ it('lists open items before done ones, each in the order they were added', funct
 });
 
 it('reads all done when nothing in a group is open', function () {
-    GroceryItem::factory()->for($this->user)->create(['name' => 'Dish soap', 'store' => Store::Delhaize, 'category' => GroceryCategory::Household, 'done' => true]);
+    GroceryItem::factory()->for($this->user)->create(['name' => 'Dish soap', 'store' => 'Delhaize', 'category' => GroceryCategory::Household, 'done' => true]);
 
     expect(groceryCards(Livewire::test(Groceries::class)))->toBe(['Delhaize · all done' => ['Dish soap: Household (done)']]);
 });
@@ -278,7 +277,7 @@ it('adds a quick-add line and empties the input', function () {
     $item = $this->user->groceryItems()->latest('id')->first();
 
     expect([$item->name, $item->qty, $item->store, $item->category, $item->done, $item->promo_id])
-        ->toBe(['Coffee', '2', Store::Lidl, GroceryCategory::Pantry, false, null])
+        ->toBe(['Coffee', '2', 'Lidl', GroceryCategory::Pantry, false, null])
         ->and(groceryCards($component)['Lidl · 3 left'])->toBe(['Spinach: 300g · Fruit & veg', 'Greek yoghurt: 2 · Dairy', 'Coffee: 2 · Pantry'])
         ->and(grocerySubtitle($component))->toBe('7 things to grab, 0 with a deal');
 
@@ -434,9 +433,9 @@ it('clears only the user\'s ticked items', function () {
 });
 
 it('never lists another user\'s items', function () {
-    GroceryItem::factory()->for($this->user)->create(['name' => 'Milk', 'qty' => null, 'store' => Store::Lidl, 'category' => GroceryCategory::Dairy]);
-    GroceryItem::factory()->create(['name' => 'Eggs', 'store' => Store::Lidl, 'category' => GroceryCategory::Dairy]);
-    GroceryItem::factory()->create(['name' => 'Cheese', 'store' => Store::Other, 'done' => true]);
+    GroceryItem::factory()->for($this->user)->create(['name' => 'Milk', 'qty' => null, 'store' => 'Lidl', 'category' => GroceryCategory::Dairy]);
+    GroceryItem::factory()->create(['name' => 'Eggs', 'store' => 'Lidl', 'category' => GroceryCategory::Dairy]);
+    GroceryItem::factory()->create(['name' => 'Cheese', 'store' => 'Other', 'done' => true]);
 
     $component = Livewire::test(Groceries::class);
 
@@ -448,9 +447,9 @@ it('never lists another user\'s items', function () {
 it('refreshes when the add-item sheet adds an item', function () {
     $component = Livewire::test(Groceries::class);
 
-    expect($component->effects['listeners'])->toBe(['grocery-item-added', 'promo-changed']);
+    expect($component->effects['listeners'])->toBe(['grocery-item-added', 'promo-changed', 'stores-changed']);
 
-    GroceryItem::factory()->for($this->user)->create(['name' => 'Oat bars', 'qty' => '4', 'store' => Store::Aldi, 'category' => GroceryCategory::Pantry]);
+    GroceryItem::factory()->for($this->user)->create(['name' => 'Oat bars', 'qty' => '4', 'store' => 'Aldi', 'category' => GroceryCategory::Pantry]);
 
     expect(groceryCards($component->dispatch('grocery-item-added')))->toBe(['Aldi · 1 left' => ['Oat bars: 4 · Pantry']]);
 });
@@ -565,8 +564,8 @@ it('loads each row\'s promo without a query per row', function () {
     $before = $queries();
 
     foreach (['Rice', 'Flour', 'Sugar'] as $product) {
-        $promo = $this->user->promos()->create(['store' => Store::Aldi, 'product' => $product, 'deal' => '€1', 'valid_until' => today()->addDays(3)]);
-        GroceryItem::factory()->for($this->user)->create(['name' => $product, 'store' => Store::Aldi, 'done' => false, 'promo_id' => $promo->id]);
+        $promo = $this->user->promos()->create(['store' => 'Aldi', 'product' => $product, 'deal' => '€1', 'valid_until' => today()->addDays(3)]);
+        GroceryItem::factory()->for($this->user)->create(['name' => $product, 'store' => 'Aldi', 'done' => false, 'promo_id' => $promo->id]);
     }
 
     expect(array_filter(groceryBadges(Livewire::test(Groceries::class))))->toHaveCount(7)
@@ -582,7 +581,7 @@ it('shows the switch on the Promo board with the user\'s open item count', funct
     expect(switchLinks($component))->toBe([
         ['List · 6', route('groceries'), null],
         ['Promo board', route('promos'), 'page'],
-    ])->and($component->effects['listeners'])->toBe(['grocery-item-added', 'promo-changed']);
+    ])->and($component->effects['listeners'])->toBe(['grocery-item-added', 'promo-changed', 'stores-changed']);
 
     GroceryItem::factory()->for($this->user)->create(['done' => false]);
 

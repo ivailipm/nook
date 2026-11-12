@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Pages;
 
-use App\Enums\Store;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\On;
@@ -12,10 +11,11 @@ use Livewire\Component;
 #[Title('Promo board')]
 #[On('grocery-item-added')]
 #[On('promo-changed')]
+#[On('stores-changed')]
 class PromoBoard extends Component
 {
     /**
-     * A store's value shows only that store; anything else shows every store.
+     * One of the user's store names shows only that store; anything else shows every store.
      */
     public string $storeFilter = 'All';
 
@@ -27,7 +27,8 @@ class PromoBoard extends Component
     public function render(): View
     {
         $user = auth()->user();
-        $store = Store::tryFrom($this->storeFilter);
+        $stores = $user->storeNames();
+        $store = in_array($this->storeFilter, $stores, true) ? $this->storeFilter : null;
 
         // The board runs soonest end first, the archive in the order the promos were added.
         $promos = $this->archive
@@ -41,6 +42,7 @@ class PromoBoard extends Component
         return view('livewire.pages.promo-board', [
             // A promo is "on list" while one of the user's open items links to it.
             'promos' => $promos->withExists(['groceryItems as linked' => fn (Builder $query) => $query->where('done', false)->where('user_id', $user->id)])->get(),
+            'stores' => $stores,
             'store' => $store,
             'open' => $user->groceryItems()->where('done', false)->count(),
             'expiredThisWeek' => $user->promos()->expiredThisWeek()->count(),

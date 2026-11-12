@@ -1,6 +1,7 @@
-{{-- Every close (the close button, Escape, the scrim or a save) resets the form, so the sheet always opens empty and due today. A dialog's close event doesn't bubble, hence the capture. Opening refreshes the sheet, so the weekday chip is current on a page left open overnight. --}}
+{{-- Every close (the close button, Escape, the scrim or a save) resets the form, so the sheet always opens empty and due today. A dialog's close event doesn't bubble, hence the capture. Opening refreshes the sheet, so the weekday chip is current on a page left open overnight. A tag added in the Your tags sheet on top of this one gets picked. --}}
 <div
     x-on:close.capture="$wire.resetForm()"
+    x-on:tag-added.window="$el.querySelector('dialog').open && $wire.set('tag', $event.detail.name)"
     x-on:open-sheet.window="$event.detail.name === 'add-task' && $wire.$refresh()"
 >
     <x-sheet name="add-task" title="New task">
@@ -19,7 +20,7 @@
                 @enderror
             </div>
 
-            <x-task-chips prefix="add-task" :priority="$priority" :tag="$tag" :repeat="$repeat" />
+            <x-task-chips prefix="add-task" :priority="$priority" :tag="$tag" :tags="$tags" :repeat="$repeat" />
 
             <button type="submit" class="min-h-12 cursor-pointer rounded-button bg-apricot text-[15px] font-bold text-on-apricot">Add task</button>
         </form>

@@ -9,7 +9,8 @@ use Illuminate\Support\Str;
 /**
  * Reads a task quick-add line such as "Email the prof tomorrow !high #school", exactly as the
  * prototype's parseTask does, except that only real weekday words count and "!medium" is read whole.
- * The title isn't capitalised, as the prototype's addTask doesn't.
+ * The title isn't capitalised, as the prototype's addTask doesn't. The # word picks from the tags it is given,
+ * so it can pick a tag of the user's own.
  */
 class TaskParser
 {
@@ -17,10 +18,15 @@ class TaskParser
 
     private const array WEEKDAY_NUMBERS = ['sun' => 0, 'mon' => 1, 'tue' => 2, 'wed' => 3, 'thu' => 4, 'fri' => 5, 'sat' => 6];
 
-    public function parse(string $line): ParsedTask
+    /**
+     * @param  list<string>|null  $tags  The tags a # word can pick; null means the built-in tags.
+     */
+    public function parse(string $line, ?array $tags = null): ParsedTask
     {
+        $tags ??= array_column(TaskTag::cases(), 'value');
+
         [$text, $priority] = $this->take('/!(high|medium|med|low)/iu', $line);
-        [$text, $tag] = $this->take('/#(school|home|internship)/iu', $text);
+        [$text, $tag] = $this->take($this->tagPattern($tags), $text);
         [$text, $repeat] = $this->take('/every\s+('.self::WEEKDAY.')\b/iu', $text);
         [$text, $dateWord] = $this->take('/\b(today|tomorrow)\b/iu', $text);
         [$text, $weekday] = $this->take('/\b('.self::WEEKDAY.')\b/iu', $text);
@@ -45,9 +51,22 @@ class TaskParser
                 'low' => TaskPriority::Low,
                 default => TaskPriority::Med,
             },
-            tag: $tag === null ? TaskTag::Home : TaskTag::from($tag),
+            tag: array_find($tags, fn (string $name) => Str::convertCase($name) === $tag) ?? TaskTag::Home->value,
             repeatWeekday: $repeatWeekday,
         );
+    }
+
+    /**
+     * Matches "#" and one of the tags, ignoring case. A longer tag goes first, so "#homework" reads as a homework tag
+     * when there is one, and as home followed by "work" when there isn't.
+     *
+     * @param  list<string>  $tags
+     */
+    private function tagPattern(array $tags): string
+    {
+        usort($tags, fn (string $a, string $b) => mb_strlen($b) <=> mb_strlen($a));
+
+        return '/#('.implode('|', array_map(fn (string $tag) => preg_quote($tag, '/'), $tags)).')/iu';
     }
 
     /**

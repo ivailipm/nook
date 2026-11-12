@@ -4,7 +4,6 @@ namespace App\Livewire\Pages;
 
 use App\Actions\AddGroceryItem;
 use App\Enums\GroceryCategory;
-use App\Enums\Store;
 use App\Models\GroceryItem;
 use App\Parsers\GroceryItemParser;
 use Illuminate\Contracts\View\View;
@@ -15,6 +14,7 @@ use Livewire\Component;
 #[Title('Groceries')]
 #[On('grocery-item-added')]
 #[On('promo-changed')]
+#[On('stores-changed')]
 class Groceries extends Component
 {
     public string $quickItem = '';
@@ -28,7 +28,7 @@ class Groceries extends Component
     {
         $this->validate(['quickItem' => ['string', 'max:255']], attributes: ['quickItem' => 'item']);
 
-        $parsed = $parser->parse($this->quickItem);
+        $parsed = $parser->parse($this->quickItem, auth()->user()->storeNames());
 
         if ($parsed->name === '') {
             return;
@@ -77,11 +77,16 @@ class Groceries extends Component
         $items = auth()->user()->groceryItems()->with('promo')->orderBy('done')->orderBy('id')->get();
         $open = $items->where('done', false);
 
-        $groups = collect($byCategory ? GroceryCategory::cases() : Store::cases())
-            ->map(function (Store|GroceryCategory $key) use ($items, $byCategory) {
-                $groupItems = $items->where($byCategory ? 'category' : 'store', $key);
+        // By store, the user's stores in chip order, then any store an item still names that isn't one of them.
+        $keys = $byCategory
+            ? array_column(GroceryCategory::cases(), 'value')
+            : collect(auth()->user()->storeNames())->merge($items->pluck('store'))->unique()->all();
 
-                return ['title' => $key->value, 'items' => $groupItems, 'left' => $groupItems->where('done', false)->count()];
+        $groups = collect($keys)
+            ->map(function (string $key) use ($items, $byCategory) {
+                $groupItems = $items->filter(fn (GroceryItem $item) => ($byCategory ? $item->category->value : $item->store) === $key);
+
+                return ['title' => $key, 'items' => $groupItems, 'left' => $groupItems->where('done', false)->count()];
             })
             ->filter(fn (array $group) => $group['items']->isNotEmpty());
 

@@ -21,6 +21,8 @@ Where these differ from `docs/nook-design/` (the prototype included), these win.
 - To-do "Done" group: tasks completed in the last 7 days.
 - The add-promo form has an optional Note field (the promo sheet shows the note).
 - The promo board's store filter includes an "Other" chip.
+- You can add stores of your own in the "Your stores" sheet, opened from the dashed + after the store chips on the promo board and in the add-item and add-promo forms. They go between Colruyt and Other in every store list and in the grouping by store, and the quick add's `@store` finds them by prefix (a built-in store still wins a shared prefix: `@c` is Colruyt). Removing one moves its items and deals to Other. The built-in stores stay. Added on 2026-11-12.
+- The same goes for task tags, in the "Your tags" sheet, opened from the dashed + after the tag chips on To-do and in the add-task and edit-task forms. A tag is one lower-case word (spaces become hyphens), so the quick add reads it as `#gym`; a longer tag wins over one it starts with, so `#homework` is the homework tag once there is one. Your tags follow school, home and internship, and removing one moves its tasks to home. The built-in tags stay. Added on 2026-11-12.
 - Home "Coming up" shows the real charge for yearly subscriptions, not price ÷ 12.
 - Share target: the service worker catches the share POST and hands the photo to the add-promo form, so no route needs a CSRF exemption.
 - The 08:00 push is skipped when nothing is due. "A deal on your list ends today" is a line in that same push, not a separate notification.

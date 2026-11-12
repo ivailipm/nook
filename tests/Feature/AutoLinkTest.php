@@ -2,7 +2,6 @@
 
 use App\Actions\AddGroceryItem;
 use App\Enums\GroceryCategory;
-use App\Enums\Store;
 use App\Livewire\Pages\Groceries;
 use App\Livewire\Sheets\AddItem;
 use App\Models\GroceryItem;
@@ -14,7 +13,7 @@ beforeEach(function () {
     $this->user = User::factory()->create();
 });
 
-function autoLinkAdd(User $user, string $name, Store $store = Store::Lidl): GroceryItem
+function autoLinkAdd(User $user, string $name, string $store = 'Lidl'): GroceryItem
 {
     return app(AddGroceryItem::class)->handle($user, $name, null, $store, GroceryCategory::Pantry);
 }
@@ -30,20 +29,20 @@ function autoLinkPromo(User $user, array $attributes): Promo
 }
 
 it('links an item to the active promo for its first word and moves it to the promo\'s store', function () {
-    $promo = autoLinkPromo($this->user, ['store' => Store::Colruyt, 'product' => 'Coffee beans 1 kg', 'deal' => '2+1 free']);
+    $promo = autoLinkPromo($this->user, ['store' => 'Colruyt', 'product' => 'Coffee beans 1 kg', 'deal' => '2+1 free']);
 
-    $item = autoLinkAdd($this->user, 'coffee', Store::Lidl);
+    $item = autoLinkAdd($this->user, 'coffee', 'Lidl');
 
     expect($item->relationLoaded('promo'))->toBeTrue()
         ->and($item->promo->is($promo))->toBeTrue()
-        ->and([$item->fresh()->name, $item->fresh()->store, $item->fresh()->promo_id])->toBe(['Coffee', Store::Colruyt, $promo->id])
+        ->and([$item->fresh()->name, $item->fresh()->store, $item->fresh()->promo_id])->toBe(['Coffee', 'Colruyt', $promo->id])
         ->and(app(AddGroceryItem::class)->message($item))->toBe('Added, and linked to the Colruyt deal: 2+1 free');
 });
 
-it('prefers a promo at the item\'s store, then the oldest at any store', function (Store $store, string $linked) {
+it('prefers a promo at the item\'s store, then the oldest at any store', function (string $store, string $linked) {
     $promos = [
-        'Aldi' => autoLinkPromo($this->user, ['store' => Store::Aldi, 'product' => 'Greek yoghurt']),
-        'Lidl' => autoLinkPromo($this->user, ['store' => Store::Lidl, 'product' => 'Greek yoghurt']),
+        'Aldi' => autoLinkPromo($this->user, ['store' => 'Aldi', 'product' => 'Greek yoghurt']),
+        'Lidl' => autoLinkPromo($this->user, ['store' => 'Lidl', 'product' => 'Greek yoghurt']),
     ];
 
     $item = autoLinkAdd($this->user, 'greek yoghurt', $store);
@@ -51,8 +50,8 @@ it('prefers a promo at the item\'s store, then the oldest at any store', functio
     expect($item->promo_id)->toBe($promos[$linked]->id)
         ->and($item->store)->toBe($promos[$linked]->store);
 })->with([
-    'the same store' => [Store::Lidl, 'Lidl'],
-    'another store' => [Store::Delhaize, 'Aldi'],
+    'the same store' => ['Lidl', 'Lidl'],
+    'another store' => ['Delhaize', 'Aldi'],
 ]);
 
 it('matches the first word in any case and inside a longer word', function (string $name, string $product) {
@@ -99,24 +98,24 @@ it('ignores other users\' promos and promos without a product', function () {
 });
 
 it('keeps the given store and no promo when nothing matches', function () {
-    autoLinkPromo($this->user, ['store' => Store::Colruyt, 'product' => 'Coffee beans 1 kg']);
+    autoLinkPromo($this->user, ['store' => 'Colruyt', 'product' => 'Coffee beans 1 kg']);
 
-    $item = autoLinkAdd($this->user, 'spinach', Store::Aldi);
+    $item = autoLinkAdd($this->user, 'spinach', 'Aldi');
 
     expect($item->relationLoaded('promo'))->toBeTrue()
         ->and($item->promo)->toBeNull()
-        ->and([$item->fresh()->store, $item->fresh()->promo_id])->toBe([Store::Aldi, null])
+        ->and([$item->fresh()->store, $item->fresh()->promo_id])->toBe(['Aldi', null])
         ->and(app(AddGroceryItem::class)->message($item))->toBe('Added Spinach');
 });
 
 dataset('add toasts', [
-    'a linked item' => ['coffee', 'Added, and linked to the Colruyt deal: 2+1 free', Store::Colruyt],
-    'an unlinked item' => ['spinach', 'Added Spinach', Store::Lidl],
+    'a linked item' => ['coffee', 'Added, and linked to the Colruyt deal: 2+1 free', 'Colruyt'],
+    'an unlinked item' => ['spinach', 'Added Spinach', 'Lidl'],
 ]);
 
-it('toasts the linked deal from the quick add', function (string $name, string $toast, Store $store) {
+it('toasts the linked deal from the quick add', function (string $name, string $toast, string $store) {
     $this->actingAs($this->user);
-    autoLinkPromo($this->user, ['store' => Store::Colruyt, 'product' => 'Coffee beans 1 kg', 'deal' => '2+1 free']);
+    autoLinkPromo($this->user, ['store' => 'Colruyt', 'product' => 'Coffee beans 1 kg', 'deal' => '2+1 free']);
 
     Livewire::test(Groceries::class)
         ->set('quickItem', $name)
@@ -127,9 +126,9 @@ it('toasts the linked deal from the quick add', function (string $name, string $
     expect($this->user->groceryItems()->sole()->store)->toBe($store);
 })->with('add toasts');
 
-it('toasts the linked deal from the add-item sheet', function (string $name, string $toast, Store $store) {
+it('toasts the linked deal from the add-item sheet', function (string $name, string $toast, string $store) {
     $this->actingAs($this->user);
-    autoLinkPromo($this->user, ['store' => Store::Colruyt, 'product' => 'Coffee beans 1 kg', 'deal' => '2+1 free']);
+    autoLinkPromo($this->user, ['store' => 'Colruyt', 'product' => 'Coffee beans 1 kg', 'deal' => '2+1 free']);
 
     Livewire::test(AddItem::class)
         ->set('itemName', $name)

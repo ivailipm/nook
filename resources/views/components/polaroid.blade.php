@@ -11,7 +11,7 @@
         ['-rotate-[1.8deg]', '-rotate-3'],
         ['rotate-[1.2deg]', 'rotate-2'],
     ][$promo->id % 6];
-    $label = collect([$promo->product, "{$promo->deal} at {$promo->store->value}", $promo->untilLabel(), $linked ? 'on list' : null])->whereNotNull()->implode(', ');
+    $label = collect([$promo->product, "{$promo->deal} at {$promo->store}", $promo->untilLabel(), $linked ? 'on list' : null])->whereNotNull()->implode(', ');
 @endphp
 
 {{-- A taped board polaroid that opens the promo sheet: the store, product and deal on the photo or the tone's square, then the until label and, when an open item links to it, "on list". Expired promos fade to grey. It's a flex column because a button stretched to its row's height centres block content. Compact is Home's smaller polaroid, with no check in its pill. --}}
@@ -38,9 +38,9 @@
         PolaroidStyle::photo($promo),
     ])>
         @if ($promo->photoUrl() !== null)
-            <img src="{{ $promo->photoUrl() }}" alt="Photo of the {{ $promo->store->value }} deal" loading="lazy" class="absolute inset-0 size-full object-cover">
+            <img src="{{ $promo->photoUrl() }}" alt="Photo of the {{ $promo->store }} deal" loading="lazy" class="absolute inset-0 size-full object-cover">
         @endif
-        <span class="relative text-[9px] font-bold tracking-[0.12em] uppercase">{{ $promo->store->value }}</span>
+        <span class="relative text-[9px] font-bold tracking-[0.12em] uppercase">{{ $promo->store }}</span>
         @if ($promo->product !== null)
             <span class="{{ $compact ? 'relative font-display text-[15px] leading-[1.1] font-semibold' : 'relative font-display text-[16px] leading-[1.1] font-semibold' }}">{{ $promo->product }}</span>
         @endif

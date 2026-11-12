@@ -99,7 +99,7 @@
                     @if ($item->hasActivePromo())
                         <x-promo-badge :promo="$item->promo" variant="home" />
                     @else
-                        <span class="flex-none text-[12px] text-cream-muted">{{ $item->store->value }}</span>
+                        <span class="flex-none text-[12px] text-cream-muted">{{ $item->store }}</span>
                     @endif
                 </div>
             @empty

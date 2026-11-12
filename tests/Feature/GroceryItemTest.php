@@ -11,7 +11,7 @@ it('persists a factory item for a user', function () {
     $this->assertModelExists($item);
 
     expect($item->user->is(User::sole()))->toBeTrue()
-        ->and($item->store)->toBeInstanceOf(Store::class)
+        ->and($item->store)->toBeIn(array_column(Store::cases(), 'value'))
         ->and($item->category)->toBeInstanceOf(GroceryCategory::class)
         ->and($item->done)->toBeFalse()
         ->and($item->promo_id)->toBeNull();

@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\TaskPriority;
-use App\Enums\TaskTag;
 use App\Livewire\Sheets\AddTask;
 use App\Models\Task;
 use App\Models\User;
@@ -38,7 +37,7 @@ function addTaskChips(Testable $component): array
         $label = trim($page->getElementById($group->getAttribute('aria-labelledby'))->textContent);
         $rows[$label] = array_map(
             fn (Element $chip) => trim($chip->textContent).($chip->getAttribute('aria-pressed') === 'true' ? ' (pressed)' : ''),
-            iterator_to_array($group->querySelectorAll('button')),
+            iterator_to_array($group->querySelectorAll('button[aria-pressed]')),
         );
     }
 
@@ -146,7 +145,7 @@ it('saves a task for the signed-in user, then closes and resets', function (arra
     $task = $this->user->tasks()->sole();
 
     expect([$task->title, $task->priority, $task->tag, $task->done, $task->completed_at, $task->rolled_over])
-        ->toBe(['Send CV to Cegeka', TaskPriority::High, TaskTag::Internship, false, null, false])
+        ->toBe(['Send CV to Cegeka', TaskPriority::High, 'internship', false, null, false])
         ->and($other->tasks()->count())->toBe(0)
         ->and(addTaskChips($component))->toBe($chips);
 })->with('default chips');

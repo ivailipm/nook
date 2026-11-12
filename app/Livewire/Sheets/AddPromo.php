@@ -8,6 +8,7 @@ use App\Models\GroceryItem;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\FileUploadConfiguration;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -52,7 +53,7 @@ class AddPromo extends Component
     {
         return [
             'photo' => ['nullable', 'file', 'mimes:jpeg,png,webp', 'max:12288'],
-            'store' => ['required', Rule::enum(Store::class)],
+            'store' => ['required', Rule::in(auth()->user()->storeNames())],
             'validFrom' => ['date_format:Y-m-d'],
             'validUntil' => ['required', 'date_format:Y-m-d', 'after_or_equal:validFrom'],
             'product' => ['string', 'max:255'],
@@ -111,7 +112,7 @@ class AddPromo extends Component
         try {
             $promo = $pinPromo->handle(
                 auth()->user(),
-                Store::from($this->store),
+                $this->store,
                 $this->validFrom,
                 $this->validUntil,
                 $this->product,
@@ -135,6 +136,17 @@ class AddPromo extends Component
     }
 
     /**
+     * A store removed in the Your stores sheet while it was picked falls back to Lidl, as its items moved to Other.
+     */
+    #[On('stores-changed')]
+    public function keepStore(): void
+    {
+        if (! in_array($this->store, auth()->user()->storeNames(), true)) {
+            $this->store = Store::Lidl->value;
+        }
+    }
+
+    /**
      * Back to an empty form with today's dates, without errors or an upload. The view calls this whenever the sheet opens or closes.
      */
     public function resetForm(): void
@@ -148,6 +160,7 @@ class AddPromo extends Component
     public function render(): View
     {
         return view('livewire.sheets.add-promo', [
+            'stores' => auth()->user()->storeNames(),
             'linkOptions' => auth()->user()->groceryItems()->with('promo')->where('done', false)->orderBy('id')->get()
                 ->reject(fn (GroceryItem $item) => $item->hasActivePromo())
                 ->take(6),

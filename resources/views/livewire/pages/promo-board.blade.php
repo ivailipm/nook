@@ -1,5 +1,5 @@
 @use('App\Enums\Section')
-@use('App\Enums\Store')
+@use('Illuminate\Support\Js')
 
 <div class="flex flex-col gap-4.5 wide:gap-6">
     <x-page-header eyebrow="GROCERIES" :subtitle="$archive ? 'expired deals rest here' : 'snapped from this week’s folders'">{{ $archive ? 'The' : 'Promo' }} <em>{{ $archive ? 'archive' : 'board' }}</em></x-page-header>
@@ -21,11 +21,13 @@
         </span>
     </button>
 
+    {{-- The dashed + after the chips opens the Your stores sheet. --}}
     <div role="group" aria-label="Filter by store" class="flex flex-wrap gap-2">
         <x-chip size="sm" :pressed="$store === null" wire:click="$set('storeFilter', 'All')">All</x-chip>
-        @foreach (Store::cases() as $case)
-            <x-chip size="sm" :pressed="$store === $case" wire:click="$set('storeFilter', '{{ $case->value }}')">{{ $case->value }}</x-chip>
+        @foreach ($stores as $name)
+            <x-chip size="sm" :pressed="$store === $name" wire:key="store-{{ $name }}" wire:click="$set('storeFilter', {{ Js::from($name) }})">{{ $name }}</x-chip>
         @endforeach
+        <x-plus-chip sheet="stores" label="Add or remove stores" size="sm" />
     </div>
 
     @if ($promos->isEmpty())

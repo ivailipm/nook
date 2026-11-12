@@ -2,7 +2,6 @@
 
 use App\Actions\AddGroceryItem;
 use App\Enums\GroceryCategory;
-use App\Enums\Store;
 use App\Livewire\Pages\Groceries;
 use App\Livewire\Pages\PromoBoard;
 use App\Livewire\Sheets\PromoSheet;
@@ -226,7 +225,7 @@ it('adds an item with the deal linked', function () {
 
     // An older promo whose product also holds "Pasta": the search would pick it, the sheet's promo must win.
     $older = $this->user->promos()->orderBy('id')->first();
-    $older->update(['product' => 'Pasta shells', 'store' => Store::Colruyt]);
+    $older->update(['product' => 'Pasta shells', 'store' => 'Colruyt']);
 
     openPromoSheet($promo)
         ->call('addToList')
@@ -238,7 +237,7 @@ it('adds an item with the deal linked', function () {
     $item = sheetItem($this->user, 'Pasta');
 
     expect([$item->store, $item->category, $item->qty, $item->done, $item->promo_id])
-        ->toBe([Store::Aldi, GroceryCategory::Pantry, null, false, $promo->id]);
+        ->toBe(['Aldi', GroceryCategory::Pantry, null, false, $promo->id]);
 });
 
 it('adds only one item on a double tap', function () {
@@ -251,7 +250,7 @@ it('adds only one item from a sheet gone stale', function () {
     $promo = sheetPromo($this->user, 'Pasta 1 kg');
     $component = openPromoSheet($promo);
 
-    app(AddGroceryItem::class)->handle($this->user, 'Pasta', null, Store::Aldi, GroceryCategory::Pantry, $promo);
+    app(AddGroceryItem::class)->handle($this->user, 'Pasta', null, 'Aldi', GroceryCategory::Pantry, $promo);
 
     $component->call('addToList')
         ->assertNotDispatched('toast')
@@ -380,7 +379,7 @@ it('gives the validity line with and without a start date', function () {
 });
 
 it('strips the trailing size for the item name', function (?string $product, string $name) {
-    expect(Promo::factory()->make(['product' => $product, 'store' => Store::Lidl])->listItemName())->toBe($name);
+    expect(Promo::factory()->make(['product' => $product, 'store' => 'Lidl'])->listItemName())->toBe($name);
 })->with([
     ['Coffee beans 1 kg', 'Coffee beans'],
     ['Avocados ×4', 'Avocados'],
@@ -397,15 +396,15 @@ it('strips the trailing size for the item name', function (?string $product, str
 it('links the given promo and adopts its store without searching', function () {
     $promo = sheetPromo($this->user, 'Laundry pods');
 
-    $item = app(AddGroceryItem::class)->handle($this->user, 'Coffee', '2', Store::Lidl, GroceryCategory::Pantry, $promo);
+    $item = app(AddGroceryItem::class)->handle($this->user, 'Coffee', '2', 'Lidl', GroceryCategory::Pantry, $promo);
 
     expect($item->promo_id)->toBe($promo->id)
-        ->and($item->store)->toBe(Store::Colruyt)
+        ->and($item->store)->toBe('Colruyt')
         ->and($item->promo->is($promo))->toBeTrue();
 });
 
 it('still searches when no promo is given', function () {
-    $item = app(AddGroceryItem::class)->handle($this->user, 'Coffee', '2', Store::Lidl, GroceryCategory::Pantry);
+    $item = app(AddGroceryItem::class)->handle($this->user, 'Coffee', '2', 'Lidl', GroceryCategory::Pantry);
 
     expect($item->promo_id)->toBe(sheetPromo($this->user, 'Coffee beans 1 kg')->id);
 });

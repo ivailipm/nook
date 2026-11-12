@@ -42,7 +42,7 @@ class TaskSheet extends Component
         $this->editTaskTitle = $task->title;
         $this->editDueDate = $task->due_date?->toDateString() ?? '';
         $this->priority = $task->priority?->value;
-        $this->tag = $task->tag->value;
+        $this->tag = $task->tag;
         $this->repeat = $task->repeat_weekday === null ? 'once' : 'weekly';
         $this->resetValidation();
 
@@ -58,7 +58,7 @@ class TaskSheet extends Component
             'editTaskTitle' => ['required', 'string', 'max:255'],
             'editDueDate' => ['nullable', 'date_format:Y-m-d'],
             'priority' => ['nullable', Rule::enum(TaskPriority::class)],
-            'tag' => ['required', Rule::enum(TaskTag::class)],
+            'tag' => ['required', Rule::in(auth()->user()->tagNames())],
             'repeat' => ['required', Rule::in(['once', 'weekly'])],
         ];
     }
@@ -89,7 +89,7 @@ class TaskSheet extends Component
             // A blank date and a blank priority pass the nullable rules, so they count as none.
             filled($this->editDueDate) ? Carbon::parse($this->editDueDate) : null,
             TaskPriority::tryFrom((string) $this->priority),
-            TaskTag::from($this->tag),
+            $this->tag,
             $this->repeat === 'weekly',
         );
 
@@ -113,6 +113,17 @@ class TaskSheet extends Component
     }
 
     /**
+     * A tag removed in the Your tags sheet while it was picked falls back to home, where its tasks moved.
+     */
+    #[On('tags-changed')]
+    public function keepTag(): void
+    {
+        if ($this->taskId !== null && ! in_array($this->tag, auth()->user()->tagNames(), true)) {
+            $this->tag = TaskTag::Home->value;
+        }
+    }
+
+    /**
      * Forgets the task and any unsaved change or error. The view calls this whenever the sheet closes.
      */
     public function clear(): void
@@ -123,7 +134,7 @@ class TaskSheet extends Component
 
     public function render(): View
     {
-        return view('livewire.sheets.task-sheet', ['task' => $this->task()]);
+        return view('livewire.sheets.task-sheet', ['task' => $this->task(), 'tags' => auth()->user()->tagNames()]);
     }
 
     private function finish(Task $task): void

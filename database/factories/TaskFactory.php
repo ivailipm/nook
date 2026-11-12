@@ -23,7 +23,7 @@ class TaskFactory extends Factory
         return [
             'user_id' => User::factory(),
             'title' => Str::ucfirst(fake()->words(3, true)),
-            'tag' => fake()->randomElement(TaskTag::cases()),
+            'tag' => fake()->randomElement(TaskTag::cases())->value,
             'due_date' => null,
             'priority' => null,
             'repeat_weekday' => null,

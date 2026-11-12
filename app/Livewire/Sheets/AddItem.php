@@ -8,6 +8,7 @@ use App\Enums\Store;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
@@ -31,7 +32,7 @@ class AddItem extends Component
         return [
             'itemName' => ['required', 'string', 'max:255'],
             'itemQty' => ['string', 'max:255'],
-            'store' => ['required', Rule::enum(Store::class)],
+            'store' => ['required', Rule::in(auth()->user()->storeNames())],
             'category' => ['required', Rule::enum(GroceryCategory::class)],
         ];
     }
@@ -55,7 +56,7 @@ class AddItem extends Component
             auth()->user(),
             $this->itemName,
             $this->itemQty,
-            Store::from($this->store),
+            $this->store,
             GroceryCategory::from($this->category),
         );
 
@@ -64,6 +65,17 @@ class AddItem extends Component
         $this->dispatch('toast', message: $addGroceryItem->message($item));
         $this->dispatch('grocery-item-added');
         $this->dispatch('close-sheet', name: 'add-item');
+    }
+
+    /**
+     * A store removed in the Your stores sheet while it was picked falls back to Lidl, as its items moved to Other.
+     */
+    #[On('stores-changed')]
+    public function keepStore(): void
+    {
+        if (! in_array($this->store, auth()->user()->storeNames(), true)) {
+            $this->store = Store::Lidl->value;
+        }
     }
 
     /**
@@ -77,6 +89,6 @@ class AddItem extends Component
 
     public function render(): View
     {
-        return view('livewire.sheets.add-item');
+        return view('livewire.sheets.add-item', ['stores' => auth()->user()->storeNames()]);
     }
 }

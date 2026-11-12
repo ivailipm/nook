@@ -2,7 +2,6 @@
 
 namespace App\Actions;
 
-use App\Enums\Store;
 use App\Models\Promo;
 use App\Models\User;
 use App\Support\RelativeDate;
@@ -19,7 +18,7 @@ class PinPromo
 
     public function handle(
         User $user,
-        Store $store,
+        string $store,
         string $validFrom,
         string $validUntil,
         string $product,
@@ -34,7 +33,7 @@ class PinPromo
 
         $promo = $user->promos()->create([
             'store' => $store,
-            'product' => $product === '' ? "{$store->value} deal" : $product,
+            'product' => $product === '' ? "{$store} deal" : $product,
             'deal' => $deal === '' ? 'Deal' : $deal,
             'note' => $note === '' ? null : $note,
             'valid_from' => $validFrom,

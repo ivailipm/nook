@@ -18,7 +18,7 @@ it('persists a factory task as an open, one-off task for a user', function () {
 
     expect($task->user->is(User::sole()))->toBeTrue()
         ->and($task->title)->not->toBe('')
-        ->and($task->tag)->toBeInstanceOf(TaskTag::class)
+        ->and($task->tag)->toBeIn(array_column(TaskTag::cases(), 'value'))
         ->and($task->due_date)->toBeNull()
         ->and($task->priority)->toBeNull()
         ->and($task->repeat_weekday)->toBeNull()
@@ -38,7 +38,7 @@ it('casts its columns when read back', function () {
         'rolled_over' => true,
     ])->fresh();
 
-    expect($task->tag)->toBe(TaskTag::Internship)
+    expect($task->tag)->toBe('internship')
         ->and($task->priority)->toBe(TaskPriority::Med)
         ->and($task->due_date)->toBeInstanceOf(Carbon::class)
         ->and($task->due_date->toDateString())->toBe('2026-10-29')
@@ -121,15 +121,15 @@ it('labels each priority', function (TaskPriority $priority, string $label) {
     [TaskPriority::Low, 'Low'],
 ]);
 
-it('gives the Home card its meta line', function (TaskTag $tag, ?int $days, bool $done, string $meta) {
+it('gives the Home card its meta line', function (string $tag, ?int $days, bool $done, string $meta) {
     $task = Task::factory()->create(['tag' => $tag, 'due_date' => $days === null ? null : today()->addDays($days), 'done' => $done])->fresh();
 
     expect($task->homeMeta())->toBe($meta);
 })->with([
-    'overdue' => [TaskTag::School, -1, false, 'School · overdue'],
-    'due today' => [TaskTag::Internship, 0, false, 'Internship · due today'],
-    'done' => [TaskTag::Home, 0, true, 'Home · done'],
-    'overdue and done' => [TaskTag::Home, -3, true, 'Home · done'],
-    'due later' => [TaskTag::School, 2, false, 'School · due Sat'],
-    'no date' => [TaskTag::Home, null, false, 'Home · no date'],
+    'overdue' => ['school', -1, false, 'School · overdue'],
+    'due today' => ['internship', 0, false, 'Internship · due today'],
+    'done' => ['home', 0, true, 'Home · done'],
+    'overdue and done' => ['home', -3, true, 'Home · done'],
+    'due later' => ['school', 2, false, 'School · due Sat'],
+    'no date' => ['home', null, false, 'Home · no date'],
 ]);

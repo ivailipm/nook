@@ -4,7 +4,7 @@
 <button
     type="button"
     aria-haspopup="dialog"
-    aria-label="Show the {{ $promo->store->value }} deal: {{ $promo->deal }}"
+    aria-label="Show the {{ $promo->store }} deal: {{ $promo->deal }}"
     x-on:click="$dispatch('show-promo', { id: {{ $promo->id }} })"
     {{ $attributes->class([
         'relative inline-flex max-w-[60%] cursor-pointer items-center gap-[5px] rounded-full px-2.5 py-1 text-[12px] font-bold whitespace-nowrap before:absolute before:inset-x-0 before:-inset-y-2.5' => $variant === 'list',
@@ -13,5 +13,5 @@
     ]) }}
 >
     <x-lucide-tag :class="$variant === 'home' ? 'size-3 flex-none stroke-[2.2]' : 'size-[13px] flex-none stroke-[2.2]'" aria-hidden="true" />
-    <span class="min-w-0 truncate">{{ $promo->deal }}<span @class(['hidden wide:inline' => $variant === 'list'])> · {{ $promo->store->value }}</span></span>
+    <span class="min-w-0 truncate">{{ $promo->deal }}<span @class(['hidden wide:inline' => $variant === 'list'])> · {{ $promo->store }}</span></span>
 </button>

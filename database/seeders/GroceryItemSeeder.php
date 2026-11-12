@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Enums\GroceryCategory;
-use App\Enums\Store;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -20,13 +19,13 @@ class GroceryItemSeeder extends Seeder
         }
 
         $user->groceryItems()->createMany([
-            ['name' => 'Coffee beans', 'qty' => '1kg', 'store' => Store::Colruyt, 'category' => GroceryCategory::Pantry, 'done' => false],
-            ['name' => 'Dish soap', 'qty' => null, 'store' => Store::Delhaize, 'category' => GroceryCategory::Household, 'done' => false],
-            ['name' => 'Oat milk', 'qty' => '2', 'store' => Store::Aldi, 'category' => GroceryCategory::Dairy, 'done' => false],
-            ['name' => 'Spinach', 'qty' => '300g', 'store' => Store::Lidl, 'category' => GroceryCategory::FruitAndVeg, 'done' => false],
-            ['name' => 'Greek yoghurt', 'qty' => '2', 'store' => Store::Lidl, 'category' => GroceryCategory::Dairy, 'done' => false],
-            ['name' => 'Bananas', 'qty' => '6', 'store' => Store::Aldi, 'category' => GroceryCategory::FruitAndVeg, 'done' => true],
-            ['name' => 'Laundry pods', 'qty' => null, 'store' => Store::Colruyt, 'category' => GroceryCategory::Household, 'done' => false],
+            ['name' => 'Coffee beans', 'qty' => '1kg', 'store' => 'Colruyt', 'category' => GroceryCategory::Pantry, 'done' => false],
+            ['name' => 'Dish soap', 'qty' => null, 'store' => 'Delhaize', 'category' => GroceryCategory::Household, 'done' => false],
+            ['name' => 'Oat milk', 'qty' => '2', 'store' => 'Aldi', 'category' => GroceryCategory::Dairy, 'done' => false],
+            ['name' => 'Spinach', 'qty' => '300g', 'store' => 'Lidl', 'category' => GroceryCategory::FruitAndVeg, 'done' => false],
+            ['name' => 'Greek yoghurt', 'qty' => '2', 'store' => 'Lidl', 'category' => GroceryCategory::Dairy, 'done' => false],
+            ['name' => 'Bananas', 'qty' => '6', 'store' => 'Aldi', 'category' => GroceryCategory::FruitAndVeg, 'done' => true],
+            ['name' => 'Laundry pods', 'qty' => null, 'store' => 'Colruyt', 'category' => GroceryCategory::Household, 'done' => false],
         ]);
     }
 }

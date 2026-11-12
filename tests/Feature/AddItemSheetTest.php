@@ -2,7 +2,6 @@
 
 use App\Actions\AddGroceryItem;
 use App\Enums\GroceryCategory;
-use App\Enums\Store;
 use App\Livewire\Sheets\AddItem;
 use App\Models\GroceryItem;
 use App\Models\User;
@@ -35,7 +34,7 @@ function addItemChips(Testable $component): array
         $label = trim($page->getElementById($group->getAttribute('aria-labelledby'))->textContent);
         $rows[$label] = array_map(
             fn (Element $chip) => trim($chip->textContent).($chip->getAttribute('aria-pressed') === 'true' ? ' (pressed)' : ''),
-            iterator_to_array($group->querySelectorAll('button')),
+            iterator_to_array($group->querySelectorAll('button[aria-pressed]')),
         );
     }
 
@@ -118,7 +117,7 @@ it('saves an item for the signed-in user, then closes and resets', function (arr
     $item = $this->user->groceryItems()->sole();
 
     expect([$item->name, $item->qty, $item->store, $item->category, $item->done, $item->promo_id])
-        ->toBe(['Oat bars', '4', Store::Aldi, GroceryCategory::Pantry, false, null])
+        ->toBe(['Oat bars', '4', 'Aldi', GroceryCategory::Pantry, false, null])
         ->and(addItemChips($component))->toBe($chips);
 })->with('default chips');
 
@@ -132,7 +131,7 @@ it('trims the fields and stores an empty qty as null', function (string $qty) {
 
     $item = $this->user->groceryItems()->sole();
 
-    expect([$item->name, $item->qty, $item->store, $item->category])->toBe(['Milk', null, Store::Lidl, GroceryCategory::Pantry]);
+    expect([$item->name, $item->qty, $item->store, $item->category])->toBe(['Milk', null, 'Lidl', GroceryCategory::Pantry]);
 })->with(['empty' => '', 'spaces' => '   ']);
 
 it('requires a name and keeps the sheet open', function (string $name) {
@@ -217,17 +216,17 @@ it('resets the form and its errors when the sheet closes', function (array $chip
 it('adds an open item through the user with a capitalised name', function () {
     GroceryItem::factory()->create();
 
-    $item = app(AddGroceryItem::class)->handle($this->user, 'oat bars', '4', Store::Aldi, GroceryCategory::Pantry);
+    $item = app(AddGroceryItem::class)->handle($this->user, 'oat bars', '4', 'Aldi', GroceryCategory::Pantry);
 
     expect($item->exists)->toBeTrue()
         ->and($item->user->is($this->user))->toBeTrue()
         ->and($this->user->groceryItems()->sole()->is($item))->toBeTrue()
         ->and([$item->name, $item->qty, $item->store, $item->category, $item->done, $item->promo_id])
-        ->toBe(['Oat bars', '4', Store::Aldi, GroceryCategory::Pantry, false, null]);
+        ->toBe(['Oat bars', '4', 'Aldi', GroceryCategory::Pantry, false, null]);
 });
 
 it('adds an item with an empty qty as null', function (?string $qty) {
-    $item = app(AddGroceryItem::class)->handle($this->user, 'Milk', $qty, Store::Lidl, GroceryCategory::Dairy);
+    $item = app(AddGroceryItem::class)->handle($this->user, 'Milk', $qty, 'Lidl', GroceryCategory::Dairy);
 
     expect($item->fresh()->qty)->toBeNull();
 })->with(['null' => null, 'empty' => '']);

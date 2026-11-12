@@ -18,7 +18,7 @@ beforeEach(function () {
  */
 function newPromo(User $user, array $attributes = []): Promo
 {
-    return $user->promos()->create(['store' => Store::Lidl, 'product' => 'Gouda slices', 'deal' => '€1.99', 'valid_until' => today(), ...$attributes]);
+    return $user->promos()->create(['store' => 'Lidl', 'product' => 'Gouda slices', 'deal' => '€1.99', 'valid_until' => today(), ...$attributes]);
 }
 
 it('persists an active factory promo for a user', function () {
@@ -29,7 +29,7 @@ it('persists an active factory promo for a user', function () {
     expect($promo->user)->toBeInstanceOf(User::class)
         ->and($promo->user->isNot($this->user))->toBeTrue()
         ->and($promo->user->promos->modelKeys())->toBe([$promo->id])
-        ->and($promo->store)->toBeInstanceOf(Store::class)
+        ->and($promo->store)->toBeIn(array_column(Store::cases(), 'value'))
         ->and($promo->valid_from->isBefore(today()))->toBeTrue()
         ->and($promo->valid_until->betweenIncluded(today(), today()->addDays(14)))->toBeTrue()
         ->and(Promo::active()->sole()->is($promo))->toBeTrue()

@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\TaskPriority;
-use App\Enums\TaskTag;
 use App\Livewire\Sheets\AddTask;
 use App\Livewire\Sheets\TaskSheet;
 use App\Models\Task;
@@ -111,7 +110,7 @@ it('renders no form until a task is shown', function () {
 });
 
 it('fills the form from the task it was opened for and changes nothing', function (string $title, array $properties, array $pressed) {
-    Task::factory()->for($this->user)->create(['title' => 'Email the prof', 'due_date' => null, 'priority' => TaskPriority::High, 'tag' => TaskTag::Internship]);
+    Task::factory()->for($this->user)->create(['title' => 'Email the prof', 'due_date' => null, 'priority' => TaskPriority::High, 'tag' => 'internship']);
     Task::query()->update(['updated_at' => '2026-10-01 08:00:00']);
     $before = taskSheetSnapshot();
 
@@ -181,7 +180,7 @@ it('saves every field of the form, with a toast, and closes', function () {
     $fresh = $book->fresh();
 
     expect([$fresh->title, $fresh->due_date->toDateString(), $fresh->priority, $fresh->tag, $fresh->repeat_weekday])
-        ->toBe(['Return library books', '2026-10-30', TaskPriority::High, TaskTag::Home, null])
+        ->toBe(['Return library books', '2026-10-30', TaskPriority::High, 'home', null])
         ->and([$fresh->done, $fresh->completed_at, $fresh->rolled_over, $fresh->user_id])->toBe([false, null, false, $this->user->id]);
 });
 

@@ -2,7 +2,6 @@
 
 use App\Actions\ToggleTask;
 use App\Enums\TaskPriority;
-use App\Enums\TaskTag;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -42,7 +41,7 @@ it('completes a recurring task and creates the next one for the same user', func
     $other = User::factory()->create();
     $task = Task::factory()->for($user)->create([
         'title' => 'Put out the PMD bag',
-        'tag' => TaskTag::School,
+        'tag' => 'school',
         'due_date' => '2026-10-29',
         'priority' => TaskPriority::High,
         'repeat_weekday' => 4,
@@ -64,7 +63,7 @@ it('completes a recurring task and creates the next one for the same user', func
     expect($next->is($task))->toBeFalse()
         ->and($next->user->is($user))->toBeTrue()
         ->and($next->title)->toBe('Put out the PMD bag')
-        ->and($next->tag)->toBe(TaskTag::School)
+        ->and($next->tag)->toBe('school')
         ->and($next->priority)->toBe(TaskPriority::High)
         ->and($next->repeat_weekday)->toBe(4)
         ->and($next->done)->toBeFalse()

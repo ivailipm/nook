@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\TaskPriority;
-use App\Enums\TaskTag;
 use App\Support\RelativeDate;
 use Database\Factories\TaskFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -28,7 +27,6 @@ class Task extends Model
     protected function casts(): array
     {
         return [
-            'tag' => TaskTag::class,
             'priority' => TaskPriority::class,
             'due_date' => 'date',
             'repeat_weekday' => 'integer',
@@ -77,7 +75,7 @@ class Task extends Model
             default => $this->dueLabel(),
         };
 
-        return Str::ucfirst($this->tag->value)." · {$state}";
+        return Str::ucfirst($this->tag)." · {$state}";
     }
 
     /**

@@ -8,12 +8,17 @@ use Illuminate\Support\Str;
 
 /**
  * Reads a grocery quick-add line such as "2 coffee @lidl #pantry", exactly as the
- * prototype's parseItem does, and capitalises the name as its addItem does.
+ * prototype's parseItem does, and capitalises the name as its addItem does. The @ token
+ * picks from the stores it is given, so it can pick a store of the user's own.
  */
 class GroceryItemParser
 {
-    public function parse(string $line): ParsedGroceryItem
+    /**
+     * @param  list<string>|null  $stores  The store names an @ token can pick, in order; null means the built-in stores.
+     */
+    public function parse(string $line, ?array $stores = null): ParsedGroceryItem
     {
+        $stores ??= array_column(Store::cases(), 'value');
         $text = Str::trim($line);
         $qty = null;
 
@@ -25,12 +30,13 @@ class GroceryItemParser
 
         [$text, $storeToken] = $this->takeToken('@', $text);
         [$text, $categoryToken] = $this->takeToken('#', $text);
+        $category = $this->firstStartingWith(array_column(GroceryCategory::cases(), 'value'), $categoryToken);
 
         return new ParsedGroceryItem(
             name: Str::ucfirst(Str::squish($text)),
             qty: $qty,
-            store: $this->caseStartingWith(Store::cases(), $storeToken) ?? Store::Lidl,
-            category: $this->caseStartingWith(GroceryCategory::cases(), $categoryToken) ?? GroceryCategory::Pantry,
+            store: $this->firstStartingWith($stores, $storeToken) ?? Store::Lidl->value,
+            category: $category === null ? GroceryCategory::Pantry : GroceryCategory::from($category),
         );
     }
 
@@ -51,19 +57,16 @@ class GroceryItemParser
     }
 
     /**
-     * The first case, in case order, whose value starts with the token, ignoring case.
+     * The first name, in list order, that starts with the token, ignoring case.
      *
-     * @template TCase of Store|GroceryCategory
-     *
-     * @param  list<TCase>  $cases
-     * @return TCase|null
+     * @param  list<string>  $names
      */
-    private function caseStartingWith(array $cases, ?string $token): Store|GroceryCategory|null
+    private function firstStartingWith(array $names, ?string $token): ?string
     {
         if ($token === null) {
             return null;
         }
 
-        return array_find($cases, fn (Store|GroceryCategory $case) => str_starts_with(Str::lower($case->value), Str::lower($token)));
+        return array_find($names, fn (string $name) => str_starts_with(Str::lower($name), Str::lower($token)));
     }
 }
