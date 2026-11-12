@@ -1,0 +1,24 @@
+{
+    "id": "/",
+    "name": "nook",
+    "short_name": "nook",
+    "description": "A household hub: groceries and deals, to-dos and subscriptions.",
+    "lang": "en",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#190a0d",
+    "theme_color": "#190a0d",
+    "icons": [
+        { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+        { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ],
+    "share_target": {
+        "action": "/promos/share",
+        "method": "POST",
+        "enctype": "multipart/form-data",
+        "params": { "title": "title", "text": "text", "files": [{ "name": "photo", "accept": ["image/*"] }] }
+    }
+}
