@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\TaskPriority;
-use App\Enums\TaskTag;
 use App\Livewire\Pages\Todo;
 use App\Models\Task;
 use App\Models\User;
@@ -75,7 +74,7 @@ function todoFilterChips(Testable $component): array
 {
     return array_map(
         fn (Element $chip) => trim($chip->textContent).($chip->getAttribute('aria-pressed') === 'true' ? ' (pressed)' : ''),
-        iterator_to_array(todoHtml($component)->querySelectorAll('[role="group"][aria-label="Filter by tag"] button')),
+        iterator_to_array(todoHtml($component)->querySelectorAll('[role="group"][aria-label="Filter by tag"] button[aria-pressed]')),
     );
 }
 
@@ -177,7 +176,7 @@ it('renders the quick add, the hint and the page\'s layout', function () {
         ->and($page->querySelector('.grid.grid-cols-1.items-start.gap-3\\.5.wide\\:grid-cols-2'))->not->toBeNull();
 });
 
-it('adds a task from a quick-add line', function (string $line, string $title, ?string $due, ?TaskPriority $priority, TaskTag $tag, ?int $repeat, string $toast) {
+it('adds a task from a quick-add line', function (string $line, string $title, ?string $due, ?TaskPriority $priority, string $tag, ?int $repeat, string $toast) {
     Livewire::test(Todo::class)
         ->set('quickTask', $line)
         ->call('add')
@@ -190,11 +189,11 @@ it('adds a task from a quick-add line', function (string $line, string $title, ?
     expect([$task->title, $task->due_date?->toDateString(), $task->priority, $task->tag, $task->repeat_weekday, $task->done])
         ->toBe([$title, $due, $priority, $tag, $repeat, false]);
 })->with([
-    'tomorrow, high and a tag' => ['Email the prof tomorrow !high #school', 'Email the prof', '2026-10-30', TaskPriority::High, TaskTag::School, null, 'Task added · due tomorrow'],
-    'every tue, keeping "monitor"' => ['Clean the monitor !medium every tue #school', 'Clean the monitor', '2026-11-03', TaskPriority::Med, TaskTag::School, 2, 'Task added · due Tue'],
-    'every thu, on a Thursday' => ['Put out the bins every thu', 'Put out the bins', '2026-10-29', null, TaskTag::Home, 4, 'Task added · due today'],
-    'today and low' => ['water plants today !low', 'water plants', '2026-10-29', TaskPriority::Low, TaskTag::Home, null, 'Task added · due today'],
-    'no date' => ['Buy stamps', 'Buy stamps', null, null, TaskTag::Home, null, 'Task added'],
+    'tomorrow, high and a tag' => ['Email the prof tomorrow !high #school', 'Email the prof', '2026-10-30', TaskPriority::High, 'school', null, 'Task added · due tomorrow'],
+    'every tue, keeping "monitor"' => ['Clean the monitor !medium every tue #school', 'Clean the monitor', '2026-11-03', TaskPriority::Med, 'school', 2, 'Task added · due Tue'],
+    'every thu, on a Thursday' => ['Put out the bins every thu', 'Put out the bins', '2026-10-29', null, 'home', 4, 'Task added · due today'],
+    'today and low' => ['water plants today !low', 'water plants', '2026-10-29', TaskPriority::Low, 'home', null, 'Task added · due today'],
+    'no date' => ['Buy stamps', 'Buy stamps', null, null, 'home', null, 'Task added'],
 ]);
 
 it('shows a quick-added task in its group', function () {
@@ -262,13 +261,13 @@ it('refuses to tick another user\'s task', function (?int $repeatWeekday) {
 
 it('never lists another user\'s tasks', function () {
     Task::factory()->create(['title' => 'Theirs', 'due_date' => today()]);
-    Task::factory()->for($this->user)->create(['title' => 'Mine', 'due_date' => today(), 'tag' => TaskTag::Home]);
+    Task::factory()->for($this->user)->create(['title' => 'Mine', 'due_date' => today(), 'tag' => 'home']);
 
     expect(todoCards(Livewire::test(Todo::class)))->toBe(['Today · 1 task' => ['Mine: due today | home']]);
 });
 
 it('rolls a recurring task over and shows the next one under Upcoming', function () {
-    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => TaskTag::Home, 'due_date' => today(), 'repeat_weekday' => 4]);
+    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => 'home', 'due_date' => today(), 'repeat_weekday' => 4]);
 
     $component = Livewire::test(Todo::class)
         ->call('toggle', $task->id, true)
@@ -281,7 +280,7 @@ it('rolls a recurring task over and shows the next one under Upcoming', function
 });
 
 it('ticks a one-off without a toast, and unticking returns it to its group', function () {
-    $task = Task::factory()->for($this->user)->create(['title' => 'Stamps', 'tag' => TaskTag::Home, 'due_date' => today()]);
+    $task = Task::factory()->for($this->user)->create(['title' => 'Stamps', 'tag' => 'home', 'due_date' => today()]);
 
     $component = Livewire::test(Todo::class)
         ->call('toggle', $task->id, true)
@@ -295,7 +294,7 @@ it('ticks a one-off without a toast, and unticking returns it to its group', fun
 });
 
 it('unticks and re-ticks a recurring task without a second copy or toast', function () {
-    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => TaskTag::Home, 'due_date' => today(), 'repeat_weekday' => 4]);
+    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => 'home', 'due_date' => today(), 'repeat_weekday' => 4]);
 
     $component = Livewire::test(Todo::class)->call('toggle', $task->id, true);
 
@@ -306,7 +305,7 @@ it('unticks and re-ticks a recurring task without a second copy or toast', funct
 });
 
 it('ticks a recurring task once when the same tick is saved twice', function () {
-    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => TaskTag::Home, 'due_date' => today(), 'repeat_weekday' => 4]);
+    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => 'home', 'due_date' => today(), 'repeat_weekday' => 4]);
 
     $component = Livewire::test(Todo::class)
         ->call('toggle', $task->id, true)
@@ -325,7 +324,7 @@ it('ticks a recurring task once when the same tick is saved twice', function () 
 });
 
 it('leaves an open task alone when it is unticked', function () {
-    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => TaskTag::Home, 'due_date' => today(), 'repeat_weekday' => 4]);
+    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => 'home', 'due_date' => today(), 'repeat_weekday' => 4]);
     $before = $task->fresh()->getAttributes();
 
     $this->travel(1)->minutes();
@@ -421,7 +420,7 @@ it('shows the empty line when there is nothing to show', function () {
 
     expect(todoCards($component))->toBe([]);
 
-    Task::factory()->for($this->user)->create(['tag' => TaskTag::Home, 'due_date' => today()]);
+    Task::factory()->for($this->user)->create(['tag' => 'home', 'due_date' => today()]);
 
     $component->call('$refresh')->assertDontSee($line);
     $component->set('tagFilter', 'internship')->assertSee($line);
@@ -446,7 +445,7 @@ it('marks each priority with a shape and its word', function (TaskPriority $prio
 it('shows a task created elsewhere on task-added', function () {
     $component = Livewire::test(Todo::class);
 
-    Task::factory()->for($this->user)->create(['title' => 'From the sheet', 'tag' => TaskTag::Home, 'due_date' => today()]);
+    Task::factory()->for($this->user)->create(['title' => 'From the sheet', 'tag' => 'home', 'due_date' => today()]);
 
     expect(todoCards($component))->toBe([]);
 
@@ -535,7 +534,7 @@ it('makes each row\'s text a button that opens the edit sheet, in every group', 
 });
 
 it('refreshes on task-changed and gives the saved row its focus back', function () {
-    $task = Task::factory()->for($this->user)->create(['title' => 'Stamps', 'tag' => TaskTag::Home, 'due_date' => today()]);
+    $task = Task::factory()->for($this->user)->create(['title' => 'Stamps', 'tag' => 'home', 'due_date' => today()]);
     $component = Livewire::test(Todo::class);
 
     $task->update(['due_date' => today()->addDay()]);

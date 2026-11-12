@@ -8,6 +8,7 @@ use App\Enums\TaskTag;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
@@ -34,7 +35,7 @@ class AddTask extends Component
             'taskTitle' => ['required', 'string', 'max:255'],
             'due' => ['required', Rule::in(['today', 'tomorrow', 'weekday', 'next-week', 'none'])],
             'priority' => ['nullable', Rule::enum(TaskPriority::class)],
-            'tag' => ['required', Rule::enum(TaskTag::class)],
+            'tag' => ['required', Rule::in(auth()->user()->tagNames())],
             'repeat' => ['required', Rule::in(['once', 'weekly'])],
         ];
     }
@@ -74,7 +75,7 @@ class AddTask extends Component
             $dueDate,
             // An empty string passes the nullable rule, so it counts as no priority.
             TaskPriority::tryFrom((string) $this->priority),
-            TaskTag::from($this->tag),
+            $this->tag,
             $repeatWeekday,
         );
 
@@ -83,6 +84,17 @@ class AddTask extends Component
         $this->dispatch('toast', message: $createTask->message($task));
         $this->dispatch('task-added');
         $this->dispatch('close-sheet', name: 'add-task');
+    }
+
+    /**
+     * A tag removed in the Your tags sheet while it was picked falls back to home, as its tasks moved to home.
+     */
+    #[On('tags-changed')]
+    public function keepTag(): void
+    {
+        if (! in_array($this->tag, auth()->user()->tagNames(), true)) {
+            $this->tag = TaskTag::Home->value;
+        }
     }
 
     /**
@@ -96,6 +108,6 @@ class AddTask extends Component
 
     public function render(): View
     {
-        return view('livewire.sheets.add-task');
+        return view('livewire.sheets.add-task', ['tags' => auth()->user()->tagNames()]);
     }
 }

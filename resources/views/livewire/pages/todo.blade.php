@@ -1,5 +1,5 @@
 @use('App\Enums\TaskPriority')
-@use('App\Enums\TaskTag')
+@use('Illuminate\Support\Js')
 
 <div class="flex flex-col gap-4.5 wide:gap-6">
     <x-page-header eyebrow="TO-DO" subtitle="one at a time is plenty">Small <em>things</em></x-page-header>
@@ -28,9 +28,10 @@
 
     <div role="group" aria-label="Filter by tag" class="flex flex-wrap gap-2">
         <x-chip size="sm" :pressed="$tag === null" wire:click="$set('tagFilter', 'All')">All</x-chip>
-        @foreach (TaskTag::cases() as $case)
-            <x-chip size="sm" :pressed="$tag === $case" wire:click="$set('tagFilter', '{{ $case->value }}')">{{ $case->value }}</x-chip>
+        @foreach ($tags as $name)
+            <x-chip size="sm" :pressed="$tag === $name" wire:key="tag-{{ $name }}" wire:click="$set('tagFilter', {{ Js::from($name) }})">{{ $name }}</x-chip>
         @endforeach
+        <x-plus-chip sheet="tags" label="Add or remove tags" size="sm" />
     </div>
 
     <div class="grid grid-cols-1 items-start gap-3.5 wide:grid-cols-2">
@@ -93,7 +94,7 @@
                                             {{ $task->repeatLabel() }}
                                         </span>
                                     @endif
-                                    <span class="rounded-full bg-white/9 px-2 py-px text-cream">{{ $task->tag->value }}</span>
+                                    <span class="rounded-full bg-white/9 px-2 py-px text-cream">{{ $task->tag }}</span>
                                 </span>
                             </button>
                         </div>

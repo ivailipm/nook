@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Enums\TaskPriority;
-use App\Enums\TaskTag;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -22,13 +21,13 @@ class TaskSeeder extends Seeder
         $day = fn (int $offset) => today()->addDays($offset);
 
         $user->tasks()->createMany([
-            ['title' => 'Return library book', 'tag' => TaskTag::School, 'due_date' => $day(-1), 'priority' => TaskPriority::Med, 'repeat_weekday' => null, 'done' => false, 'completed_at' => null],
-            ['title' => 'Send CV to two companies', 'tag' => TaskTag::Internship, 'due_date' => $day(0), 'priority' => TaskPriority::High, 'repeat_weekday' => null, 'done' => false, 'completed_at' => null],
-            ['title' => 'Put out the PMD bag', 'tag' => TaskTag::Home, 'due_date' => $day(0), 'priority' => null, 'repeat_weekday' => $day(0)->dayOfWeek, 'done' => false, 'completed_at' => null],
-            ['title' => 'Water the plants', 'tag' => TaskTag::Home, 'due_date' => $day(0), 'priority' => TaskPriority::Low, 'repeat_weekday' => null, 'done' => true, 'completed_at' => now()],
-            ['title' => 'Finish cloud lab report', 'tag' => TaskTag::School, 'due_date' => $day(1), 'priority' => TaskPriority::High, 'repeat_weekday' => null, 'done' => false, 'completed_at' => null],
-            ['title' => 'Read deep learning chapter 5', 'tag' => TaskTag::School, 'due_date' => $day(4), 'priority' => TaskPriority::Low, 'repeat_weekday' => null, 'done' => false, 'completed_at' => null],
-            ['title' => 'Take out the trash', 'tag' => TaskTag::Home, 'due_date' => $day(5), 'priority' => null, 'repeat_weekday' => $day(5)->dayOfWeek, 'done' => false, 'completed_at' => null],
+            ['title' => 'Return library book', 'tag' => 'school', 'due_date' => $day(-1), 'priority' => TaskPriority::Med, 'repeat_weekday' => null, 'done' => false, 'completed_at' => null],
+            ['title' => 'Send CV to two companies', 'tag' => 'internship', 'due_date' => $day(0), 'priority' => TaskPriority::High, 'repeat_weekday' => null, 'done' => false, 'completed_at' => null],
+            ['title' => 'Put out the PMD bag', 'tag' => 'home', 'due_date' => $day(0), 'priority' => null, 'repeat_weekday' => $day(0)->dayOfWeek, 'done' => false, 'completed_at' => null],
+            ['title' => 'Water the plants', 'tag' => 'home', 'due_date' => $day(0), 'priority' => TaskPriority::Low, 'repeat_weekday' => null, 'done' => true, 'completed_at' => now()],
+            ['title' => 'Finish cloud lab report', 'tag' => 'school', 'due_date' => $day(1), 'priority' => TaskPriority::High, 'repeat_weekday' => null, 'done' => false, 'completed_at' => null],
+            ['title' => 'Read deep learning chapter 5', 'tag' => 'school', 'due_date' => $day(4), 'priority' => TaskPriority::Low, 'repeat_weekday' => null, 'done' => false, 'completed_at' => null],
+            ['title' => 'Take out the trash', 'tag' => 'home', 'due_date' => $day(5), 'priority' => null, 'repeat_weekday' => $day(5)->dayOfWeek, 'done' => false, 'completed_at' => null],
         ]);
     }
 }

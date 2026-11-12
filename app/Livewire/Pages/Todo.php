@@ -5,7 +5,6 @@ namespace App\Livewire\Pages;
 use App\Actions\CreateTask;
 use App\Actions\ToggleMorningNudge;
 use App\Actions\ToggleTask;
-use App\Enums\TaskTag;
 use App\Parsers\TaskParser;
 use App\Support\TaskGroups;
 use Illuminate\Contracts\View\View;
@@ -15,12 +14,13 @@ use Livewire\Component;
 
 #[Title('To-do')]
 #[On('task-added')]
+#[On('tags-changed')]
 class Todo extends Component
 {
     public string $quickTask = '';
 
     /**
-     * A tag's value shows only that tag; anything else shows every tag.
+     * One of the user's tags shows only that tag; anything else shows every tag.
      */
     public string $tagFilter = 'All';
 
@@ -28,7 +28,7 @@ class Todo extends Component
     {
         $this->validate(['quickTask' => ['string', 'max:255']], attributes: ['quickTask' => 'task']);
 
-        $parsed = $parser->parse($this->quickTask);
+        $parsed = $parser->parse($this->quickTask, auth()->user()->tagNames());
 
         if ($parsed->title === '') {
             return;
@@ -78,10 +78,12 @@ class Todo extends Component
     public function render(): View
     {
         $user = auth()->user();
-        $tag = TaskTag::tryFrom($this->tagFilter);
+        $tags = $user->tagNames();
+        $tag = in_array($this->tagFilter, $tags, true) ? $this->tagFilter : null;
 
         return view('livewire.pages.todo', [
             'groups' => TaskGroups::for($user, $tag),
+            'tags' => $tags,
             'tag' => $tag,
             'nudge' => $user->morning_nudge,
         ]);

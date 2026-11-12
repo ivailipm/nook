@@ -2,7 +2,6 @@
 
 namespace App\Support;
 
-use App\Enums\TaskTag;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Contracts\Database\Query\Builder;
@@ -18,7 +17,7 @@ class TaskGroups
      *
      * @return list<array{title: string, tasks: Collection<int, Task>}>
      */
-    public static function for(User $user, ?TaskTag $tag = null): array
+    public static function for(User $user, ?string $tag = null): array
     {
         $today = today()->toDateString();
         $tasks = fn () => $user->tasks()->when($tag !== null, fn (Builder $query) => $query->where('tag', $tag));

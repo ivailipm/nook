@@ -1,5 +1,8 @@
-{{-- A close (the close button, Escape, the scrim, saving or deleting) forgets the task and any unsaved change. A dialog's close event doesn't bubble, hence the capture. The ids differ from the add sheet's, because both sheets are on every page. --}}
-<div x-on:close.capture="$wire.clear()">
+{{-- A close (the close button, Escape, the scrim, saving or deleting) forgets the task and any unsaved change. A dialog's close event doesn't bubble, hence the capture. The ids differ from the add sheet's, because both sheets are on every page. A tag added in the Your tags sheet on top of this one gets picked. --}}
+<div
+    x-on:close.capture="$wire.clear()"
+    x-on:tag-added.window="$el.querySelector('dialog').open && $wire.set('tag', $event.detail.name)"
+>
     <x-sheet name="task" title="Edit task">
         @if ($task)
             {{-- The Due chips set a date, so one is pressed only when the date matches it: an overdue date or one further out presses none. --}}
@@ -27,7 +30,7 @@
 
                 <x-field label="Or pick a date" name="editDueDate" type="date" wire:model.live="editDueDate" />
 
-                <x-task-chips prefix="edit-task" :priority="$priority" :tag="$tag" :repeat="$repeat" />
+                <x-task-chips prefix="edit-task" :priority="$priority" :tag="$tag" :tags="$tags" :repeat="$repeat" />
 
                 <button type="submit" class="min-h-12 cursor-pointer rounded-button bg-apricot text-[15px] font-bold text-on-apricot">Save changes</button>
                 <button type="button" wire:click="deleteTask" class="min-h-[46px] cursor-pointer rounded-button border border-destructive-border text-[14px] font-bold text-destructive">Delete task</button>

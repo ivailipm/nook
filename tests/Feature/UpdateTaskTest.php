@@ -3,7 +3,6 @@
 use App\Actions\ToggleTask;
 use App\Actions\UpdateTask;
 use App\Enums\TaskPriority;
-use App\Enums\TaskTag;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -18,7 +17,7 @@ beforeEach(function () {
 /**
  * Saves the task through the action, with the date as Y-m-d or null.
  */
-function updateTaskSave(Task $task, ?string $due, bool $weekly, string $title = 'Put out the bins', ?TaskPriority $priority = null, TaskTag $tag = TaskTag::Home): Task
+function updateTaskSave(Task $task, ?string $due, bool $weekly, string $title = 'Put out the bins', ?TaskPriority $priority = null, string $tag = 'home'): Task
 {
     return app(UpdateTask::class)->handle($task, $title, $due === null ? null : Carbon::parse($due), $priority, $tag, $weekly);
 }
@@ -46,14 +45,14 @@ it('works out the due date and the repeat', function (?string $dueBefore, ?int $
 ]);
 
 it('returns the task it was given, with its new fields stored', function () {
-    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => TaskTag::Home, 'priority' => TaskPriority::Low, 'due_date' => '2026-10-29']);
+    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => 'home', 'priority' => TaskPriority::Low, 'due_date' => '2026-10-29']);
 
-    $saved = updateTaskSave($task, '2026-10-30', false, 'Put out the bins', TaskPriority::High, TaskTag::School);
+    $saved = updateTaskSave($task, '2026-10-30', false, 'Put out the bins', TaskPriority::High, 'school');
     $fresh = $task->fresh();
 
     expect($saved->is($task))->toBeTrue()
         ->and([$fresh->title, $fresh->tag, $fresh->priority, $fresh->due_date->toDateString()])
-        ->toBe(['Put out the bins', TaskTag::School, TaskPriority::High, '2026-10-30']);
+        ->toBe(['Put out the bins', 'school', TaskPriority::High, '2026-10-30']);
 });
 
 it('clears the priority', function () {
@@ -65,7 +64,7 @@ it('clears the priority', function () {
 });
 
 it('keeps a done, rolled-over task done and leaves every other task alone', function () {
-    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => TaskTag::Home, 'due_date' => '2026-10-29', 'repeat_weekday' => 4]);
+    $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => 'home', 'due_date' => '2026-10-29', 'repeat_weekday' => 4]);
     $next = app(ToggleTask::class)->handle($task, true);
     Task::factory()->for($this->user)->create(['due_date' => '2026-10-30']);
     Task::factory()->create(['due_date' => '2026-10-29']);
@@ -73,7 +72,7 @@ it('keeps a done, rolled-over task done and leaves every other task alone', func
     $others = fn () => Task::whereKeyNot($task->id)->orderBy('id')->get()->map->getAttributes()->all();
     $before = $others();
 
-    updateTaskSave($task->fresh(), '2026-10-30', true, 'Put out the bins', TaskPriority::High, TaskTag::School);
+    updateTaskSave($task->fresh(), '2026-10-30', true, 'Put out the bins', TaskPriority::High, 'school');
 
     $fresh = $task->fresh();
 

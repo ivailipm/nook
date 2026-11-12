@@ -4,7 +4,6 @@ use App\Enums\GroceryCategory;
 use App\Enums\SubscriptionCategory;
 use App\Enums\SubscriptionCycle;
 use App\Enums\TaskPriority;
-use App\Enums\TaskTag;
 use App\Models\GroceryItem;
 use App\Models\Promo;
 use App\Models\Subscription;
@@ -67,13 +66,13 @@ it('seeds the local account, its grocery items, its promos, its tasks and its su
             $task->title, $task->tag, $task->due_date->toDateString(), $task->priority, $task->repeat_weekday,
             $task->done, $task->completed_at?->toDateTimeString(), $task->rolled_over,
         ])->all())->toBe([
-            ['Return library book', TaskTag::School, $day(-1), TaskPriority::Med, null, false, null, false],
-            ['Send CV to two companies', TaskTag::Internship, $day(0), TaskPriority::High, null, false, null, false],
-            ['Put out the PMD bag', TaskTag::Home, $day(0), null, $weekday(0), false, null, false],
-            ['Water the plants', TaskTag::Home, $day(0), TaskPriority::Low, null, true, now()->toDateTimeString(), false],
-            ['Finish cloud lab report', TaskTag::School, $day(1), TaskPriority::High, null, false, null, false],
-            ['Read deep learning chapter 5', TaskTag::School, $day(4), TaskPriority::Low, null, false, null, false],
-            ['Take out the trash', TaskTag::Home, $day(5), null, $weekday(5), false, null, false],
+            ['Return library book', 'school', $day(-1), TaskPriority::Med, null, false, null, false],
+            ['Send CV to two companies', 'internship', $day(0), TaskPriority::High, null, false, null, false],
+            ['Put out the PMD bag', 'home', $day(0), null, $weekday(0), false, null, false],
+            ['Water the plants', 'home', $day(0), TaskPriority::Low, null, true, now()->toDateTimeString(), false],
+            ['Finish cloud lab report', 'school', $day(1), TaskPriority::High, null, false, null, false],
+            ['Read deep learning chapter 5', 'school', $day(4), TaskPriority::Low, null, false, null, false],
+            ['Take out the trash', 'home', $day(5), null, $weekday(5), false, null, false],
         ]);
 
     $subscriptions = Subscription::orderBy('id')->get();

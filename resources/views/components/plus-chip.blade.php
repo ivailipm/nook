@@ -1,6 +1,6 @@
 @props(['sheet', 'label', 'size' => 'md'])
 
-{{-- The dashed + at the end of a chip row that a user can add to (the stores), opening that list's sheet on top of whatever is open. It is as tall as the chips beside it, md 36px or sm 34px, and the ::before, starting inside the 1px border, makes the hit area 44px square. --}}
+{{-- The dashed + at the end of a chip row that a user can add to (the stores and the task tags), opening that list's sheet on top of whatever is open. It is as tall as the chips beside it, md 36px or sm 34px, and the ::before, starting inside the 1px border, makes the hit area 44px square. --}}
 <button
     type="button"
     aria-haspopup="dialog"

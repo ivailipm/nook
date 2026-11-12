@@ -3,7 +3,6 @@
 namespace App\Actions;
 
 use App\Enums\TaskPriority;
-use App\Enums\TaskTag;
 use App\Models\Task;
 use App\Models\User;
 use App\Support\RelativeDate;
@@ -14,7 +13,7 @@ use Carbon\CarbonInterface;
  */
 class CreateTask
 {
-    public function handle(User $user, string $title, ?CarbonInterface $dueDate, ?TaskPriority $priority, TaskTag $tag, ?int $repeatWeekday): Task
+    public function handle(User $user, string $title, ?CarbonInterface $dueDate, ?TaskPriority $priority, string $tag, ?int $repeatWeekday): Task
     {
         return $user->tasks()->create([
             'title' => $title,
