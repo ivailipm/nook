@@ -66,7 +66,7 @@ it('clears the priority', function () {
 
 it('keeps a done, rolled-over task done and leaves every other task alone', function () {
     $task = Task::factory()->for($this->user)->create(['title' => 'Bins', 'tag' => TaskTag::Home, 'due_date' => '2026-10-29', 'repeat_weekday' => 4]);
-    $next = app(ToggleTask::class)->handle($task);
+    $next = app(ToggleTask::class)->handle($task, true);
     Task::factory()->for($this->user)->create(['due_date' => '2026-10-30']);
     Task::factory()->create(['due_date' => '2026-10-29']);
     Task::query()->update(['updated_at' => '2026-10-01 08:00:00']);
@@ -89,13 +89,13 @@ it('makes no second copy when a done weekly task goes to once and back, then is 
     $task = Task::factory()->for($this->user)->create(['due_date' => '2026-10-29', 'repeat_weekday' => 4]);
     $toggleTask = app(ToggleTask::class);
 
-    $toggleTask->handle($task);
+    $toggleTask->handle($task, true);
 
     updateTaskSave($task, '2026-10-29', false);
     updateTaskSave($task, '2026-10-29', true);
 
-    expect($toggleTask->handle($task))->toBeNull()
-        ->and($toggleTask->handle($task))->toBeNull()
+    expect($toggleTask->handle($task, false))->toBeNull()
+        ->and($toggleTask->handle($task, true))->toBeNull()
         ->and($task->fresh()->done)->toBeTrue()
         ->and($task->fresh()->rolled_over)->toBeTrue()
         ->and($this->user->tasks()->count())->toBe(2);
@@ -107,7 +107,7 @@ it('rolls a moved weekly task over from its new date', function () {
 
     updateTaskSave($task, '2026-10-30', true);
 
-    $next = $toggleTask->handle($task);
+    $next = $toggleTask->handle($task, true);
 
     expect($toggleTask->message($next))->toBe('Done. Next one: Fri 6 Nov')
         ->and($next->repeat_weekday)->toBe(5)

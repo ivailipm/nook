@@ -15,7 +15,7 @@ beforeEach(function () {
 it('gives the next task its due date', function (?string $due, int $weekday, string $next) {
     $task = Task::factory()->create(['due_date' => $due, 'repeat_weekday' => $weekday]);
 
-    expect(app(ToggleTask::class)->handle($task)->fresh()->due_date->toDateString())->toBe($next);
+    expect(app(ToggleTask::class)->handle($task, true)->fresh()->due_date->toDateString())->toBe($next);
 })->with([
     'the plain case' => ['2026-10-29', 4, '2026-11-05'],
     'overdue, but + 7 is still ahead' => ['2026-10-28', 3, '2026-11-04'],
@@ -34,7 +34,7 @@ it('keeps the weekday across the clock change', function () {
 
     $task = Task::factory()->create(['due_date' => '2026-10-21', 'repeat_weekday' => 3]);
 
-    expect(app(ToggleTask::class)->handle($task)->fresh()->due_date->toDateString())->toBe('2026-10-28');
+    expect(app(ToggleTask::class)->handle($task, true)->fresh()->due_date->toDateString())->toBe('2026-10-28');
 });
 
 it('completes a recurring task and creates the next one for the same user', function () {
@@ -48,7 +48,7 @@ it('completes a recurring task and creates the next one for the same user', func
         'repeat_weekday' => 4,
     ]);
 
-    $next = app(ToggleTask::class)->handle($task);
+    $next = app(ToggleTask::class)->handle($task, true);
 
     // The task passed in shows the new state, as does its row.
     foreach ([$task, $task->fresh()] as $completed) {
@@ -78,13 +78,13 @@ it('builds the toast with the long date', function () {
     $task = Task::factory()->create(['due_date' => '2026-10-29', 'repeat_weekday' => 4]);
     $action = app(ToggleTask::class);
 
-    expect($action->message($action->handle($task)))->toBe('Done. Next one: Thu 5 Nov');
+    expect($action->message($action->handle($task, true)))->toBe('Done. Next one: Thu 5 Nov');
 });
 
 it('completes a one-off task without creating another', function () {
     $task = Task::factory()->create(['due_date' => '2026-10-29']);
 
-    expect(app(ToggleTask::class)->handle($task))->toBeNull()
+    expect(app(ToggleTask::class)->handle($task, true))->toBeNull()
         ->and($task->done)->toBeTrue()
         ->and($task->completed_at->toDateTimeString())->toBe('2026-10-29 12:00:00')
         ->and($task->rolled_over)->toBeFalse()
@@ -95,9 +95,9 @@ it('completes a one-off task without creating another', function () {
 it('unticks a task and leaves the next one in place', function () {
     $task = Task::factory()->create(['due_date' => '2026-10-29', 'repeat_weekday' => 4]);
     $action = app(ToggleTask::class);
-    $next = $action->handle($task);
+    $next = $action->handle($task, true);
 
-    expect($action->handle($task))->toBeNull()
+    expect($action->handle($task, false))->toBeNull()
         ->and($task->done)->toBeFalse()
         ->and($task->completed_at)->toBeNull()
         ->and($task->rolled_over)->toBeTrue()
@@ -111,36 +111,53 @@ it('does not create a second copy on tick, untick, tick', function () {
     $task = Task::factory()->create(['due_date' => '2026-10-29', 'repeat_weekday' => 4]);
     $action = app(ToggleTask::class);
 
-    $action->handle($task);
-    $action->handle($task);
+    $action->handle($task, true);
+    $action->handle($task, false);
 
     $this->travelTo(Carbon::parse('2026-10-29 15:30', 'Europe/Brussels'));
 
-    expect($action->handle($task))->toBeNull()
+    expect($action->handle($task, true))->toBeNull()
         ->and($task->done)->toBeTrue()
         ->and($task->completed_at->toDateTimeString())->toBe('2026-10-29 15:30:00')
         ->and(Task::count())->toBe(2);
 });
 
-it('decides from the row, so a second tap with a stale model does not create a second copy', function () {
+it('decides from the row, so a second tick with a stale model does not create a second copy', function () {
     $task = Task::factory()->create(['due_date' => '2026-10-29', 'repeat_weekday' => 4]);
     $staleTask = $task->fresh();
     $action = app(ToggleTask::class);
 
-    $action->handle($task);
+    $action->handle($task, true);
 
-    expect($action->handle($staleTask))->toBeNull()
-        ->and($staleTask->done)->toBeFalse()
+    $this->travelTo(Carbon::parse('2026-10-29 15:30', 'Europe/Brussels'));
+
+    expect($action->handle($staleTask, true))->toBeNull()
+        ->and($staleTask->done)->toBeTrue()
+        ->and($staleTask->completed_at->toDateTimeString())->toBe('2026-10-29 12:00:00')
         ->and($staleTask->rolled_over)->toBeTrue()
         ->and(Task::count())->toBe(2);
 });
+
+it('leaves a task already in the given state alone', function (array $state, bool $done) {
+    $task = Task::factory()->create(['due_date' => '2026-10-29', 'repeat_weekday' => 4, ...$state]);
+    $before = $task->fresh()->getAttributes();
+
+    $this->travelTo(Carbon::parse('2026-10-29 15:30', 'Europe/Brussels'));
+
+    expect(app(ToggleTask::class)->handle($task, $done))->toBeNull()
+        ->and($task->fresh()->getAttributes())->toBe($before)
+        ->and(Task::count())->toBe(1);
+})->with([
+    'ticking a done task that has not rolled over' => [['done' => true, 'completed_at' => '2026-10-29 09:00:00', 'rolled_over' => false], true],
+    'unticking an open task' => [['done' => false, 'completed_at' => null, 'rolled_over' => true], false],
+]);
 
 it('rolls over again when the next task is ticked', function () {
     $task = Task::factory()->create(['due_date' => '2026-10-29', 'repeat_weekday' => 4]);
     $action = app(ToggleTask::class);
 
-    $next = $action->handle($task);
-    $third = $action->handle($next);
+    $next = $action->handle($task, true);
+    $third = $action->handle($next, true);
 
     expect($third->due_date->toDateString())->toBe('2026-11-12')
         ->and($next->rolled_over)->toBeTrue()
