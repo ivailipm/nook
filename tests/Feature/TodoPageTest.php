@@ -347,7 +347,7 @@ it('names the checkbox by the task and restores its focus by id', function () {
 
     expect($open->getAttribute('aria-label'))->toBe('Complete: Stamps')
         ->and($open->getAttribute('aria-pressed'))->toBe('false')
-        ->and($open->getAttribute('x-on:click'))->toBe("const focused = document.activeElement === \$el; \$tick((done) => \$wire.toggle({$task->id}, done)).then(() => focused && document.getElementById('task-check-{$task->id}')?.focus())");
+        ->and($open->getAttribute('x-on:click'))->toBe("const focused = document.activeElement === \$el; \$tick((done, \$wire) => \$wire.toggle({$task->id}, done)).then(() => focused && document.getElementById('task-check-{$task->id}')?.focus())");
 
     $component->call('toggle', $task->id, true);
     $done = todoCheckbox($component, $task);

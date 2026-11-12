@@ -59,7 +59,7 @@
                         :checked="$task->done"
                         :label="'Complete: '.$task->title"
                         :checked-label="'Mark not done: '.$task->title"
-                        x-on:click="const focused = document.activeElement === $el; $tick((done) => $wire.toggleTask({{ $task->id }}, done)).then(() => focused && document.getElementById('today-check-{{ $task->id }}')?.focus())"
+                        x-on:click="const focused = document.activeElement === $el; $tick((done, $wire) => $wire.toggleTask({{ $task->id }}, done)).then(() => focused && document.getElementById('today-check-{{ $task->id }}')?.focus())"
                         class="-mt-2.5 -mr-2 -ml-3"
                     />
                     {{-- Opens the edit sheet. The ::before covers the row's padding above and below, so the hit area is at least 44px without moving the layout, and it doesn't reach sideways over the checkbox. --}}
@@ -92,7 +92,7 @@
                         size="sm"
                         id="item-check-{{ $item->id }}"
                         :label="'Tick off '.$item->name"
-                        x-on:click="const focused = document.activeElement === $el, card = $el.closest('section'), boxes = () => [...card.querySelectorAll('button[aria-pressed]')], place = boxes().indexOf($el); $tick(() => $wire.tickItem({{ $item->id }}), { tickOnly: true }).then(() => focused && (boxes()[place] ?? boxes().at(-1) ?? card.querySelector('a')).focus())"
+                        x-on:click="const focused = document.activeElement === $el, card = $el.closest('section'), boxes = () => [...card.querySelectorAll('button[aria-pressed]')], place = boxes().indexOf($el); $tick((done, $wire) => $wire.tickItem({{ $item->id }}), { tickOnly: true }).then(() => focused && (boxes()[place] ?? boxes().at(-1) ?? card.querySelector('a')).focus())"
                         class="-mr-2 -ml-3"
                     />
                     <span class="min-w-0 flex-1 text-[14px] font-semibold break-words in-data-done:line-through in-data-done:opacity-55">{{ $item->name }}</span>

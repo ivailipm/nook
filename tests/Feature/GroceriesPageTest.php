@@ -232,7 +232,7 @@ it('ticks with $tick, passing only the item\'s id', function () {
 
     $checkbox = groceriesHtml(Livewire::test(Groceries::class))->getElementById("item-check-{$item->id}");
 
-    expect($checkbox->getAttribute('x-on:click'))->toBe("const focused = document.activeElement === \$el; \$tick((done) => \$wire.toggle({$item->id}, done)).then(() => focused && \$el.focus())")
+    expect($checkbox->getAttribute('x-on:click'))->toBe("const focused = document.activeElement === \$el; \$tick((done, \$wire) => \$wire.toggle({$item->id}, done)).then(() => focused && \$el.focus())")
         ->and($checkbox->getAttribute('x-on:click'))->not->toContain('img')
         ->and($checkbox->getAttribute('data-label'))->toBe('Tick off <img src=x onerror=alert(1)>');
 });

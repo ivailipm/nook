@@ -1,11 +1,14 @@
 // Instant ticking. Every tick checkbox calls $tick from its x-on:click with a save function, for example
-// $tick((done) => $wire.toggle(12, done)). The checkbox and its row show the tapped state at once, through the attributes
-// their classes follow, and the save sends that state. Counts, moves and toasts come with the reply's re-render.
+// $tick((done, $wire) => $wire.toggle(12, done)). The checkbox and its row show the tapped state at once, through the
+// attributes their classes follow, and the save sends that state. Counts, moves and toasts come with the reply's re-render.
+//
+// The save gets its component's $wire rather than reading Alpine's: a reply can rebuild the checkbox (a To-do row moving
+// to Done), and Alpine's $wire, looked up from a checkbox that has left the page, does nothing.
 
 const failure = 'That tick was not saved. Try again';
 
-// The rows with a save waiting, by checkbox id: the state the server last confirmed, the state the row wants now, and
-// the promise that settles once the row's saves are done.
+// The rows with a save waiting, by checkbox id: the state the server last confirmed, the state the row wants now, its
+// component's $wire, and the promise that settles once the row's saves are done.
 const waiting = new Map();
 
 // True while a save function runs, so the action it fires is known as a tick save.
@@ -18,11 +21,11 @@ function show(box, done) {
     box.closest('[wire\\:key]').toggleAttribute('data-done', done);
 }
 
-function send(save, done) {
+function send(save, done, wire) {
     sending = true;
 
     try {
-        return save(done);
+        return save(done, wire);
     } finally {
         sending = false;
     }
@@ -35,7 +38,7 @@ async function settle(id, row, save) {
         const done = row.wanted;
 
         try {
-            await send(save, done);
+            await send(save, done, row.wire);
         } catch {
             if (row.wanted !== row.confirmed) {
                 const box = document.getElementById(id);
@@ -78,7 +81,7 @@ function tick(box, save, { tickOnly = false } = {}) {
         return row.settled;
     }
 
-    row = { confirmed: pressed, wanted: !pressed };
+    row = { confirmed: pressed, wanted: !pressed, wire: Livewire.find(box.closest('[wire\\:id]').getAttribute('wire:id')) };
     waiting.set(box.id, row);
     row.settled = settle(box.id, row, save);
 

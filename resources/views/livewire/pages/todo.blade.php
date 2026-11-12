@@ -53,7 +53,7 @@
                                 :checked="$task->done"
                                 :label="'Complete: '.$task->title"
                                 :checked-label="'Mark not done: '.$task->title"
-                                x-on:click="const focused = document.activeElement === $el; $tick((done) => $wire.toggle({{ $task->id }}, done)).then(() => focused && document.getElementById('task-check-{{ $task->id }}')?.focus())"
+                                x-on:click="const focused = document.activeElement === $el; $tick((done, $wire) => $wire.toggle({{ $task->id }}, done)).then(() => focused && document.getElementById('task-check-{{ $task->id }}')?.focus())"
                                 class="-ml-3"
                             />
                             {{-- Opens the edit sheet. The checkbox stays its own button, so ticking never opens it. --}}

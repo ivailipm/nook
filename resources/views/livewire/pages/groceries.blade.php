@@ -48,7 +48,7 @@
                             :checked="$item->done"
                             :label="'Tick off '.$item->name"
                             :checked-label="'Untick '.$item->name"
-                            x-on:click="const focused = document.activeElement === $el; $tick((done) => $wire.toggle({{ $item->id }}, done)).then(() => focused && $el.focus())"
+                            x-on:click="const focused = document.activeElement === $el; $tick((done, $wire) => $wire.toggle({{ $item->id }}, done)).then(() => focused && $el.focus())"
                             class="-ml-3"
                         />
                         <span class="flex min-w-0 flex-1 flex-col break-words">

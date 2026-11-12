@@ -620,7 +620,7 @@ it('marks only a done Today row with data-done and ticks with $tick, passing onl
         ->and($labels($open))->toBe(['false', 'Complete: Return library book', 'Complete: Return library book', 'Mark not done: Return library book'])
         ->and($title($done)->getAttribute('class'))->toBe('text-[14px] font-semibold in-data-done:line-through in-data-done:opacity-55')
         ->and($title($open)->getAttribute('class'))->toBe($title($done)->getAttribute('class'))
-        ->and($open->getAttribute('x-on:click'))->toBe("const focused = document.activeElement === \$el; \$tick((done) => \$wire.toggleTask({$id}, done)).then(() => focused && document.getElementById('today-check-{$id}')?.focus())")
+        ->and($open->getAttribute('x-on:click'))->toBe("const focused = document.activeElement === \$el; \$tick((done, \$wire) => \$wire.toggleTask({$id}, done)).then(() => focused && document.getElementById('today-check-{$id}')?.focus())")
         ->and($open->getAttribute('x-on:click'))->not->toContain('library');
 });
 
@@ -636,7 +636,7 @@ it('gives each Groceries row a tick-only checkbox with one label and no data-don
         ->and(array_map(fn (string $name) => $checkbox->getAttribute($name), ['aria-pressed', 'aria-label', 'data-label', 'data-checked-label']))
         ->toBe(['false', 'Tick off Coffee beans', 'Tick off Coffee beans', 'Tick off Coffee beans'])
         ->and($checkbox->nextElementSibling->getAttribute('class'))->toBe('min-w-0 flex-1 text-[14px] font-semibold break-words in-data-done:line-through in-data-done:opacity-55')
-        ->and($checkbox->getAttribute('x-on:click'))->toBe("const focused = document.activeElement === \$el, card = \$el.closest('section'), boxes = () => [...card.querySelectorAll('button[aria-pressed]')], place = boxes().indexOf(\$el); \$tick(() => \$wire.tickItem({$coffee->id}), { tickOnly: true }).then(() => focused && (boxes()[place] ?? boxes().at(-1) ?? card.querySelector('a')).focus())")
+        ->and($checkbox->getAttribute('x-on:click'))->toBe("const focused = document.activeElement === \$el, card = \$el.closest('section'), boxes = () => [...card.querySelectorAll('button[aria-pressed]')], place = boxes().indexOf(\$el); \$tick((done, \$wire) => \$wire.tickItem({$coffee->id}), { tickOnly: true }).then(() => focused && (boxes()[place] ?? boxes().at(-1) ?? card.querySelector('a')).focus())")
         ->and($checkbox->getAttribute('x-on:click'))->not->toContain('Coffee');
 
     foreach ($card->querySelectorAll('button[aria-pressed]') as $box) {
