@@ -3,6 +3,8 @@
 # and point the domain at the `app` service, port 8080.
 x-app: &app
   image: ghcr.io/ivailipm/nook:latest
+  # :latest moves with every merge, so each deploy checks the registry instead of reusing the image on the server.
+  pull_policy: always
   restart: unless-stopped
   environment: &env
     APP_NAME: nook
