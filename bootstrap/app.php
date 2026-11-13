@@ -11,8 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // In production Coolify's proxy terminates TLS and reaches the container over a private Docker network.
-        $middleware->trustProxies(at: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '127.0.0.1']);
+        // In production Coolify's proxy terminates TLS and is the only way in: the container publishes no port,
+        // and the proxy replaces any X-Forwarded-* headers a visitor sends. A list of private ranges didn't match
+        // the address the proxy arrives from, so every URL came out as http:// and the browser blocked the CSS.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

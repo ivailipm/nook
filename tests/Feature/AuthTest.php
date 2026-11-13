@@ -14,6 +14,17 @@ it('sends guests to the login page', function (string $uri) {
     $this->get($uri)->assertRedirect('/login');
 })->with('sections');
 
+it('builds https links behind the TLS proxy', function () {
+    $response = $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.7'])
+        ->withHeaders(['X-Forwarded-Proto' => 'https', 'X-Forwarded-Host' => 'nook.example.com', 'X-Forwarded-Port' => '443'])
+        ->get('/login')
+        ->assertOk();
+
+    $page = HTMLDocument::createFromString($response->getContent(), LIBXML_NOERROR);
+
+    expect($page->querySelector('form')->getAttribute('action'))->toBe('https://nook.example.com/login');
+});
+
 it('keeps the health check public', function () {
     $this->get('/up')->assertOk();
 
